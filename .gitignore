@@ -1,0 +1,9 @@
+# build outputs
+android/.gradle/
+android/build/
+android/*/build/
+apple/MuCore/.build/
+
+# tmp
+*.log
+.DS_Store

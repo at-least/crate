@@ -1,0 +1,33 @@
+{
+  "albums": [
+    {
+      "albumArtist": "Lofi",
+      "artTrackId": "Lofi/Beats/01 - Rain.opus",
+      "compilation": false,
+      "id": "alb|Lofi|Beats",
+      "name": "Beats",
+      "trackCount": 1,
+      "year": null
+    }
+  ],
+  "errors": [],
+  "playlists": [],
+  "tracks": [
+    {
+      "album": "Beats",
+      "albumArtist": "Lofi",
+      "albumId": "alb|Lofi|Beats",
+      "artist": "Lofi",
+      "disc": 1,
+      "durationMs": null,
+      "format": "opus",
+      "id": "Lofi/Beats/01 - Rain.opus",
+      "path": "Lofi/Beats/01 - Rain.opus",
+      "sizeBytes": 270,
+      "tagOk": true,
+      "title": "Rain",
+      "trackNo": 1,
+      "year": null
+    }
+  ]
+}

@@ -1,0 +1,48 @@
+{
+  "albums": [
+    {
+      "albumArtist": "陳綺貞",
+      "artTrackId": "陳綺貞/時間的歌/03 - 旅行的意義.flac",
+      "compilation": false,
+      "id": "alb|陳綺貞|時間的歌",
+      "name": "時間的歌",
+      "trackCount": 1,
+      "year": null
+    }
+  ],
+  "errors": [],
+  "playlists": [
+    {
+      "id": "清單/我的最愛.m3u8",
+      "items": [
+        {
+          "durationMs": 260000,
+          "missing": false,
+          "position": 0,
+          "ref": "../陳綺貞/時間的歌/03 - 旅行的意義.flac",
+          "trackId": "陳綺貞/時間的歌/03 - 旅行的意義.flac"
+        }
+      ],
+      "name": "我的最愛",
+      "path": "清單/我的最愛.m3u8"
+    }
+  ],
+  "tracks": [
+    {
+      "album": "時間的歌",
+      "albumArtist": "陳綺貞",
+      "albumId": "alb|陳綺貞|時間的歌",
+      "artist": "陳綺貞",
+      "disc": 1,
+      "durationMs": null,
+      "format": "flac",
+      "id": "陳綺貞/時間的歌/03 - 旅行的意義.flac",
+      "path": "陳綺貞/時間的歌/03 - 旅行的意義.flac",
+      "sizeBytes": 8498,
+      "tagOk": true,
+      "title": "旅行的意義",
+      "trackNo": 3,
+      "year": null
+    }
+  ]
+}

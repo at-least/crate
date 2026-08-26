@@ -1,0 +1,131 @@
+{
+  "albums": [
+    {
+      "albumArtist": "<Unknown Artist>",
+      "artTrackId": null,
+      "compilation": false,
+      "id": "alb|<Unknown Artist>|<No Album>",
+      "name": "<No Album>",
+      "trackCount": 1,
+      "year": null
+    },
+    {
+      "albumArtist": "<Unknown Artist>",
+      "artTrackId": null,
+      "compilation": false,
+      "id": "alb|<Unknown Artist>|C",
+      "name": "C",
+      "trackCount": 1,
+      "year": null
+    },
+    {
+      "albumArtist": "A",
+      "artTrackId": null,
+      "compilation": false,
+      "id": "alb|A|B",
+      "name": "B",
+      "trackCount": 4,
+      "year": null
+    }
+  ],
+  "errors": [],
+  "playlists": [],
+  "tracks": [
+    {
+      "album": "B",
+      "albumArtist": "A",
+      "albumId": "alb|A|B",
+      "artist": "A",
+      "disc": 1,
+      "durationMs": null,
+      "format": "flac",
+      "id": "A/B/05 - Leading Zero.flac",
+      "path": "A/B/05 - Leading Zero.flac",
+      "sizeBytes": 8431,
+      "tagOk": false,
+      "title": "Leading Zero",
+      "trackNo": 5,
+      "year": null
+    },
+    {
+      "album": "B",
+      "albumArtist": "A",
+      "albumId": "alb|A|B",
+      "artist": "A",
+      "disc": 1,
+      "durationMs": null,
+      "format": "flac",
+      "id": "A/B/12-Irregular.flac",
+      "path": "A/B/12-Irregular.flac",
+      "sizeBytes": 8431,
+      "tagOk": false,
+      "title": "12-Irregular",
+      "trackNo": null,
+      "year": null
+    },
+    {
+      "album": "B",
+      "albumArtist": "A",
+      "albumId": "alb|A|B",
+      "artist": "A",
+      "disc": 1,
+      "durationMs": null,
+      "format": "flac",
+      "id": "A/B/99 No Dash.flac",
+      "path": "A/B/99 No Dash.flac",
+      "sizeBytes": 8431,
+      "tagOk": false,
+      "title": "99 No Dash",
+      "trackNo": null,
+      "year": null
+    },
+    {
+      "album": "B",
+      "albumArtist": "A",
+      "albumId": "alb|A|B",
+      "artist": "A",
+      "disc": 1,
+      "durationMs": null,
+      "format": "flac",
+      "id": "A/B/No Number.flac",
+      "path": "A/B/No Number.flac",
+      "sizeBytes": 8431,
+      "tagOk": false,
+      "title": "No Number",
+      "trackNo": null,
+      "year": null
+    },
+    {
+      "album": "C",
+      "albumArtist": "<Unknown Artist>",
+      "albumId": "alb|<Unknown Artist>|C",
+      "artist": "<Unknown Artist>",
+      "disc": 1,
+      "durationMs": null,
+      "format": "flac",
+      "id": "C/onlyone.flac",
+      "path": "C/onlyone.flac",
+      "sizeBytes": 8431,
+      "tagOk": false,
+      "title": "onlyone",
+      "trackNo": null,
+      "year": null
+    },
+    {
+      "album": "<No Album>",
+      "albumArtist": "<Unknown Artist>",
+      "albumId": "alb|<Unknown Artist>|<No Album>",
+      "artist": "<Unknown Artist>",
+      "disc": 1,
+      "durationMs": null,
+      "format": "flac",
+      "id": "loose.flac",
+      "path": "loose.flac",
+      "sizeBytes": 8431,
+      "tagOk": false,
+      "title": "loose",
+      "trackNo": null,
+      "year": null
+    }
+  ]
+}

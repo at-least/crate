@@ -1,0 +1,33 @@
+{
+  "albums": [
+    {
+      "albumArtist": "Sfx",
+      "artTrackId": null,
+      "compilation": false,
+      "id": "alb|Sfx|Pack",
+      "name": "Pack",
+      "trackCount": 1,
+      "year": null
+    }
+  ],
+  "errors": [],
+  "playlists": [],
+  "tracks": [
+    {
+      "album": "Pack",
+      "albumArtist": "Sfx",
+      "albumId": "alb|Sfx|Pack",
+      "artist": "Sfx",
+      "disc": 1,
+      "durationMs": null,
+      "format": "wav",
+      "id": "Sfx/Pack/01 - Kick.wav",
+      "path": "Sfx/Pack/01 - Kick.wav",
+      "sizeBytes": 26538,
+      "tagOk": false,
+      "title": "Kick",
+      "trackNo": 1,
+      "year": null
+    }
+  ]
+}

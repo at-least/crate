@@ -1,0 +1,33 @@
+{
+  "albums": [
+    {
+      "albumArtist": "Lofi",
+      "artTrackId": "Lofi/Beats/02 - Snow.ogg",
+      "compilation": false,
+      "id": "alb|Lofi|Beats",
+      "name": "Beats",
+      "trackCount": 1,
+      "year": null
+    }
+  ],
+  "errors": [],
+  "playlists": [],
+  "tracks": [
+    {
+      "album": "Beats",
+      "albumArtist": "Lofi",
+      "albumId": "alb|Lofi|Beats",
+      "artist": "Lofi",
+      "disc": 1,
+      "durationMs": null,
+      "format": "ogg",
+      "id": "Lofi/Beats/02 - Snow.ogg",
+      "path": "Lofi/Beats/02 - Snow.ogg",
+      "sizeBytes": 3451,
+      "tagOk": true,
+      "title": "Snow",
+      "trackNo": 2,
+      "year": null
+    }
+  ]
+}

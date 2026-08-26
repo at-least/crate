@@ -1,0 +1,12 @@
+{
+  "albums": [],
+  "errors": [
+    {
+      "code": "BAD_CONTAINER",
+      "message": "",
+      "path": "X/Y/01 - Fake.mp3"
+    }
+  ],
+  "playlists": [],
+  "tracks": []
+}

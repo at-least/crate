@@ -1,0 +1,58 @@
+{
+  "albums": [
+    {
+      "albumArtist": "Ken",
+      "artTrackId": "Ken/Album One/01 - A.flac",
+      "compilation": false,
+      "id": "alb|Ken|Album One",
+      "name": "Album One",
+      "trackCount": 1,
+      "year": null
+    },
+    {
+      "albumArtist": "Ken",
+      "artTrackId": "Ken/Album Two/01 - B.flac",
+      "compilation": false,
+      "id": "alb|Ken|Album Two",
+      "name": "Album Two",
+      "trackCount": 1,
+      "year": null
+    }
+  ],
+  "errors": [],
+  "playlists": [],
+  "tracks": [
+    {
+      "album": "Album One",
+      "albumArtist": "Ken",
+      "albumId": "alb|Ken|Album One",
+      "artist": "Ken",
+      "disc": 1,
+      "durationMs": null,
+      "format": "flac",
+      "id": "Ken/Album One/01 - A.flac",
+      "path": "Ken/Album One/01 - A.flac",
+      "sizeBytes": 8475,
+      "tagOk": true,
+      "title": "A",
+      "trackNo": 1,
+      "year": null
+    },
+    {
+      "album": "Album Two",
+      "albumArtist": "Ken",
+      "albumId": "alb|Ken|Album Two",
+      "artist": "Ken",
+      "disc": 1,
+      "durationMs": null,
+      "format": "flac",
+      "id": "Ken/Album Two/01 - B.flac",
+      "path": "Ken/Album Two/01 - B.flac",
+      "sizeBytes": 8475,
+      "tagOk": true,
+      "title": "B",
+      "trackNo": 1,
+      "year": null
+    }
+  ]
+}

@@ -1,0 +1,13 @@
+{
+  "albums": [],
+  "errors": [],
+  "playlists": [
+    {
+      "id": "Playlists/empty.m3u8",
+      "items": [],
+      "name": "empty",
+      "path": "Playlists/empty.m3u8"
+    }
+  ],
+  "tracks": []
+}

@@ -1,0 +1,33 @@
+{
+  "albums": [
+    {
+      "albumArtist": "Various Artists",
+      "artTrackId": null,
+      "compilation": true,
+      "id": "alb|Various Artists|Dream Mixtape",
+      "name": "Dream Mixtape",
+      "trackCount": 1,
+      "year": null
+    }
+  ],
+  "errors": [],
+  "playlists": [],
+  "tracks": [
+    {
+      "album": "Dream Mixtape",
+      "albumArtist": "Various Artists",
+      "albumId": "alb|Various Artists|Dream Mixtape",
+      "artist": "Various Artists",
+      "disc": 1,
+      "durationMs": null,
+      "format": "flac",
+      "id": "Various Artists/Dream Mixtape/07 - Unknown.flac",
+      "path": "Various Artists/Dream Mixtape/07 - Unknown.flac",
+      "sizeBytes": 8431,
+      "tagOk": false,
+      "title": "Unknown",
+      "trackNo": 7,
+      "year": null
+    }
+  ]
+}

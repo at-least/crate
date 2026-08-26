@@ -1,0 +1,33 @@
+{
+  "albums": [
+    {
+      "albumArtist": "The Band",
+      "artTrackId": "The Band/Sleeves/01 - Covered.mp3",
+      "compilation": false,
+      "id": "alb|The Band|Sleeves",
+      "name": "Sleeves",
+      "trackCount": 1,
+      "year": null
+    }
+  ],
+  "errors": [],
+  "playlists": [],
+  "tracks": [
+    {
+      "album": "Sleeves",
+      "albumArtist": "The Band",
+      "albumId": "alb|The Band|Sleeves",
+      "artist": "The Band",
+      "disc": 1,
+      "durationMs": null,
+      "format": "mp3",
+      "id": "The Band/Sleeves/01 - Covered.mp3",
+      "path": "The Band/Sleeves/01 - Covered.mp3",
+      "sizeBytes": 3232,
+      "tagOk": true,
+      "title": "Covered",
+      "trackNo": 1,
+      "year": null
+    }
+  ]
+}

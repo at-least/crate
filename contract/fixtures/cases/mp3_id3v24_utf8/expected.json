@@ -1,0 +1,33 @@
+{
+  "albums": [
+    {
+      "albumArtist": "Kyary",
+      "artTrackId": "Kyary/Jelly/02 - Ninjya.mp3",
+      "compilation": false,
+      "id": "alb|Kyary|Jelly",
+      "name": "Jelly",
+      "trackCount": 1,
+      "year": null
+    }
+  ],
+  "errors": [],
+  "playlists": [],
+  "tracks": [
+    {
+      "album": "Jelly",
+      "albumArtist": "Kyary",
+      "albumId": "alb|Kyary|Jelly",
+      "artist": "Kyary",
+      "disc": 1,
+      "durationMs": null,
+      "format": "mp3",
+      "id": "Kyary/Jelly/02 - Ninjya.mp3",
+      "path": "Kyary/Jelly/02 - Ninjya.mp3",
+      "sizeBytes": 3026,
+      "tagOk": true,
+      "title": "にんじゃ",
+      "trackNo": 2,
+      "year": null
+    }
+  ]
+}

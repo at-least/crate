@@ -1,0 +1,33 @@
+{
+  "albums": [
+    {
+      "albumArtist": "©PªN­Û",
+      "artTrackId": "周杰倫/葉惠美/03 - 晴天.mp3",
+      "compilation": false,
+      "id": "alb|©PªN­Û|¸­´f¬ü",
+      "name": "¸­´f¬ü",
+      "trackCount": 1,
+      "year": null
+    }
+  ],
+  "errors": [],
+  "playlists": [],
+  "tracks": [
+    {
+      "album": "¸­´f¬ü",
+      "albumArtist": "©PªN­Û",
+      "albumId": "alb|©PªN­Û|¸­´f¬ü",
+      "artist": "©PªN­Û",
+      "disc": 1,
+      "durationMs": null,
+      "format": "mp3",
+      "id": "周杰倫/葉惠美/03 - 晴天.mp3",
+      "path": "周杰倫/葉惠美/03 - 晴天.mp3",
+      "sizeBytes": 3030,
+      "tagOk": true,
+      "title": "´¸¤Ñ",
+      "trackNo": 3,
+      "year": null
+    }
+  ]
+}
