@@ -43,6 +43,7 @@
 | D8 | 開發順序 = contract → **Android 先** → Apple 後 | Agent 開發機是 Linux：Android 可端到端自動驗證（build/test/emulator），閉環不經過人；Apple 端 agent 寫碼、使用者在 Mac 驗收 | Apple 先（驗證瓶頸在使用者） |
 | D9 | 域名：註冊 **mu.music**（查證未註冊），備選 muplayer.app | RDAP 查證 2026-08-27 | app.mu（ccTLD 貴）；mu.app/mu.fm（已註冊） |
 | D10 | Phase 1 順序改為：**LocalFolderProvider → FakeProvider → Android 殼 → GDrive 最後**（2026-08-27 決定，暫緩實作） | 本地 provider 對應 provider.md 全部方法（delta=mtime/size、rev=size+mtime），零帳號零網路即可開發測試整條同步管線；且「本地資料夾」本來就是規劃中的正式功能（桌機情境），非拋棄式測試碼 | 一開始就做 GDrive（被 OAuth 設定卡住開發節奏） |
+| D11 | GDrive OAuth **申請延後到實際要上 production 前才做**（2026-08-27 決定） | D10 後 GDrive 不阻塞任何開發；開發期申請無收益——Testing 模式 refresh token 7 天就過期，太早申請反而要反覆重授權。操作文件已備妥（docs/gdrive-setup.md），屆時照做約 10 分鐘 | 現在就並行申請（無收益，7 天 token 過期擾人） |
 
 ## 4. 架構
 
@@ -165,7 +166,7 @@ interface CloudProvider {
 1. **LocalFolderProvider**：實作 contract/provider.md 介面（delta = mtime/size 快照比對、rev = size+mtime、rangeRead = RandomAccessFile、putText = 寫檔）。同步引擎：首掃 → DB → 增量（增/刪/改/改名）。機器測試含髒情境：掃描中拔檔、外部改 m3u8、目錄改名。
 2. **FakeProvider**（in-memory、可腳本化錯誤）：測 provider.md §2 錯誤語意（401 重授權、429/5xx 指數退避、putText rev 衝突）。
 3. **Android 殼**（Compose + Media3 + Room）：瀏覽專輯/藝人、播放（串流/本地）、釘選、媒體通知/耳機控制、`.m3u8`。資料來源先接 LocalFolderProvider。
-4. **GDriveProvider**（最後；需要 docs/gdrive-setup.md 的 3 個 Client ID）：插進現有管線，UI 加帳號連結頁。
+4. **GDriveProvider**（最後；需要 docs/gdrive-setup.md 的 3 個 Client ID——依 D11，申請延後到實際要上 production 前才做）：插進現有管線，UI 加帳號連結頁。
 
 範圍（不變）：專輯/藝人瀏覽、Media3 播放（串流 + 下載快取）、釘選離線、媒體通知/耳機控制、`.m3u8` 讀取。
 **驗收（機器可查）**：core 契約測試全綠；emulator 上掃描 500 張專輯模擬資料 < 5 分鐘。
@@ -238,7 +239,7 @@ CarPlay（Media3 原生支援 + CarPlay framework）、桌面 Widget、Last.fm s
 ## 12. 立即的下一步
 
 1. agent（Linux 機）：建 repo 骨架 + 寫 `contract/` 全部內容 + Android core 契約測試骨架
-2. 你（Mac）：照 §10 跑通環境；同時註冊 Google Drive API 的 OAuth client id（需要一個 Google Cloud 專案，Drive scope read/write）
+2. 你（Mac）：照 §10 跑通環境（GDrive OAuth 申請依 D11 延後，現階段不用做）
 3. 會合點：contract/ 完成 → 開 Phase 1
 
 ---

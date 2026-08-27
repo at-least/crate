@@ -1,4 +1,4 @@
-# Google Drive OAuth 設定（Phase 1 前置）
+# Google Drive OAuth 設定（依 D11 暫緩：實際要上 production 前才申請）
 
 > 2026-08-27 依 Google 官方文件查證後撰寫。在 Google Cloud Console 操作，約 10 分鐘。
 
