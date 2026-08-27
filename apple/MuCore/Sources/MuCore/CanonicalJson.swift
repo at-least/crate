@@ -98,7 +98,7 @@ public enum CanonicalJson {
         ])
     }
 
-    private static func canonical(_ a: Scanner.Album) -> JSONValue {
+    static func canonical(_ a: Scanner.Album) -> JSONValue {
         .object([
             ("albumArtist", .string(a.albumArtist)),
             ("artTrackId", a.artTrackId.map { .string($0) } ?? .null),
@@ -110,7 +110,7 @@ public enum CanonicalJson {
         ])
     }
 
-    private static func canonical(_ e: Scanner.ScanError) -> JSONValue {
+    static func canonical(_ e: Scanner.ScanError) -> JSONValue {
         .object([
             ("code", .string(e.code)),
             ("message", .string("")), // 契約豁免
@@ -135,8 +135,8 @@ public enum CanonicalJson {
         ])
     }
 
-    private static func canonical(_ t: Scanner.Track) -> JSONValue {
-        .object([
+    static func trackPairs(_ t: Scanner.Track) -> [(String, JSONValue)] {
+        [
             ("album", .string(t.album)),
             ("albumArtist", .string(t.albumArtist)),
             ("albumId", .string(t.albumId)),
@@ -151,6 +151,18 @@ public enum CanonicalJson {
             ("title", .string(t.title)),
             ("trackNo", t.trackNo.map { .int($0) } ?? .null),
             ("year", t.year.map { .int($0) } ?? .null),
-        ])
+        ]
+    }
+
+    static func errorPairs(_ e: Scanner.ScanError) -> [(String, JSONValue)] {
+        [
+            ("code", .string(e.code)),
+            ("message", .string("")), // 契約豁免
+            ("path", .string(e.path)),
+        ]
+    }
+
+    static func canonical(_ t: Scanner.Track) -> JSONValue {
+        .object(trackPairs(t))
     }
 }

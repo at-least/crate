@@ -1,0 +1,476 @@
+[
+  {
+    "changes": [
+      {
+        "kind": "added",
+        "path": "Aurora/Northern Lights/01 - Rise.flac",
+        "rev": "8540:1700000200000"
+      },
+      {
+        "kind": "added",
+        "path": "Ken/Album One/01 - A.flac",
+        "rev": "8431:1700000201000"
+      }
+    ],
+    "index": {
+      "albums": [
+        {
+          "albumArtist": "Aurora",
+          "artTrackId": "Aurora/Northern Lights/01 - Rise.flac",
+          "compilation": false,
+          "id": "alb|Aurora|Northern Lights",
+          "name": "Northern Lights",
+          "trackCount": 1,
+          "year": 2021
+        },
+        {
+          "albumArtist": "Ken",
+          "artTrackId": null,
+          "compilation": false,
+          "id": "alb|Ken|Album One",
+          "name": "Album One",
+          "trackCount": 1,
+          "year": null
+        }
+      ],
+      "errors": [],
+      "playlists": [],
+      "tracks": [
+        {
+          "album": "Northern Lights",
+          "albumArtist": "Aurora",
+          "albumId": "alb|Aurora|Northern Lights",
+          "artist": "Aurora",
+          "available": true,
+          "disc": 1,
+          "durationMs": null,
+          "format": "flac",
+          "id": "Aurora/Northern Lights/01 - Rise.flac",
+          "path": "Aurora/Northern Lights/01 - Rise.flac",
+          "rev": "8540:1700000200000",
+          "sizeBytes": 8540,
+          "tagOk": true,
+          "title": "Rise",
+          "trackNo": 1,
+          "year": 2021
+        },
+        {
+          "album": "Album One",
+          "albumArtist": "Ken",
+          "albumId": "alb|Ken|Album One",
+          "artist": "Ken",
+          "available": true,
+          "disc": 1,
+          "durationMs": null,
+          "format": "flac",
+          "id": "Ken/Album One/01 - A.flac",
+          "path": "Ken/Album One/01 - A.flac",
+          "rev": "8431:1700000201000",
+          "sizeBytes": 8431,
+          "tagOk": false,
+          "title": "A",
+          "trackNo": 1,
+          "year": null
+        }
+      ]
+    },
+    "scanned": [
+      "Aurora/Northern Lights/01 - Rise.flac",
+      "Ken/Album One/01 - A.flac"
+    ]
+  },
+  {
+    "changes": [
+      {
+        "kind": "added",
+        "path": "Kyary/Jelly/02 - Ninjya.mp3",
+        "rev": "3020:1700000300000"
+      }
+    ],
+    "index": {
+      "albums": [
+        {
+          "albumArtist": "Aurora",
+          "artTrackId": "Aurora/Northern Lights/01 - Rise.flac",
+          "compilation": false,
+          "id": "alb|Aurora|Northern Lights",
+          "name": "Northern Lights",
+          "trackCount": 1,
+          "year": 2021
+        },
+        {
+          "albumArtist": "Ken",
+          "artTrackId": null,
+          "compilation": false,
+          "id": "alb|Ken|Album One",
+          "name": "Album One",
+          "trackCount": 1,
+          "year": null
+        },
+        {
+          "albumArtist": "Kyary",
+          "artTrackId": "Kyary/Jelly/02 - Ninjya.mp3",
+          "compilation": false,
+          "id": "alb|Kyary|Jelly",
+          "name": "Jelly",
+          "trackCount": 1,
+          "year": null
+        }
+      ],
+      "errors": [],
+      "playlists": [],
+      "tracks": [
+        {
+          "album": "Northern Lights",
+          "albumArtist": "Aurora",
+          "albumId": "alb|Aurora|Northern Lights",
+          "artist": "Aurora",
+          "available": true,
+          "disc": 1,
+          "durationMs": null,
+          "format": "flac",
+          "id": "Aurora/Northern Lights/01 - Rise.flac",
+          "path": "Aurora/Northern Lights/01 - Rise.flac",
+          "rev": "8540:1700000200000",
+          "sizeBytes": 8540,
+          "tagOk": true,
+          "title": "Rise",
+          "trackNo": 1,
+          "year": 2021
+        },
+        {
+          "album": "Album One",
+          "albumArtist": "Ken",
+          "albumId": "alb|Ken|Album One",
+          "artist": "Ken",
+          "available": true,
+          "disc": 1,
+          "durationMs": null,
+          "format": "flac",
+          "id": "Ken/Album One/01 - A.flac",
+          "path": "Ken/Album One/01 - A.flac",
+          "rev": "8431:1700000201000",
+          "sizeBytes": 8431,
+          "tagOk": false,
+          "title": "A",
+          "trackNo": 1,
+          "year": null
+        },
+        {
+          "album": "Jelly",
+          "albumArtist": "Kyary",
+          "albumId": "alb|Kyary|Jelly",
+          "artist": "Kyary",
+          "available": true,
+          "disc": 1,
+          "durationMs": null,
+          "format": "mp3",
+          "id": "Kyary/Jelly/02 - Ninjya.mp3",
+          "path": "Kyary/Jelly/02 - Ninjya.mp3",
+          "rev": "3020:1700000300000",
+          "sizeBytes": 3020,
+          "tagOk": true,
+          "title": "Ninjya",
+          "trackNo": 2,
+          "year": null
+        }
+      ]
+    },
+    "scanned": [
+      "Kyary/Jelly/02 - Ninjya.mp3"
+    ]
+  },
+  {
+    "changes": [
+      {
+        "kind": "modified",
+        "path": "Aurora/Northern Lights/01 - Rise.flac",
+        "rev": "8541:1700000400000"
+      }
+    ],
+    "index": {
+      "albums": [
+        {
+          "albumArtist": "Aurora",
+          "artTrackId": "Aurora/Northern Lights/01 - Rise.flac",
+          "compilation": false,
+          "id": "alb|Aurora|Northern Lights",
+          "name": "Northern Lights",
+          "trackCount": 1,
+          "year": 2021
+        },
+        {
+          "albumArtist": "Ken",
+          "artTrackId": null,
+          "compilation": false,
+          "id": "alb|Ken|Album One",
+          "name": "Album One",
+          "trackCount": 1,
+          "year": null
+        },
+        {
+          "albumArtist": "Kyary",
+          "artTrackId": "Kyary/Jelly/02 - Ninjya.mp3",
+          "compilation": false,
+          "id": "alb|Kyary|Jelly",
+          "name": "Jelly",
+          "trackCount": 1,
+          "year": null
+        }
+      ],
+      "errors": [],
+      "playlists": [],
+      "tracks": [
+        {
+          "album": "Northern Lights",
+          "albumArtist": "Aurora",
+          "albumId": "alb|Aurora|Northern Lights",
+          "artist": "Aurora",
+          "available": true,
+          "disc": 1,
+          "durationMs": null,
+          "format": "flac",
+          "id": "Aurora/Northern Lights/01 - Rise.flac",
+          "path": "Aurora/Northern Lights/01 - Rise.flac",
+          "rev": "8541:1700000400000",
+          "sizeBytes": 8541,
+          "tagOk": true,
+          "title": "Drift",
+          "trackNo": 1,
+          "year": 2021
+        },
+        {
+          "album": "Album One",
+          "albumArtist": "Ken",
+          "albumId": "alb|Ken|Album One",
+          "artist": "Ken",
+          "available": true,
+          "disc": 1,
+          "durationMs": null,
+          "format": "flac",
+          "id": "Ken/Album One/01 - A.flac",
+          "path": "Ken/Album One/01 - A.flac",
+          "rev": "8431:1700000201000",
+          "sizeBytes": 8431,
+          "tagOk": false,
+          "title": "A",
+          "trackNo": 1,
+          "year": null
+        },
+        {
+          "album": "Jelly",
+          "albumArtist": "Kyary",
+          "albumId": "alb|Kyary|Jelly",
+          "artist": "Kyary",
+          "available": true,
+          "disc": 1,
+          "durationMs": null,
+          "format": "mp3",
+          "id": "Kyary/Jelly/02 - Ninjya.mp3",
+          "path": "Kyary/Jelly/02 - Ninjya.mp3",
+          "rev": "3020:1700000300000",
+          "sizeBytes": 3020,
+          "tagOk": true,
+          "title": "Ninjya",
+          "trackNo": 2,
+          "year": null
+        }
+      ]
+    },
+    "scanned": [
+      "Aurora/Northern Lights/01 - Rise.flac"
+    ]
+  },
+  {
+    "changes": [
+      {
+        "kind": "removed",
+        "path": "Ken/Album One/01 - A.flac",
+        "rev": "8431:1700000201000"
+      }
+    ],
+    "index": {
+      "albums": [
+        {
+          "albumArtist": "Aurora",
+          "artTrackId": "Aurora/Northern Lights/01 - Rise.flac",
+          "compilation": false,
+          "id": "alb|Aurora|Northern Lights",
+          "name": "Northern Lights",
+          "trackCount": 1,
+          "year": 2021
+        },
+        {
+          "albumArtist": "Ken",
+          "artTrackId": null,
+          "compilation": false,
+          "id": "alb|Ken|Album One",
+          "name": "Album One",
+          "trackCount": 1,
+          "year": null
+        },
+        {
+          "albumArtist": "Kyary",
+          "artTrackId": "Kyary/Jelly/02 - Ninjya.mp3",
+          "compilation": false,
+          "id": "alb|Kyary|Jelly",
+          "name": "Jelly",
+          "trackCount": 1,
+          "year": null
+        }
+      ],
+      "errors": [],
+      "playlists": [],
+      "tracks": [
+        {
+          "album": "Northern Lights",
+          "albumArtist": "Aurora",
+          "albumId": "alb|Aurora|Northern Lights",
+          "artist": "Aurora",
+          "available": true,
+          "disc": 1,
+          "durationMs": null,
+          "format": "flac",
+          "id": "Aurora/Northern Lights/01 - Rise.flac",
+          "path": "Aurora/Northern Lights/01 - Rise.flac",
+          "rev": "8541:1700000400000",
+          "sizeBytes": 8541,
+          "tagOk": true,
+          "title": "Drift",
+          "trackNo": 1,
+          "year": 2021
+        },
+        {
+          "album": "Album One",
+          "albumArtist": "Ken",
+          "albumId": "alb|Ken|Album One",
+          "artist": "Ken",
+          "available": false,
+          "disc": 1,
+          "durationMs": null,
+          "format": "flac",
+          "id": "Ken/Album One/01 - A.flac",
+          "path": "Ken/Album One/01 - A.flac",
+          "rev": "8431:1700000201000",
+          "sizeBytes": 8431,
+          "tagOk": false,
+          "title": "A",
+          "trackNo": 1,
+          "year": null
+        },
+        {
+          "album": "Jelly",
+          "albumArtist": "Kyary",
+          "albumId": "alb|Kyary|Jelly",
+          "artist": "Kyary",
+          "available": true,
+          "disc": 1,
+          "durationMs": null,
+          "format": "mp3",
+          "id": "Kyary/Jelly/02 - Ninjya.mp3",
+          "path": "Kyary/Jelly/02 - Ninjya.mp3",
+          "rev": "3020:1700000300000",
+          "sizeBytes": 3020,
+          "tagOk": true,
+          "title": "Ninjya",
+          "trackNo": 2,
+          "year": null
+        }
+      ]
+    },
+    "scanned": []
+  },
+  {
+    "changes": [],
+    "index": {
+      "albums": [
+        {
+          "albumArtist": "Aurora",
+          "artTrackId": "Aurora/Northern Lights/01 - Rise.flac",
+          "compilation": false,
+          "id": "alb|Aurora|Northern Lights",
+          "name": "Northern Lights",
+          "trackCount": 1,
+          "year": 2021
+        },
+        {
+          "albumArtist": "Ken",
+          "artTrackId": null,
+          "compilation": false,
+          "id": "alb|Ken|Album One",
+          "name": "Album One",
+          "trackCount": 1,
+          "year": null
+        },
+        {
+          "albumArtist": "Kyary",
+          "artTrackId": "Kyary/Jelly/02 - Ninjya.mp3",
+          "compilation": false,
+          "id": "alb|Kyary|Jelly",
+          "name": "Jelly",
+          "trackCount": 1,
+          "year": null
+        }
+      ],
+      "errors": [],
+      "playlists": [],
+      "tracks": [
+        {
+          "album": "Northern Lights",
+          "albumArtist": "Aurora",
+          "albumId": "alb|Aurora|Northern Lights",
+          "artist": "Aurora",
+          "available": true,
+          "disc": 1,
+          "durationMs": null,
+          "format": "flac",
+          "id": "Aurora/Northern Lights/01 - Rise.flac",
+          "path": "Aurora/Northern Lights/01 - Rise.flac",
+          "rev": "8541:1700000400000",
+          "sizeBytes": 8541,
+          "tagOk": true,
+          "title": "Drift",
+          "trackNo": 1,
+          "year": 2021
+        },
+        {
+          "album": "Album One",
+          "albumArtist": "Ken",
+          "albumId": "alb|Ken|Album One",
+          "artist": "Ken",
+          "available": false,
+          "disc": 1,
+          "durationMs": null,
+          "format": "flac",
+          "id": "Ken/Album One/01 - A.flac",
+          "path": "Ken/Album One/01 - A.flac",
+          "rev": "8431:1700000201000",
+          "sizeBytes": 8431,
+          "tagOk": false,
+          "title": "A",
+          "trackNo": 1,
+          "year": null
+        },
+        {
+          "album": "Jelly",
+          "albumArtist": "Kyary",
+          "albumId": "alb|Kyary|Jelly",
+          "artist": "Kyary",
+          "available": true,
+          "disc": 1,
+          "durationMs": null,
+          "format": "mp3",
+          "id": "Kyary/Jelly/02 - Ninjya.mp3",
+          "path": "Kyary/Jelly/02 - Ninjya.mp3",
+          "rev": "3020:1700000300000",
+          "sizeBytes": 3020,
+          "tagOk": true,
+          "title": "Ninjya",
+          "trackNo": 2,
+          "year": null
+        }
+      ]
+    },
+    "scanned": []
+  }
+]

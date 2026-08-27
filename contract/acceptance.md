@@ -11,6 +11,7 @@
 - [A5] 兩平台輸出與 `expected.json` byte-identical（A3/A4 內含）
 
 ## Phase 1（Android MVP）
+- [B0] 同步引擎契約（sync-rules §7；sync_cases 6 案例）Python/Kotlin/Swift 三方 byte-identical — ✅ 2026-08-27（機器；CI 三 job）
 - [B1] core 契約測試仍全綠（CI）
 - [B2] emulator：掃描 500 張專輯模擬資料 < 5 分鐘（機器）
 - [B3] 真機：選本地音樂資料夾 → 首掃 → 專輯網格出現（人；GDrive 接通後複驗同項）

@@ -9,10 +9,12 @@
 contract/    兩套核心的共同規格（唯一事實來源）
   schema.sql       SQLite schema
   model.md         資料模型 + 掃描器 + canonical JSON 規格
-  provider.md      雲端 provider 介面語意
-  sync-rules.md    同步衝突規則
+  provider.md      雲端 provider 介面語意（§6 本地資料夾）
+  sync-rules.md    同步衝突規則（§7 同步引擎）
   acceptance.md    各 Phase 驗收清單
-  fixtures/        26 個黃金測試案例（含 Python 參考實作 generate.py）
+  fixtures/        黃金測試案例（含 Python 參考實作 generate.py / sync_generate.py）
+    cases/         26 個掃描器案例
+    sync_cases/    6 個同步引擎案例（+ sync_assets/ 共享音訊資產）
 android/     Kotlin core（純 JVM，跑契約測試）+ 之後的 Compose app
 apple/       MuCore Swift package（跑契約測試）+ 之後的 iOS/macOS app
 ```
@@ -22,6 +24,7 @@ apple/       MuCore Swift package（跑契約測試）+ 之後的 iOS/macOS app
 | 端 | 指令 | 狀態 |
 |---|---|---|
 | 契約（參考實作重產） | `python3 contract/fixtures/generate.py`（需 ffmpeg） | ✅ 26 案例 |
+| 同步引擎（參考實作重放） | `python3 contract/fixtures/sync_generate.py --check`（無 ffmpeg，CI 用） | ✅ 6 案例 |
 | Android core | `cd android && ./gradlew :core:test` | ✅ 全綠 |
 | Apple MuCore | `cd apple/MuCore && swift test` | ✅ macOS（Swift 6.2.4, arm64）+ Linux Swift 6.1 雙驗通過（2026-08-27） |
 

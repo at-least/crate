@@ -1,0 +1,46 @@
+{
+  "steps": [
+    {
+      "ops": [
+        {
+          "op": "write",
+          "path": "Aurora/Northern Lights/01 - Rise.flac",
+          "asset": "flac_a",
+          "mtime": 1700000700
+        },
+        {
+          "op": "write",
+          "path": "Playlists/best.m3u8",
+          "mtime": 1700000701,
+          "text": "#EXTM3U\n#EXTINF:213.5,Rise\n../Aurora/Northern Lights/01 - Rise.flac\n"
+        }
+      ]
+    },
+    {
+      "ops": [
+        {
+          "op": "write",
+          "path": "Playlists/best.m3u8",
+          "mtime": 1700000800,
+          "text": "#EXTM3U\n#EXTINF:213.5,Rise\n../Aurora/Northern Lights/01 - Rise.flac\n../Nowhere/02 - Ghost.flac\n"
+        }
+      ]
+    },
+    {
+      "ops": [
+        {
+          "op": "delete",
+          "path": "Aurora/Northern Lights/01 - Rise.flac"
+        }
+      ]
+    },
+    {
+      "ops": [
+        {
+          "op": "delete",
+          "path": "Playlists/best.m3u8"
+        }
+      ]
+    }
+  ]
+}

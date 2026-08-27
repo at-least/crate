@@ -46,6 +46,8 @@ CloudProvider {
 | rev | `files.get` 的 `id`+`version` | `rev` 欄位 |
 | put | `files.update`（含衝突偵測） | `files/upload` mode=update + parent_rev |
 
+本地資料夾後端不在此表 —— 語意獨立定義於 §6。
+
 ## 4. 驗證要求（Phase 1 進場條件）
 - [ ] 兩後端的 range request 實測（m4a 尾部 tag 依賴 Range 支援；不支援 → m4a 全檔下載，記入已知限制）
 - [ ] delta cursor 失效情境實測（人工改 cursor 觸發 reset）
@@ -59,3 +61,26 @@ CloudProvider {
 5. m3u8/mu-state.json 變更 → 重新解析/合併
 
 併發：rangeRead 上限 8；429 時全管線退避。
+
+## 6. LocalFolderProvider（本地資料夾；D10 起為正式 provider）
+
+對象：桌機情境的本地音樂資料夾，兼開發期零網路全管線。實作同一套 §1 介面。
+
+| 方法 | 語意 |
+|---|---|
+| `id` | 檔案相對路徑（`/` 分隔，同 model.md §2.1 `id=path` 慣例）；目錄僅出現在 listDir entries（`isDir=true`），不參與音訊索引 |
+| `rev` | `"{sizeBytes}:{mtimeMs}"`（十進位、無填充） |
+| `modifiedAt` | mtime（毫秒） |
+| `listDir` | 單層列目錄；entries 依 path 排序；`nextPageToken` 恆 null |
+| `delta` | 本地無變更日誌 → 每輪遞迴全量 walk，與 cursor 內嵌的上次快照比對：新 path → added、消失 → removed、rev 變 → modified。cursor 為快照的 opaque 序列化（client 不解析、不比較內容） |
+| `rangeRead` | 直讀檔案 offset/length（RandomAccessFile / FileHandle） |
+| `openStreamUrl` | 不支援（本地無時效 URL）；App 層直接開本地檔 |
+| `download` | 複製到目標路徑 |
+| `readText` / `putText` | 直讀 / 原子寫（temp + rename）。`putText` 的 `parentRev` = 寫入前 rev；不符 → `ConflictError` |
+| `authenticate` / `revoke` | no-op |
+
+錯誤語意：本地只有 `NotFoundError`（讀取時檔案已消失）適用；無 401/429 類。
+
+v0 已知限制（釘死）：
+- **改名 = removed(舊) + added(新)**（本地無穩定 file id；tag 會重掃）。
+- mtime 變但內容未變 → 仍算 modified（rev 含 mtime 的直接後果；保守重掃可接受）。

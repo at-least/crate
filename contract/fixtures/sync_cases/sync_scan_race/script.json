@@ -1,0 +1,31 @@
+{
+  "steps": [
+    {
+      "ops": [
+        {
+          "op": "write",
+          "path": "Aurora/Northern Lights/01 - Rise.flac",
+          "asset": "flac_a",
+          "mtime": 1700000850
+        }
+      ]
+    },
+    {
+      "ops": [
+        {
+          "op": "write",
+          "path": "Ken/Album One/01 - B.flac",
+          "asset": "flac_b",
+          "mtime": 1700000851
+        },
+        {
+          "op": "delete_after_delta",
+          "path": "Ken/Album One/01 - B.flac"
+        }
+      ]
+    },
+    {
+      "ops": []
+    }
+  ]
+}

@@ -1,0 +1,51 @@
+{
+  "steps": [
+    {
+      "ops": [
+        {
+          "op": "write",
+          "path": "Aurora/Northern Lights/01 - Rise.flac",
+          "asset": "flac_a",
+          "mtime": 1700000200
+        },
+        {
+          "op": "write",
+          "path": "Ken/Album One/01 - A.flac",
+          "asset": "flac_notags",
+          "mtime": 1700000201
+        }
+      ]
+    },
+    {
+      "ops": [
+        {
+          "op": "write",
+          "path": "Kyary/Jelly/02 - Ninjya.mp3",
+          "asset": "mp3_tags",
+          "mtime": 1700000300
+        }
+      ]
+    },
+    {
+      "ops": [
+        {
+          "op": "write",
+          "path": "Aurora/Northern Lights/01 - Rise.flac",
+          "asset": "flac_b",
+          "mtime": 1700000400
+        }
+      ]
+    },
+    {
+      "ops": [
+        {
+          "op": "delete",
+          "path": "Ken/Album One/01 - A.flac"
+        }
+      ]
+    },
+    {
+      "ops": []
+    }
+  ]
+}

@@ -100,6 +100,12 @@ object CanonicalJson {
         "tracks" to tracks.map { it.toCanonical() },
     )
 
+    // ---- SyncEngine 契約輸出用（sync-rules.md §7.3）----
+
+    fun trackCanonical(t: Scanner.Track): Map<String, Any?> = t.toCanonical()
+
+    fun errorCanonical(e: Scanner.ScanError): Map<String, Any?> = e.toCanonical()
+
     private fun Scanner.Album.toCanonical(): Map<String, Any?> = linkedMapOf(
         "albumArtist" to albumArtist,
         "artTrackId" to artTrackId,
@@ -110,7 +116,7 @@ object CanonicalJson {
         "year" to year,
     )
 
-    private fun Scanner.ScanError.toCanonical(): Map<String, Any?> = linkedMapOf(
+    internal fun Scanner.ScanError.toCanonical(): Map<String, Any?> = linkedMapOf(
         "code" to code,
         "message" to "", // 契約豁免：實作自由文字不參與比對
         "path" to path,
@@ -131,7 +137,7 @@ object CanonicalJson {
         "path" to path,
     )
 
-    private fun Scanner.Track.toCanonical(): Map<String, Any?> = linkedMapOf(
+    internal fun Scanner.Track.toCanonical(): Map<String, Any?> = linkedMapOf(
         "album" to album,
         "albumArtist" to albumArtist,
         "albumId" to albumId,

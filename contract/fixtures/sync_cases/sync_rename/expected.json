@@ -1,0 +1,176 @@
+[
+  {
+    "changes": [
+      {
+        "kind": "added",
+        "path": "Aurora/Northern Lights/01 - Rise.flac",
+        "rev": "8540:1700000600000"
+      }
+    ],
+    "index": {
+      "albums": [
+        {
+          "albumArtist": "Aurora",
+          "artTrackId": "Aurora/Northern Lights/01 - Rise.flac",
+          "compilation": false,
+          "id": "alb|Aurora|Northern Lights",
+          "name": "Northern Lights",
+          "trackCount": 1,
+          "year": 2021
+        }
+      ],
+      "errors": [],
+      "playlists": [],
+      "tracks": [
+        {
+          "album": "Northern Lights",
+          "albumArtist": "Aurora",
+          "albumId": "alb|Aurora|Northern Lights",
+          "artist": "Aurora",
+          "available": true,
+          "disc": 1,
+          "durationMs": null,
+          "format": "flac",
+          "id": "Aurora/Northern Lights/01 - Rise.flac",
+          "path": "Aurora/Northern Lights/01 - Rise.flac",
+          "rev": "8540:1700000600000",
+          "sizeBytes": 8540,
+          "tagOk": true,
+          "title": "Rise",
+          "trackNo": 1,
+          "year": 2021
+        }
+      ]
+    },
+    "scanned": [
+      "Aurora/Northern Lights/01 - Rise.flac"
+    ]
+  },
+  {
+    "changes": [
+      {
+        "kind": "removed",
+        "path": "Aurora/Northern Lights/01 - Rise.flac",
+        "rev": "8540:1700000600000"
+      },
+      {
+        "kind": "added",
+        "path": "Aurora/Northern Lights/01 - Risen.flac",
+        "rev": "8540:1700000600000"
+      }
+    ],
+    "index": {
+      "albums": [
+        {
+          "albumArtist": "Aurora",
+          "artTrackId": "Aurora/Northern Lights/01 - Rise.flac",
+          "compilation": false,
+          "id": "alb|Aurora|Northern Lights",
+          "name": "Northern Lights",
+          "trackCount": 2,
+          "year": 2021
+        }
+      ],
+      "errors": [],
+      "playlists": [],
+      "tracks": [
+        {
+          "album": "Northern Lights",
+          "albumArtist": "Aurora",
+          "albumId": "alb|Aurora|Northern Lights",
+          "artist": "Aurora",
+          "available": false,
+          "disc": 1,
+          "durationMs": null,
+          "format": "flac",
+          "id": "Aurora/Northern Lights/01 - Rise.flac",
+          "path": "Aurora/Northern Lights/01 - Rise.flac",
+          "rev": "8540:1700000600000",
+          "sizeBytes": 8540,
+          "tagOk": true,
+          "title": "Rise",
+          "trackNo": 1,
+          "year": 2021
+        },
+        {
+          "album": "Northern Lights",
+          "albumArtist": "Aurora",
+          "albumId": "alb|Aurora|Northern Lights",
+          "artist": "Aurora",
+          "available": true,
+          "disc": 1,
+          "durationMs": null,
+          "format": "flac",
+          "id": "Aurora/Northern Lights/01 - Risen.flac",
+          "path": "Aurora/Northern Lights/01 - Risen.flac",
+          "rev": "8540:1700000600000",
+          "sizeBytes": 8540,
+          "tagOk": true,
+          "title": "Rise",
+          "trackNo": 1,
+          "year": 2021
+        }
+      ]
+    },
+    "scanned": [
+      "Aurora/Northern Lights/01 - Risen.flac"
+    ]
+  },
+  {
+    "changes": [],
+    "index": {
+      "albums": [
+        {
+          "albumArtist": "Aurora",
+          "artTrackId": "Aurora/Northern Lights/01 - Rise.flac",
+          "compilation": false,
+          "id": "alb|Aurora|Northern Lights",
+          "name": "Northern Lights",
+          "trackCount": 2,
+          "year": 2021
+        }
+      ],
+      "errors": [],
+      "playlists": [],
+      "tracks": [
+        {
+          "album": "Northern Lights",
+          "albumArtist": "Aurora",
+          "albumId": "alb|Aurora|Northern Lights",
+          "artist": "Aurora",
+          "available": false,
+          "disc": 1,
+          "durationMs": null,
+          "format": "flac",
+          "id": "Aurora/Northern Lights/01 - Rise.flac",
+          "path": "Aurora/Northern Lights/01 - Rise.flac",
+          "rev": "8540:1700000600000",
+          "sizeBytes": 8540,
+          "tagOk": true,
+          "title": "Rise",
+          "trackNo": 1,
+          "year": 2021
+        },
+        {
+          "album": "Northern Lights",
+          "albumArtist": "Aurora",
+          "albumId": "alb|Aurora|Northern Lights",
+          "artist": "Aurora",
+          "available": true,
+          "disc": 1,
+          "durationMs": null,
+          "format": "flac",
+          "id": "Aurora/Northern Lights/01 - Risen.flac",
+          "path": "Aurora/Northern Lights/01 - Risen.flac",
+          "rev": "8540:1700000600000",
+          "sizeBytes": 8540,
+          "tagOk": true,
+          "title": "Rise",
+          "trackNo": 1,
+          "year": 2021
+        }
+      ]
+    },
+    "scanned": []
+  }
+]

@@ -80,7 +80,7 @@ object Scanner {
     }
 
     /** null = BAD_CONTAINER。回傳 (欄位, 是否有任何可用 tag)。 */
-    private fun parseTags(fmt: String, data: ByteArray): Pair<TagFields, Boolean>? {
+    internal fun parseTags(fmt: String, data: ByteArray): Pair<TagFields, Boolean>? {
         val tags: Map<String, String>? = when (fmt) {
             "flac" -> ContainerParsers.flacTags(data)
             "mp3" -> Id3Parser.parse(data)
@@ -96,7 +96,7 @@ object Scanner {
         return TagNormalize.from(tags) to tags.isNotEmpty()
     }
 
-    private fun makeTrack(
+    internal fun makeTrack(
         rel: String, fmt: String, size: Long,
         fields: TagFields?, tagOkRaw: Boolean,
     ): Track {
@@ -131,7 +131,7 @@ object Scanner {
         )
     }
 
-    private fun groupAlbums(tracks: List<Track>): List<Album> =
+    internal fun groupAlbums(tracks: List<Track>): List<Album> =
         tracks.groupBy { it.albumId }.map { (_, ts) ->
             val sorted = ts.sortedWith(compareBy { it.path })
             Album(

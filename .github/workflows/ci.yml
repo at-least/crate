@@ -13,7 +13,7 @@ jobs:
         working-directory: android
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-java@v4
+      - uses: actions/setup-java@v5
         with:
           distribution: temurin
           java-version: '17'
@@ -37,3 +37,4 @@ jobs:
         with:
           python-version: '3.13'
       - run: python3 contract/fixtures/generate.py --rescan-check
+      - run: python3 contract/fixtures/sync_generate.py --check

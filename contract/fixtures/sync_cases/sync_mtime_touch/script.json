@@ -1,0 +1,26 @@
+{
+  "steps": [
+    {
+      "ops": [
+        {
+          "op": "write",
+          "path": "Aurora/Northern Lights/01 - Rise.flac",
+          "asset": "flac_a",
+          "mtime": 1700000500
+        }
+      ]
+    },
+    {
+      "ops": [
+        {
+          "op": "touch",
+          "path": "Aurora/Northern Lights/01 - Rise.flac",
+          "mtime": 1700000900
+        }
+      ]
+    },
+    {
+      "ops": []
+    }
+  ]
+}

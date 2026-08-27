@@ -13,6 +13,7 @@ kotlin {
 dependencies {
     testImplementation(kotlin("test-junit5"))
     testImplementation("org.junit.jupiter:junit-jupiter:5.10.2")
+    testImplementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.3")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
 

@@ -164,6 +164,7 @@ interface CloudProvider {
 
 子步骤（後項依賴前項）：
 1. **LocalFolderProvider**：實作 contract/provider.md 介面（delta = mtime/size 快照比對、rev = size+mtime、rangeRead = RandomAccessFile、putText = 寫檔）。同步引擎：首掃 → DB → 增量（增/刪/改/改名）。機器測試含髒情境：掃描中拔檔、外部改 m3u8、目錄改名。
+   > 2026-08-27 進度：契約面完成（provider.md §6 + sync-rules.md §7 + 6 個 sync_cases/fixtures）；兩平台引擎（Kotlin `SyncEngine`/`LocalFolderProvider`、Swift 同名）與 Python 參考三方 byte-identical，含掃描中拔檔情境。尚未完成：putText/listDir/錯誤語意（隨子步驟 2 FakeProvider 契約補齊）、SQLite/Room 持久化（App 層接線時做）。
 2. **FakeProvider**（in-memory、可腳本化錯誤）：測 provider.md §2 錯誤語意（401 重授權、429/5xx 指數退避、putText rev 衝突）。
 3. **Android 殼**（Compose + Media3 + Room）：瀏覽專輯/藝人、播放（串流/本地）、釘選、媒體通知/耳機控制、`.m3u8`。資料來源先接 LocalFolderProvider。
 4. **GDriveProvider**（最後；需要 docs/gdrive-setup.md 的 3 個 Client ID——依 D11，申請延後到實際要上 production 前才做）：插進現有管線，UI 加帳號連結頁。

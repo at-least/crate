@@ -1,0 +1,41 @@
+{
+  "steps": [
+    {
+      "ops": [
+        {
+          "op": "write",
+          "path": "Aurora/Northern Lights/01 - Rise.flac",
+          "asset": "flac_a",
+          "mtime": 1700000100
+        },
+        {
+          "op": "write",
+          "path": "Aurora/Northern Lights/02 - Drift.flac",
+          "asset": "flac_b",
+          "mtime": 1700000101
+        },
+        {
+          "op": "write",
+          "path": "Various Artists/Dream Mixtape/07 - Unknown.flac",
+          "asset": "flac_notags",
+          "mtime": 1700000102
+        },
+        {
+          "op": "write",
+          "path": "Aurora/Northern Lights/cover.jpg",
+          "text": "not-a-real-jpg",
+          "mtime": 1700000103
+        },
+        {
+          "op": "write",
+          "path": "Docs/readme.txt",
+          "text": "hello",
+          "mtime": 1700000104
+        }
+      ]
+    },
+    {
+      "ops": []
+    }
+  ]
+}
