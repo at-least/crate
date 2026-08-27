@@ -1,0 +1,440 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	objectVersion = 56;
+	classes = {
+	};
+	objects = {
+
+/* Begin PBXBuildFile section */
+		1A0000000000000000000020 /* MuiOSApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A0000000000000000000030 /* MuiOSApp.swift */; };
+		1A0000000000000000000021 /* AppModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A0000000000000000000031 /* AppModel.swift */; };
+		1A0000000000000000000022 /* MuDatabase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A0000000000000000000032 /* MuDatabase.swift */; };
+		1A0000000000000000000023 /* PinManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A0000000000000000000033 /* PinManager.swift */; };
+		1A0000000000000000000024 /* PlayerManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A0000000000000000000034 /* PlayerManager.swift */; };
+		1A0000000000000000000025 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A0000000000000000000035 /* ContentView.swift */; };
+		1A0000000000000000000026 /* RoutePicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A0000000000000000000036 /* RoutePicker.swift */; };
+		1A0000000000000000000027 /* Aliases.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A0000000000000000000037 /* Aliases.swift */; };
+		1A0000000000000000000042 /* MuiOSUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A0000000000000000000041 /* MuiOSUITests.swift */; };
+		1A000000000000000000001A /* MuCore in Frameworks */ = {isa = PBXBuildFile; productRef = 1A000000000000000000001C /* MuCore */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		1A0000000000000000000030 /* MuiOSApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MuiOSApp.swift; sourceTree = "<group>"; };
+		1A0000000000000000000031 /* AppModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppModel.swift; sourceTree = "<group>"; };
+		1A0000000000000000000032 /* MuDatabase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MuDatabase.swift; sourceTree = "<group>"; };
+		1A0000000000000000000033 /* PinManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PinManager.swift; sourceTree = "<group>"; };
+		1A0000000000000000000034 /* PlayerManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlayerManager.swift; sourceTree = "<group>"; };
+		1A0000000000000000000035 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		1A0000000000000000000036 /* RoutePicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RoutePicker.swift; sourceTree = "<group>"; };
+		1A0000000000000000000037 /* Aliases.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Aliases.swift; sourceTree = "<group>"; };
+		1A0000000000000000000041 /* MuiOSUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MuiOSUITests.swift; sourceTree = "<group>"; };
+		1A000000000000000000001E /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		1A000000000000000000000E /* MuiOS.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MuiOS.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		1A000000000000000000004D /* MuiOSUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = MuiOSUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		1A0000000000000000000045 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		1A0000000000000000000010 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				1A000000000000000000001A /* MuCore in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		1A000000000000000000000B /* main */ = {
+			isa = PBXGroup;
+			children = (
+				1A0000000000000000000018 /* MuiOS */,
+				1A0000000000000000000043 /* MuiOSUITests */,
+				1A000000000000000000001E /* Info.plist */,
+				1A000000000000000000000C /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		1A0000000000000000000018 /* MuiOS */ = {
+			isa = PBXGroup;
+			children = (
+				1A0000000000000000000030 /* MuiOSApp.swift */,
+				1A0000000000000000000031 /* AppModel.swift */,
+				1A0000000000000000000032 /* MuDatabase.swift */,
+				1A0000000000000000000033 /* PinManager.swift */,
+				1A0000000000000000000034 /* PlayerManager.swift */,
+				1A0000000000000000000035 /* ContentView.swift */,
+				1A0000000000000000000036 /* RoutePicker.swift */,
+				1A0000000000000000000037 /* Aliases.swift */,
+			);
+			path = MuiOS;
+			sourceTree = "<group>";
+		};
+		1A0000000000000000000043 /* MuiOSUITests */ = {
+			isa = PBXGroup;
+			children = (
+				1A0000000000000000000041 /* MuiOSUITests.swift */,
+			);
+			path = MuiOSUITests;
+			sourceTree = "<group>";
+		};
+		1A000000000000000000000C /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				1A000000000000000000000E /* MuiOS.app */,
+				1A000000000000000000004D /* MuiOSUITests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		1A000000000000000000000D /* MuiOS */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 1A0000000000000000000016 /* Build configuration list for PBXNativeTarget "MuiOS" */;
+			buildPhases = (
+				1A000000000000000000000F /* Sources */,
+				1A0000000000000000000010 /* Frameworks */,
+				1A0000000000000000000011 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = MuiOS;
+			packageProductDependencies = (
+				1A000000000000000000001C /* MuCore */,
+			);
+			productName = MuiOS;
+			productReference = 1A000000000000000000000E /* MuiOS.app */;
+			productType = "com.apple.product-type.application";
+		};
+		1A0000000000000000000040 /* MuiOSUITests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 1A0000000000000000000047 /* Build configuration list for PBXNativeTarget "MuiOSUITests" */;
+			buildPhases = (
+				1A0000000000000000000044 /* Sources */,
+				1A0000000000000000000045 /* Frameworks */,
+				1A0000000000000000000046 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				1A000000000000000000004A /* PBXTargetDependency */,
+			);
+			name = MuiOSUITests;
+			packageProductDependencies = (
+			);
+			productName = MuiOSUITests;
+			productReference = 1A000000000000000000004D /* MuiOSUITests.xctest */;
+			productType = "com.apple.product-type.bundle.ui-testing";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXContainerItemProxy section */
+		1A000000000000000000004B /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 1A000000000000000000000A /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 1A000000000000000000000D;
+			remoteInfo = MuiOS;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXTargetDependency section */
+		1A000000000000000000004A /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 1A000000000000000000000D /* MuiOS */;
+			targetProxy = 1A000000000000000000004B /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin PBXProject section */
+		1A000000000000000000000A /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 2600;
+				LastUpgradeCheck = 2600;
+				TargetAttributes = {
+					1A000000000000000000000D = {
+						CreatedOnToolsVersion = 26.3;
+					};
+				};
+			};
+			buildConfigurationList = 1A0000000000000000000017 /* Build configuration list for PBXProject "MuiOS" */;
+			compatibilityVersion = "Xcode 14.0";
+			developmentRegion = "zh-Hant";
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+				"zh-Hant",
+			);
+			mainGroup = 1A000000000000000000000B /* main */;
+			packageReferences = (
+				1A000000000000000000001B /* MuCore */,
+			);
+			productRefGroup = 1A000000000000000000000C /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				1A000000000000000000000D /* MuiOS */,
+				1A0000000000000000000040 /* MuiOSUITests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		1A0000000000000000000046 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		1A0000000000000000000011 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		1A0000000000000000000044 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				1A0000000000000000000042 /* MuiOSUITests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		1A000000000000000000000F /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				1A0000000000000000000020 /* MuiOSApp.swift in Sources */,
+				1A0000000000000000000021 /* AppModel.swift in Sources */,
+				1A0000000000000000000022 /* MuDatabase.swift in Sources */,
+				1A0000000000000000000023 /* PinManager.swift in Sources */,
+				1A0000000000000000000024 /* PlayerManager.swift in Sources */,
+				1A0000000000000000000025 /* ContentView.swift in Sources */,
+				1A0000000000000000000026 /* RoutePicker.swift in Sources */,
+				1A0000000000000000000027 /* Aliases.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		1A0000000000000000000014 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_NO_COMMON_BLOCKS = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "$(inherited) DEBUG";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+		1A0000000000000000000015 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_NO_COMMON_BLOCKS = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				VALIDATE_PRODUCT = YES;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
+		1A0000000000000000000012 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 0.1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = music.mu.ios;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		1A0000000000000000000013 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 0.1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = music.mu.ios;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		1A0000000000000000000048 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@loader_path/Frameworks",
+				);
+				MARKETING_VERSION = 0.1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = music.mu.ios.uitests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = MuiOS;
+			};
+			name = Debug;
+		};
+		1A0000000000000000000049 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@loader_path/Frameworks",
+				);
+				MARKETING_VERSION = 0.1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = music.mu.ios.uitests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = MuiOS;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		1A0000000000000000000016 /* Build configuration list for PBXNativeTarget "MuiOS" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				1A0000000000000000000012 /* Debug */,
+				1A0000000000000000000013 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		1A0000000000000000000017 /* Build configuration list for PBXProject "MuiOS" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				1A0000000000000000000014 /* Debug */,
+				1A0000000000000000000015 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		1A0000000000000000000047 /* Build configuration list for PBXNativeTarget "MuiOSUITests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				1A0000000000000000000048 /* Debug */,
+				1A0000000000000000000049 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+
+/* Begin XCLocalSwiftPackageReference section */
+		1A000000000000000000001B /* MuCore */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = ../MuCore;
+		};
+/* End XCLocalSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		1A000000000000000000001C /* MuCore */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 1A000000000000000000001B /* MuCore */;
+			productName = MuCore;
+		};
+/* End XCSwiftPackageProductDependency section */
+	};
+	rootObject = 1A000000000000000000000A /* Project object */;
+}

@@ -9,6 +9,18 @@ public struct Scanner {
         public let sizeBytes: Int, tagOk: Bool, title: String
         public let trackNo: Int?, year: Int?
         public let compilation: Bool, durationMs: Int?
+
+        public init(album: String, albumArtist: String, albumId: String, artist: String,
+                    disc: Int, format: String, id: String, path: String,
+                    sizeBytes: Int, tagOk: Bool, title: String,
+                    trackNo: Int?, year: Int?,
+                    compilation: Bool, durationMs: Int?) {
+            self.album = album; self.albumArtist = albumArtist; self.albumId = albumId
+            self.artist = artist; self.disc = disc; self.format = format
+            self.id = id; self.path = path; self.sizeBytes = sizeBytes
+            self.tagOk = tagOk; self.title = title; self.trackNo = trackNo
+            self.year = year; self.compilation = compilation; self.durationMs = durationMs
+        }
     }
 
     public struct Album: Equatable {
@@ -27,6 +39,10 @@ public struct Scanner {
 
     public struct ScanError: Equatable {
         public let code: String, path: String
+
+        public init(code: String, path: String) {
+            self.code = code; self.path = path
+        }
     }
 
     public struct ScanResult {
@@ -158,7 +174,7 @@ public struct Scanner {
         )
     }
 
-    static func groupAlbums(_ tracks: [Track]) -> [Album] {
+    public static func groupAlbums(_ tracks: [Track]) -> [Album] {
         var byId: [String: [Track]] = [:]
         for t in tracks { byId[t.albumId, default: []].append(t) }
         return byId.values.map { ts in

@@ -21,9 +21,10 @@
 - [B7] m3u8 清單出現且可播（人 + 機器：清單契約測試）
 
 ## Phase 2（Apple MVP）
-- [C1] `swift test` 契約測試全綠（Mac）
-- [C2] Cmd+R → 同一個 Drive 帳號 → 索引與 Android 一致（人，對照兩機專輯數）
-- [C3] 鎖屏/Control Center 控制、AirPlay 可用（人）
+- [C1] `swift test` 契約測試全綠（Mac）— ✅ 2026-08-28（機器；Swift 6.2.4 / macOS 15）
+- [C1b] （補充項）iOS app 模擬器 UI 測試：掃描→瀏覽→點播→佇列推進、專輯釘選→離線標記→重啟 DB 還原 — ✅ 2026-08-28（機器；`xcodebuild test`，B3/B5 的 iOS 等效覆蓋）
+- [C2] Cmd+R → 同一個 Drive 帳號 → 索引與 Android 一致（人，對照兩機專輯數；GDrive 依 D11 延後——本地資料夾情境已覆蓋，Drive 接通後複驗）
+- [C3] 鎖屏/Control Center 控制、AirPlay 可用（人；實作已就位：MPNowPlayingInfoCenter/MPRemoteCommandCenter/AVRoutePickerView/UIBackgroundModes=audio）
 - [C4] B4–B6 同清單在 iPhone 複驗（人耳）
 
 ## Phase 3（擴充，選配；D12 後原「同步閉環」相位取消）

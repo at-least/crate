@@ -185,9 +185,10 @@ interface CloudProvider {
 
 ### Phase 2 — Apple MVP（agent 寫碼；你在 Mac 上跑）
 範圍：MuCore package（provider/delta/掃描/m3u8/DB + 契約測試）→ iOS app（瀏覽/播放/釘選/遠端控制）。
+> 2026-08-28 進度：**本地資料夾垂直切片上線**——MuCore 補 App 層 API 面（`resolvedItems`/`groupAlbums` 轉 public、六個資料型別補 public init——Kotlin data class 天生 public，Swift 隱式 memberwise init 是 internal）、Package.swift 補 `products`（Xcode 得以連結本地套件）。`apple/MuiOS`：raw sqlite3 `MuDatabase`（schema.sql v0.2 鏡像；FK 全不建——playlist_items cascade 改顯式 DELETE、pins 照 Room 慣例不參照 tracks）、`PinManager`（pins 狀態機：循序佇列、DOWNLOADING 殘留自動續傳、換庫清釘/同庫保留、root 路徑統一 `resolvingSymlinksInPath` 否則冷啟動誤判換庫）、`PlayerManager`（AVQueuePlayer + MPNowPlayingInfoCenter/MPRemoteCommandCenter + 來電中斷 + 拔耳機暫停 + AVRoutePickerView AirPlay 入口）、SwiftUI `ContentView`（專輯網格/清單列/釘選列/離線標記/迷你播放列——播放列掛 NavigationStack 外，掛 root 會被推入頁蓋住）、資料夾挑選 + security-scoped bookmark 記住庫根。`MuiOSUITests`（XCUITest，MU_ROOT 環境注入 fixture 庫）：掃描→瀏覽→點播→佇列推進、專輯釘選→離線標記→重啟 DB 還原，全綠（B3/B5 的 iOS 機器版）。CI 加 `ios-app` job（generic iOS Simulator build）。已知取捨：DB/PinManager 放 App 層比照 Android `:app`（Room 亦在 app 層；MuMac 進場時再提升共享 target）；pins state 存小寫（schema.sql 原文；Room 版存大寫 enum name——兩邊 DB 不互通無影響）；playlist 的 unavailable-pinned 軌不現身清單 UI（同 Android 取捨）。**尚未完成**：GDrive provider（D11 延後）→ C2 的「同一個 Drive」複驗待其進場；C3/C4（鎖屏/Control Center/AirPlay/耳機）需真機人耳驗收；macOS app 屬 Phase 3。
 **驗收（你的 Mac + iPhone）**：
-1. `swift test` 契約測試全綠（與 Android 同輸出）
-2. Cmd+R 跑起來 → 登入同一個 Drive → 索引與 Android 一致
+1. `swift test` 契約測試全綠（與 Android 同輸出）— ✅ 機器已驗（Mac, Swift 6.2.4）
+2. Cmd+R 跑起來 → 登入同一個 Drive → 索引與 Android 一致（GDrive 依 D11 延後；本地資料夾情境已於模擬器 UI 測試覆蓋）
 3. Control Center / 鎖屏控制、AirPlay 可用
 4. 耳機驗收同 Android 清單
 

@@ -13,3 +13,6 @@ __pycache__/
 
 # ide/sdk local config
 android/local.properties
+
+# xcode user data
+xcuserdata/

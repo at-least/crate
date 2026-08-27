@@ -16,17 +16,29 @@ public final class SyncEngine {
         public let track: Scanner.Track
         public let rev: String
         public let available: Bool
+
+        public init(track: Scanner.Track, rev: String, available: Bool) {
+            self.track = track; self.rev = rev; self.available = available
+        }
     }
 
     /// m3u8 raw（ref → trackId 在輸出時對 available 集合解析）。
     public struct RawItem: Equatable {
         public let position: Int, ref: String
         public let durationMs: Int?
+
+        public init(position: Int, ref: String, durationMs: Int?) {
+            self.position = position; self.ref = ref; self.durationMs = durationMs
+        }
     }
 
     public struct RawPlaylist: Equatable {
         public let name: String
         public let items: [RawItem]
+
+        public init(name: String, items: [RawItem]) {
+            self.name = name; self.items = items
+        }
     }
 
     public struct SyncReport {
@@ -35,6 +47,13 @@ public final class SyncEngine {
         public let tracks: [String: IndexedTrack]
         public let playlists: [String: RawPlaylist]
         public let errors: [String: Scanner.ScanError]
+
+        public init(changes: [SyncChange], scanned: [String],
+                    tracks: [String: IndexedTrack], playlists: [String: RawPlaylist],
+                    errors: [String: Scanner.ScanError]) {
+            self.changes = changes; self.scanned = scanned
+            self.tracks = tracks; self.playlists = playlists; self.errors = errors
+        }
     }
 
     private let provider: LocalFolderProvider
@@ -121,7 +140,7 @@ public final class SyncEngine {
 
     /// raw 清單 → 已解析音軌（App 層用；解析規則與 canonical 的 items 完全一致）。
     /// 回傳 (playlistPath, 每項 trackId 或 nil)。
-    func resolvedItems(_ r: SyncReport) -> [String: [String?]] {
+    public func resolvedItems(_ r: SyncReport) -> [String: [String?]] {
         let audioOk = Set(r.tracks.filter { $0.value.available }.keys)
         var out: [String: [String?]] = [:]
         for (p, pl) in r.playlists {
