@@ -3,7 +3,7 @@
 > 每條可機器查 or 需人（耳朵/真機）。Phase 定義見 PLAN.md §7。
 
 ## Phase 0（契約）— ✅ 2026-08-27 完成
-> A4 註記：Swift 測試已在 Linux Swift 6.1 驗證通過；Mac 上 `swift test` 重跑一次即完成二次確認（兩邊 Foundation 實作不同）。
+> A4 註記：Linux Swift 6.1 與 macOS（Swift 6.2.4, arm64）皆已驗證通過（2026-08-27）。Mac 端需 Package.swift 宣告 platforms（macOS 13 / iOS 16），否則 `read(upToCount:)` 等會被 SwiftPM 舊預設 deploy target 擋下（Linux 無 availability 檢查，故當時只綠在 Linux）。
 - [A1] `contract/` 五文件 + schema.sql 齊全（機器：檔案存在）
 - [A2] fixtures ≥ 20 案例，每案例 `lib/` + `expected.json`（機器：產生器跑完 0 diff）
 - [A3] Android：`./gradlew :core:test` 全綠（機器：本 Linux 機）

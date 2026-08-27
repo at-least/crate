@@ -23,7 +23,7 @@ apple/       MuCore Swift package（跑契約測試）+ 之後的 iOS/macOS app
 |---|---|---|
 | 契約（參考實作重產） | `python3 contract/fixtures/generate.py`（需 ffmpeg） | ✅ 26 案例 |
 | Android core | `cd android && ./gradlew :core:test` | ✅ 全綠 |
-| Apple MuCore | `cd apple/MuCore && swift test` | ✅ Linux Swift 6.1 已驗；Mac 上重跑一次做二次確認 |
+| Apple MuCore | `cd apple/MuCore && swift test` | ✅ macOS（Swift 6.2.4, arm64）+ Linux Swift 6.1 雙驗通過（2026-08-27） |
 
 ## 鐵律
 
