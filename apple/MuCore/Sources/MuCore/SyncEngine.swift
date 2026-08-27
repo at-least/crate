@@ -12,19 +12,19 @@ public final class SyncEngine {
     }
 
     /// 索引軌：掃描資料（Scanner.Track）+ rev + available。
-    public struct IndexedTrack {
+    public struct IndexedTrack: Equatable {
         public let track: Scanner.Track
         public let rev: String
         public let available: Bool
     }
 
     /// m3u8 raw（ref → trackId 在輸出時對 available 集合解析）。
-    public struct RawItem {
+    public struct RawItem: Equatable {
         public let position: Int, ref: String
         public let durationMs: Int?
     }
 
-    public struct RawPlaylist {
+    public struct RawPlaylist: Equatable {
         public let name: String
         public let items: [RawItem]
     }
@@ -45,6 +45,20 @@ public final class SyncEngine {
 
     public init(provider: LocalFolderProvider) {
         self.provider = provider
+    }
+
+    /// 匯出引擎狀態（App 層持久化用；儲存形態是實作細節——sync-rules §3）。
+    public func exportState() -> EngineState {
+        EngineState(cursor: cursor, tracks: tracks,
+                    playlists: playlists, errors: errors)
+    }
+
+    /// 還原引擎狀態（冷啟動；restore 後 sync() 即為 delta——rev 未變不重讀）。
+    public func restoreState(_ s: EngineState) {
+        cursor = s.cursor
+        tracks = s.tracks
+        playlists = s.playlists
+        errors = s.errors
     }
 
     /// 一輪同步。afterDelta：測試縫（delta 後、掃描前；模擬掃描中拔檔）。
@@ -225,5 +239,23 @@ public final class SyncEngine {
         }
         let name = rel.split(separator: "/").last.map(String.init) ?? rel
         return RawPlaylist(name: String(name.dropLast(5)), items: items)
+    }
+}
+
+/// 引擎持久化狀態：cursor（provider 快照）+ 三張索引表。
+public struct EngineState: Equatable {
+    public let cursor: [String: String]?             // nil = 尚未同步過
+    public let tracks: [String: SyncEngine.IndexedTrack]
+    public let playlists: [String: SyncEngine.RawPlaylist]
+    public let errors: [String: Scanner.ScanError]
+
+    public init(cursor: [String: String]?,
+                tracks: [String: SyncEngine.IndexedTrack],
+                playlists: [String: SyncEngine.RawPlaylist],
+                errors: [String: Scanner.ScanError]) {
+        self.cursor = cursor
+        self.tracks = tracks
+        self.playlists = playlists
+        self.errors = errors
     }
 }

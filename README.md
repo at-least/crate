@@ -16,7 +16,7 @@ contract/    兩套核心的共同規格（唯一事實來源）
     cases/         26 個掃描器案例
     sync_cases/    6 個同步引擎案例（+ sync_assets/ 共享音訊資產）
     err_cases/     錯誤語意案例（重試政策）
-android/     Kotlin core（純 JVM，跑契約測試）+ Compose app（Media3 播放）
+android/     Kotlin core（純 JVM，跑契約測試）+ Compose app（Media3 播放 + Room 索引持久化）
 apple/       MuCore Swift package（跑契約測試）+ 之後的 iOS/macOS app
 ```
 

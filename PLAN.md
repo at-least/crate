@@ -169,10 +169,11 @@ interface CloudProvider {
 1. **LocalFolderProvider**：實作 contract/provider.md 介面（delta = mtime/size 快照比對、rev = size+mtime、rangeRead = RandomAccessFile、putText = 寫檔）。同步引擎：首掃 → DB → 增量（增/刪/改/改名）。機器測試含髒情境：掃描中拔檔、外部改 m3u8、目錄改名。
    > 2026-08-27 進度：契約面完成（provider.md §6 + sync-rules.md §3 + 6 個 sync_cases/fixtures）；兩平台引擎（Kotlin `SyncEngine`/`LocalFolderProvider`、Swift 同名）與 Python 參考三方 byte-identical，含掃描中拔檔情境。同日完成 model.md §1.7 時長解析（flac/mp3/m4a/ogg/opus/wav，fixtures 換版）。尚未完成：listDir/錯誤語意（隨子步驟 2 FakeProvider 契約補齊；putText 已於 D12 移除）、SQLite/Room 持久化（App 層接線時做）。
 2. **FakeProvider**（in-memory、可腳本化錯誤）：測 provider.md §2 錯誤語意（401 重授權、429/5xx 指數退避）。
-   > 2026-08-27 ✅：provider.md §2.1 釘死重試政策（退避 1/2/4/8/16s、5 次重試上限、auth 立即重試一次、NotFound 不重試）+ FakeFiles putText 衝突語意；`err_cases/` fixtures 三方 byte-identical（Kotlin `RetryPolicy`/`FakeFiles`、Swift 同名）。引擎管線接線（sync 套重試）隨 Android 殼做。**同日 D12：putText/ConflictError 自契約移除，err_cases 縮編為 7 條 retry 條目。**
+   > 2026-08-27 ✅：provider.md §2.1 釘死重試政策（退避 1/2/4/8/16s、5 次重試上限、auth 立即重試一次、NotFound 不重試）+ FakeFiles putText 衝突語意；`err_cases/` fixtures 三方 byte-identical（Kotlin `RetryPolicy`/`FakeFiles`、Swift 同名）。引擎管線接線（sync 套重試）**改隨 GDrive 子步驟做**——LocalFolderProvider 無 transient/auth 錯誤來源，先接是死碼。**同日 D12：putText/ConflictError 自契約移除，err_cases 縮編為 7 條 retry 條目。**
 3. **Android 殼**（Compose + Media3 + Room）：瀏覽專輯/藝人、播放（串流/本地）、釘選、媒體通知/耳機控制、`.m3u8`。資料來源先接 LocalFolderProvider。
    > 2026-08-27 進度：垂直切片上線——`:app` 模組（Compose BOM / Material3）、`PlaybackService`（Media3 MediaSession：通知/鎖屏/耳機/音源焦點）、資料夾選擇 → SyncEngine 掃描 → 專輯網格 → 專輯音軌 → 點播（含 durationMs 顯示）。CI 加 `:app:assembleDebug` job。同日補：m3u8 playlist UI 與播放（core `resolvedItems()` 兩平台對等，解析規則=toCanonical items）、增量重掃按鈕（delta，rev 未變不重讀）、記住上次資料夾（SharedPreferences，重開自動重掃）。尚未完成：Room 持久化（目前索引在記憶體）、釘選離線。
-4. **GDriveProvider**（最後；需要 docs/gdrive-setup.md 的 3 個 Client ID——依 D11，申請延後到實際要上 production 前才做）：插進現有管線，UI 加帳號連結頁。
+   > 2026-08-28 進度：**Room 持久化上線**——schema.sql v0.2 重塑（cursor/scan_errors 落庫、playlist raw 化、補 album/rev/compilation 欄位）；`:app` 加 KSP+Room（`MuApp` DB 單例、`db/MuDatabase`：Entity×6 + `loadEngineState()`/`replaceLibrary()`）；core 兩平台 `SyncEngine.exportState()/restoreState()`（+`EngineState` 測試：還原後 sync 為純 delta）。冷啟動：DB 還原 → 即時 UI → delta 同步 → 落庫；換資料夾 = 換引擎 + DB 全量置換（順手修掉 換根重用舊引擎 bug）；root 改存 DB（移除 SharedPreferences）；syncMutex 防連點/冷啟動競態。尚未完成：釘選離線。
+4. **GDriveProvider**（最後；需要 docs/gdrive-setup.md 的 3 個 Client ID——依 D11，申請延後到實際要上 production 前才做）：插進現有管線，UI 加帳號連結頁；同步管線接上 `RetryPolicy`（transient 退避 / auth 重授）。
 
 範圍（不變）：專輯/藝人瀏覽、Media3 播放（串流 + 下載快取）、釘選離線、媒體通知/耳機控制、`.m3u8` 讀取。
 **驗收（機器可查）**：core 契約測試全綠；emulator 上掃描 500 張專輯模擬資料 < 5 分鐘。

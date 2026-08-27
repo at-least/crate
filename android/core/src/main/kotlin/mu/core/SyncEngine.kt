@@ -31,6 +31,19 @@ class SyncEngine(private val provider: LocalFolderProvider) {
     private val playlists = LinkedHashMap<String, RawPlaylist>()
     private val errors = LinkedHashMap<String, Scanner.ScanError>()
 
+    /** 匯出引擎狀態（App 層持久化用；儲存形態是實作細節——sync-rules §3）。 */
+    fun exportState(): EngineState = EngineState(
+        cursor?.let(::LinkedHashMap),
+        LinkedHashMap(tracks), LinkedHashMap(playlists), LinkedHashMap(errors))
+
+    /** 還原引擎狀態（冷啟動；restore 後 sync() 即為 delta——rev 未變不重讀）。 */
+    fun restoreState(s: EngineState) {
+        cursor = s.cursor?.let(::LinkedHashMap)
+        tracks.clear(); tracks.putAll(s.tracks)
+        playlists.clear(); playlists.putAll(s.playlists)
+        errors.clear(); errors.putAll(s.errors)
+    }
+
     /** 一輪同步。afterDelta：測試縫（delta 後、掃描前；模擬掃描中拔檔）。 */
     fun sync(afterDelta: (() -> Unit)? = null): SyncReport {
         val snap = provider.snapshot()
@@ -199,4 +212,12 @@ private fun Scanner.Album.toCanonicalMap(): Map<String, Any?> = linkedMapOf(
     "name" to name,
     "trackCount" to trackCount,
     "year" to year,
+)
+
+/** 引擎持久化狀態：cursor（provider 快照）+ 三張索引表。 */
+data class EngineState(
+    val cursor: Map<String, String>?,               // null = 尚未同步過
+    val tracks: Map<String, SyncEngine.IndexedTrack>,
+    val playlists: Map<String, SyncEngine.RawPlaylist>,
+    val errors: Map<String, Scanner.ScanError>,
 )

@@ -32,7 +32,6 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Refresh
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -71,8 +70,6 @@ fun MuApp(vm: LibraryViewModel = viewModel()) {
     val context = LocalContext.current
     var view by remember { mutableStateOf<View>(View.Library) }
     var playerSheet by remember { mutableStateOf<PlayerBarState?>(null) }
-
-    LaunchedEffect(Unit) { vm.reopenLast() }
 
     // 本地資料夾讀取權（API 33+ READ_MEDIA_AUDIO；舊版 READ_EXTERNAL_STORAGE）
     val permLauncher = rememberLauncherForActivityResult(
