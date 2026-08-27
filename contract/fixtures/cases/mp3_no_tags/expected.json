@@ -19,7 +19,7 @@
       "albumId": "alb|Aurora|Northern Lights",
       "artist": "Aurora",
       "disc": 1,
-      "durationMs": null,
+      "durationMs": 365,
       "format": "mp3",
       "id": "Aurora/Northern Lights/01 - Rise.mp3",
       "path": "Aurora/Northern Lights/01 - Rise.mp3",

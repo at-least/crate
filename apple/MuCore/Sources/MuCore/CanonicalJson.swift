@@ -142,7 +142,7 @@ public enum CanonicalJson {
             ("albumId", .string(t.albumId)),
             ("artist", .string(t.artist)),
             ("disc", .int(t.disc)),
-            ("durationMs", .null), // v0 固定 null（model.md §2.1）
+            ("durationMs", t.durationMs.map { .int($0) } ?? .null), // model.md §1.7
             ("format", .string(t.format)),
             ("id", .string(t.id)),
             ("path", .string(t.path)),

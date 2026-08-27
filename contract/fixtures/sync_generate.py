@@ -12,7 +12,7 @@ Mu 同步引擎契約 fixtures 產生器（兼 Python 參考實作）
 import json, os, sys, tempfile
 from pathlib import Path
 
-from generate import (audio_bytes, parse_tags, fmt_for, make_track,
+from generate import (audio_bytes, parse_tags, parse_duration, fmt_for, make_track,
                       group_albums, canonical, _norm_path, _extinf_to_ms)
 
 HERE = Path(__file__).parent
@@ -124,7 +124,8 @@ class SyncEngine:
                                      "message": "", "path": path}
                 continue
             self.errors.pop(path, None)
-            t = make_track(path, fmt_for(path), len(data), fields, tag_ok)
+            t = make_track(path, fmt_for(path), len(data), fields, tag_ok,
+                           parse_duration(fmt_for(path), data))
             t["_rev"] = rev
             t["_available"] = True
             self.tracks[path] = t
@@ -371,7 +372,18 @@ def check() -> int:
     print("OK: all sync cases byte-identical to expected.json")
     return 0
 
+def update_expected() -> int:
+    """重放 script 改寫 expected.json（資產池 committed，不跑 ffmpeg）。"""
+    for case in sorted(CASES.iterdir()):
+        if case.is_dir():
+            (case / "expected.json").write_text(canonical(run_case(case)),
+                                                encoding="utf-8")
+    print("OK: all sync expected.json updated")
+    return 0
+
 if __name__ == "__main__":
     if sys.argv[1:] == ["--check"]:
         sys.exit(check())
+    if sys.argv[1:] == ["--update-expected"]:
+        sys.exit(update_expected())
     main()

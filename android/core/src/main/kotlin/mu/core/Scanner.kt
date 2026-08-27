@@ -10,7 +10,7 @@ object Scanner {
         val artist: String, val disc: Int, val format: String, val id: String,
         val path: String, val sizeBytes: Long, val tagOk: Boolean,
         val title: String, val trackNo: Int?, val year: Int?,
-        val compilation: Boolean,
+        val compilation: Boolean, val durationMs: Long?,
     )
 
     data class Album(
@@ -66,7 +66,8 @@ object Scanner {
                 errors.add(ScanError("BAD_CONTAINER", rel))
             } else {
                 val (fields, tagOk) = parsed
-                tracks.add(makeTrack(rel, fmt, data.size.toLong(), fields, tagOk))
+                tracks.add(makeTrack(rel, fmt, data.size.toLong(), fields, tagOk,
+                    ContainerParsers.parseDuration(fmt, data)))
             }
         }
         return ScanResult(
@@ -99,6 +100,7 @@ object Scanner {
     internal fun makeTrack(
         rel: String, fmt: String, size: Long,
         fields: TagFields?, tagOkRaw: Boolean,
+        durationMs: Long? = null,
     ): Track {
         val segs = rel.split('/')
         val fname = segs.last()
@@ -127,7 +129,7 @@ object Scanner {
             albumId = "alb|$albumArtist|$album",
             artist = artist, disc = f.disc ?: 1, format = fmt, id = rel, path = rel,
             sizeBytes = size, tagOk = ok, title = title, trackNo = trackNo,
-            year = f.year, compilation = compilation,
+            year = f.year, compilation = compilation, durationMs = durationMs,
         )
     }
 

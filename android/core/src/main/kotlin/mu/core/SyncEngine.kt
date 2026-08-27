@@ -77,7 +77,8 @@ class SyncEngine(private val provider: LocalFolderProvider) {
             errors.remove(c.path)
             val (fields, tagOk) = parsed
             tracks[c.path] = IndexedTrack(
-                Scanner.makeTrack(c.path, fmt, data.size.toLong(), fields, tagOk),
+                Scanner.makeTrack(c.path, fmt, data.size.toLong(), fields, tagOk,
+                    ContainerParsers.parseDuration(fmt, data)),
                 rev = c.rev, available = true,
             )
         }

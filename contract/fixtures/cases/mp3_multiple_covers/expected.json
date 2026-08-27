@@ -19,7 +19,7 @@
       "albumId": "alb|The Band|Sleeves",
       "artist": "The Band",
       "disc": 1,
-      "durationMs": null,
+      "durationMs": 365,
       "format": "mp3",
       "id": "The Band/Sleeves/01 - Covered.mp3",
       "path": "The Band/Sleeves/01 - Covered.mp3",

@@ -8,7 +8,7 @@ public struct Scanner {
         public let disc: Int, format: String, id: String, path: String
         public let sizeBytes: Int, tagOk: Bool, title: String
         public let trackNo: Int?, year: Int?
-        public let compilation: Bool
+        public let compilation: Bool, durationMs: Int?
     }
 
     public struct Album: Equatable {
@@ -83,7 +83,8 @@ public struct Scanner {
                 continue
             }
             tracks.append(makeTrack(rel: rel, fmt: fmt, size: data.count,
-                                    fields: fields, tagOkRaw: tagOk))
+                                    fields: fields, tagOkRaw: tagOk,
+                                    durationMs: ContainerParsers.parseDuration(fmt, data)))
         }
         return ScanResult(
             albums: groupAlbums(tracks).sorted {
@@ -119,7 +120,8 @@ public struct Scanner {
     }
 
     static func makeTrack(
-        rel: String, fmt: String, size: Int, fields raw: TagFields?, tagOkRaw: Bool
+        rel: String, fmt: String, size: Int, fields raw: TagFields?, tagOkRaw: Bool,
+        durationMs: Int? = nil
     ) -> Track {
         let segs = rel.split(separator: "/", omittingEmptySubsequences: false).map(String.init)
         let fname = segs.last ?? rel
@@ -152,7 +154,7 @@ public struct Scanner {
             album: album, albumArtist: albumArtist, albumId: "alb|\(albumArtist)|\(album)",
             artist: artist, disc: f.disc ?? 1, format: fmt, id: rel, path: rel,
             sizeBytes: size, tagOk: ok, title: title, trackNo: trackNo, year: f.year,
-            compilation: compilation
+            compilation: compilation, durationMs: durationMs
         )
     }
 

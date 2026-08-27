@@ -41,7 +41,7 @@
       "albumId": "alb|A|B",
       "artist": "A",
       "disc": 1,
-      "durationMs": null,
+      "durationMs": 300,
       "format": "flac",
       "id": "A/B/01 - X.flac",
       "path": "A/B/01 - X.flac",

@@ -151,4 +151,120 @@ internal object ContainerParsers {
         }
         return -1
     }
+
+    private fun lastIndexOf(hay: ByteArray, needle: ByteArray): Int {
+        if (needle.isEmpty() || hay.size < needle.size) return -1
+        for (i in hay.size - needle.size downTo 0) {
+            var ok = true
+            for (j in needle.indices) if (hay[i + j] != needle[j]) { ok = false; break }
+            if (ok) return i
+        }
+        return -1
+    }
+
+    // ---- 時長（model.md §1.7）----
+
+    private val mp3BrM1 = intArrayOf(32, 40, 48, 56, 64, 80, 96, 112, 128, 160, 192, 224, 256, 320)
+    private val mp3BrM2 = intArrayOf(8, 16, 24, 32, 40, 48, 56, 64, 80, 96, 112, 128, 144, 160)
+
+    fun parseDuration(fmt: String, data: ByteArray): Long? {
+        when (fmt) {
+            "flac" -> {
+                if (data.size < 4 || String(data, 0, 4, Charsets.ISO_8859_1) != "fLaC") return null
+                if (data.size < 8 + 34 || data[4].toInt() and 0x7F != 0) return null
+                val rate = ((data[18].toInt() and 0xFF) shl 12) or
+                    ((data[19].toInt() and 0xFF) shl 4) or
+                    ((data[20].toInt() and 0xFF) ushr 4)
+                var total = (data[21].toInt() and 0xF).toLong() shl 32
+                for (q in 0 until 4) total = total or ((data[22 + q].toLong() and 0xFF) shl (24 - 8 * q))
+                if (rate == 0 || total == 0L) return null
+                return total * 1000 / rate
+            }
+            "mp3" -> {
+                var off = 0
+                if (data.size >= 3 && String(data, 0, 3, Charsets.ISO_8859_1) == "ID3") {
+                    if (data.size < 10) return null
+                    off = 10 + (((data[6].toInt() and 0x7F) shl 21) or
+                        ((data[7].toInt() and 0x7F) shl 14) or
+                        ((data[8].toInt() and 0x7F) shl 7) or (data[9].toInt() and 0x7F))
+                }
+                var i = off
+                val end = minOf(off + 65536, data.size - 3)
+                while (i < end) {
+                    if (data[i].toInt() and 0xFF == 0xFF && data[i + 1].toInt() and 0xE0 == 0xE0) {
+                        val ver = (data[i + 1].toInt() shr 3) and 3
+                        val layer = (data[i + 1].toInt() shr 1) and 3
+                        val br = (data[i + 2].toInt() shr 4) and 0xF
+                        val sr = (data[i + 2].toInt() shr 2) and 3
+                        if (ver != 1 && layer == 1 && br != 0 && br != 15 && sr != 3) {
+                            val kbps = (if (ver == 3) mp3BrM1 else mp3BrM2)[br - 1]
+                            return (data.size - i) * 8L / kbps
+                        }
+                    }
+                    i++
+                }
+                return null
+            }
+            "m4a" -> {
+                fun find(buf: ByteArray): Pair<Long, Long>? {
+                    for (box in boxes(buf)) {
+                        val t = String(box.type, Charsets.ISO_8859_1)
+                        if (t == "moov") {
+                            find(box.payload)?.let { return it }
+                        } else if (t == "mvhd") {
+                            val p = box.payload
+                            if (p.isEmpty()) return null
+                            if (p[0].toInt() == 0) {
+                                if (p.size < 20) return null
+                                return Bytes.u32be(p, 12) to Bytes.u32be(p, 16)
+                            }
+                            if (p.size < 32) return null
+                            var dur = 0L
+                            for (q in 0 until 8) dur = (dur shl 8) or (p[24 + q].toLong() and 0xFF)
+                            return Bytes.u32be(p, 20) to dur
+                        }
+                    }
+                    return null
+                }
+                val r = find(data)
+                if (r == null || r.first == 0L || r.second == 0L) return null
+                return r.second * 1000 / r.first
+            }
+            "ogg", "opus" -> {
+                val p = lastIndexOf(data, "OggS".toByteArray(Charsets.ISO_8859_1))
+                if (p < 0 || data.size < p + 14) return null
+                var granule = 0L
+                for (q in 0 until 8) granule = granule or ((data[p + 6 + q].toLong() and 0xFF) shl (8 * q))
+                if (fmt == "opus") {
+                    val h = indexOf(data, "OpusHead".toByteArray(Charsets.ISO_8859_1))
+                    if (h < 0 || data.size < h + 12) return null
+                    val preskip = (data[h + 10].toLong() and 0xFF) or
+                        ((data[h + 11].toLong() and 0xFF) shl 8)
+                    val v = (granule - preskip) * 1000 / 48000
+                    return if (v > 0) v else null
+                }
+                val v = indexOf(data, byteArrayOf(1) + "vorbis".toByteArray(Charsets.ISO_8859_1))
+                if (v < 0 || data.size < v + 16) return null
+                val rate = Bytes.u32le(data, v + 12)
+                if (rate == 0L || granule == 0L) return null
+                return granule * 1000 / rate
+            }
+            "wav" -> {
+                if (!isWav(data)) return null
+                var byteRate = 0L
+                var dataSize = -1L
+                var i = 12
+                while (i + 8 <= data.size) {
+                    val cid = String(data, i, 4, Charsets.ISO_8859_1)
+                    val csz = Bytes.u32le(data, i + 4).toInt()
+                    if (cid == "fmt " && csz >= 12) byteRate = Bytes.u32le(data, i + 16)
+                    else if (cid == "data") dataSize = csz.toLong()
+                    i += 8 + csz + (csz and 1)
+                }
+                if (byteRate == 0L || dataSize < 0L) return null
+                return dataSize * 1000 / byteRate
+            }
+        }
+        return null
+    }
 }

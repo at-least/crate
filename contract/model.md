@@ -68,6 +68,25 @@
 ### 1.6 錯誤
 `errors` 陣列的元素：`{ "code": "...", "message": "...", "path": "..." }`。v0 code 只有 `BAD_CONTAINER`（§1.1）。message 由實作自訂（**不參與 byte-compare**，見 §2.2 豁免）。
 
+### 1.7 時長（durationMs；v1）
+container 合法即解析，與 tag 內容無關。一律整數除法（floor）；解析失敗/值 ≤ 0 → null（不產生 error）。
+
+- **flac**：第一個 metadata block 需為 STREAMINFO（type 0，len 34）。
+  sampleRate = `(b[10]<<12)|(b[11]<<4)|(b[12]>>4)`；totalSamples = `((b[13]&0xF)<<32) | u64be(b[14..18])`。
+  `durationMs = totalSamples*1000 // sampleRate`；sampleRate 或 totalSamples == 0 → null。
+- **mp3**：跳過 ID3v2（10 + syncsafe size，若以 "ID3" 開頭），之後逐 byte 向後找**第一個合法 frame sync**：
+  `0xFF Ex`、version ≠ 1（保留）、layer ≠ 0、bitrate index ∉ {0,15}、samplerate index ≠ 3。
+  bitrate 表（kbps，僅 Layer III；其他 layer v1 不支援 → null）：MPEG1: 32,40,48,56,64,80,96,112,128,160,192,224,256,320；MPEG2/2.5: 8,16,24,32,40,48,56,64,80,96,112,128,144,160。
+  `durationMs = (sizeBytes − frameOffset) * 8 // bitrateKbps`；找不到 frame → null。
+- **m4a**：`moov/mvhd`。version 0：timescale = u32@+12、duration = u32@+16；version 1：timescale = u32@+20、duration = u64@+24（均相對 mvhd body 起算，body 為 version/flags 之後）。
+  `durationMs = duration*1000 // timescale`；無 mvhd 或 timescale == 0 → null。
+- **ogg**：id header `\x01vorbis` → sampleRate = u32le@+12；檔內**最後一個** `OggS` magic → granule = u64le@+6。
+  `durationMs = granule*1000 // sampleRate`。
+- **opus**：`OpusHead` → preskip = u16le@+10；最後一個 `OggS` → granule = u64le@+6（48kHz 時脈）。
+  `durationMs = (granule − preskip)*1000 // 48000`；≤ 0 → null。
+- **wav**：RIFF chunk 巡訪（id 4B + size u32le，pad 偶數）：`fmt ` 的 byteRate = u32le@fmtbody+8、`data` 的 size。
+  `durationMs = dataSize*1000 // byteRate`；byteRate == 0 → null。
+
 ## 2. ScanResult JSON（契約核心）
 
 ### 2.1 結構

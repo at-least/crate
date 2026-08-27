@@ -169,3 +169,117 @@ enum ContainerParsers {
         return nil
     }
 }
+
+// ---- 時長（model.md §1.7）----
+
+extension ContainerParsers {
+
+    private static func lastIndexOf(_ hay: [UInt8], _ needle: [UInt8]) -> Int? {
+        if needle.isEmpty || hay.count < needle.count { return nil }
+        var i = hay.count - needle.count
+        while i >= 0 {
+            var ok = true
+            for j in 0..<needle.count where hay[i + j] != needle[j] { ok = false; break }
+            if ok { return i }
+            i -= 1
+        }
+        return nil
+    }
+
+    private static let mp3BrM1 = [32, 40, 48, 56, 64, 80, 96, 112, 128, 160, 192, 224, 256, 320]
+    private static let mp3BrM2 = [8, 16, 24, 32, 40, 48, 56, 64, 80, 96, 112, 128, 144, 160]
+
+    static func parseDuration(_ fmt: String, _ data: [UInt8]) -> Int? {
+        func eq(_ s: String, _ off: Int) -> Bool {
+            let a = Array(s.utf8)
+            guard off >= 0, off + a.count <= data.count else { return false }
+            for (j, c) in a.enumerated() where data[off + j] != c { return false }
+            return true
+        }
+        switch fmt {
+        case "flac":
+            if !eq("fLaC", 0) || data.count < 8 + 34 { return nil }
+            if data[4] & 0x7F != 0 { return nil }
+            let rate = (Int(data[18]) << 12) | (Int(data[19]) << 4) | (Int(data[20]) >> 4)
+            var total = Int(data[21] & 0xF) << 32
+            for q in 0..<4 { total |= Int(data[22 + q]) << (24 - 8 * q) }
+            if rate == 0 || total == 0 { return nil }
+            return total * 1000 / rate
+        case "mp3":
+            var off = 0
+            if data.count >= 3 && eq("ID3", 0) {
+                if data.count < 10 { return nil }
+                off = 10 + (((Int(data[6]) & 0x7F) << 21) | ((Int(data[7]) & 0x7F) << 14) |
+                    ((Int(data[8]) & 0x7F) << 7) | (Int(data[9]) & 0x7F))
+            }
+            var i = off
+            let end = min(off + 65536, data.count - 3)
+            while i < end {
+                if data[i] == 0xFF && data[i + 1] & 0xE0 == 0xE0 {
+                    let ver = (Int(data[i + 1]) >> 3) & 3
+                    let layer = (Int(data[i + 1]) >> 1) & 3
+                    let br = (Int(data[i + 2]) >> 4) & 0xF
+                    let sr = (Int(data[i + 2]) >> 2) & 3
+                    if ver != 1 && layer == 1 && br != 0 && br != 15 && sr != 3 {
+                        let kbps = (ver == 3 ? mp3BrM1 : mp3BrM2)[br - 1]
+                        return (data.count - i) * 8 / kbps
+                    }
+                }
+                i += 1
+            }
+            return nil
+        case "m4a":
+            func find(_ buf: [UInt8]) -> (Int, Int)? {
+                for box in boxes(buf) {
+                    let t = String(decoding: box.type, as: UTF8.self)
+                    if t == "moov" {
+                        if let r = find(box.payload) { return r }
+                    } else if t == "mvhd" {
+                        let p = box.payload
+                        if p.isEmpty { return nil }
+                        if p[0] == 0 {
+                            if p.count < 20 { return nil }
+                            return (Bytes.u32be(p, 12), Bytes.u32be(p, 16))
+                        }
+                        if p.count < 32 { return nil }
+                        var dur = 0
+                        for q in 0..<8 { dur = (dur << 8) | Int(p[24 + q]) }
+                        return (Bytes.u32be(p, 20), dur)
+                    }
+                }
+                return nil
+            }
+            guard let r = find(data), r.0 != 0, r.1 != 0 else { return nil }
+            return r.1 * 1000 / r.0
+        case "ogg", "opus":
+            guard let p = lastIndexOf(data, Array("OggS".utf8)), data.count >= p + 14 else { return nil }
+            var granule = 0
+            for q in 0..<8 { granule |= Int(data[p + 6 + q]) << (8 * q) }
+            if fmt == "opus" {
+                guard let h = indexOf(data, Array("OpusHead".utf8)), data.count >= h + 12 else { return nil }
+                let preskip = Int(data[h + 10]) | (Int(data[h + 11]) << 8)
+                let v = (granule - preskip) * 1000 / 48000
+                return v > 0 ? v : nil
+            }
+            guard let v = indexOf(data, [1] + Array("vorbis".utf8)), data.count >= v + 16 else { return nil }
+            let rate = Bytes.u32le(data, v + 12)
+            if rate == 0 || granule == 0 { return nil }
+            return granule * 1000 / rate
+        case "wav":
+            if !isWav(data) { return nil }
+            var byteRate = 0, dataSize = -1
+            var i = 12
+            while i + 8 <= data.count {
+                let cid = String(decoding: data[i..<i + 4], as: UTF8.self)
+                let csz = Bytes.u32le(data, i + 4)
+                if cid == "fmt " && csz >= 12 { byteRate = Bytes.u32le(data, i + 16) }
+                else if cid == "data" { dataSize = csz }
+                i += 8 + csz + (csz & 1)
+            }
+            if byteRate == 0 || dataSize < 0 { return nil }
+            return dataSize * 1000 / byteRate
+        default:
+            return nil
+        }
+    }
+}

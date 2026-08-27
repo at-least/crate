@@ -143,7 +143,7 @@ object CanonicalJson {
         "albumId" to albumId,
         "artist" to artist,
         "disc" to disc,
-        "durationMs" to null, // v0 固定 null（model.md §2.1）
+            "durationMs" to durationMs, // model.md §1.7
         "format" to format,
         "id" to id,
         "path" to path,

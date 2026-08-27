@@ -19,7 +19,7 @@
       "albumId": "alb|Lofi|Beats",
       "artist": "Lofi",
       "disc": 1,
-      "durationMs": null,
+      "durationMs": 300,
       "format": "opus",
       "id": "Lofi/Beats/01 - Rain.opus",
       "path": "Lofi/Beats/01 - Rain.opus",

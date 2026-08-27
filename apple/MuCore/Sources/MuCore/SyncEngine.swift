@@ -96,7 +96,8 @@ public final class SyncEngine {
             tracks[c.path] = IndexedTrack(
                 track: Scanner.makeTrack(
                     rel: c.path, fmt: fmt, size: data.count,
-                    fields: fields, tagOkRaw: tagOk),
+                    fields: fields, tagOkRaw: tagOk,
+                    durationMs: ContainerParsers.parseDuration(fmt, data)),
                 rev: c.rev, available: true)
         }
         cursor = snap

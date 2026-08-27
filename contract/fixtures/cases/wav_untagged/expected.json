@@ -19,7 +19,7 @@
       "albumId": "alb|Sfx|Pack",
       "artist": "Sfx",
       "disc": 1,
-      "durationMs": null,
+      "durationMs": 300,
       "format": "wav",
       "id": "Sfx/Pack/01 - Kick.wav",
       "path": "Sfx/Pack/01 - Kick.wav",

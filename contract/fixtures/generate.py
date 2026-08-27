@@ -351,6 +351,105 @@ def fmt_for(name: str) -> str | None:
     return {"flac": "flac", "mp3": "mp3", "m4a": "m4a", "mp4": "m4a",
             "ogg": "ogg", "opus": "opus", "wav": "wav"}.get(ext)
 
+# ---------------------------------------------------------------- duration
+
+_MP3_BR_M1 = [32, 40, 48, 56, 64, 80, 96, 112, 128, 160, 192, 224, 256, 320]
+_MP3_BR_M2 = [8, 16, 24, 32, 40, 48, 56, 64, 80, 96, 112, 128, 144, 160]
+
+def parse_duration(fmt: str, data: bytes) -> int | None:
+    """model.md §1.7。整數除法；失敗/<=0 → None。"""
+    if fmt == "flac":
+        if data[:4] != b"fLaC" or len(data) < 8 + 34:
+            return None
+        if (data[4] & 0x7F) != 0:  # 第一個 block 非 STREAMINFO
+            return None
+        b = data[8:8 + 34]
+        rate = (b[10] << 12) | (b[11] << 4) | (b[12] >> 4)
+        total = ((b[13] & 0xF) << 32) | int.from_bytes(b[14:18], "big")
+        if rate == 0 or total == 0:
+            return None
+        return total * 1000 // rate
+    if fmt == "mp3":
+        off = 0
+        if data[:3] == b"ID3":
+            if len(data) < 10:
+                return None
+            off = 10 + (((data[6] & 0x7F) << 21) | ((data[7] & 0x7F) << 14) |
+                        ((data[8] & 0x7F) << 7) | (data[9] & 0x7F))
+        for i in range(off, min(off + 65536, len(data) - 3)):
+            if data[i] != 0xFF or (data[i + 1] & 0xE0) != 0xE0:
+                continue
+            ver = (data[i + 1] >> 3) & 3
+            layer = (data[i + 1] >> 1) & 3
+            br = (data[i + 2] >> 4) & 0xF
+            sr = (data[i + 2] >> 2) & 3
+            if ver == 1 or layer != 1 or br in (0, 15) or sr == 3:
+                continue
+            kbps = (_MP3_BR_M1 if ver == 3 else _MP3_BR_M2)[br - 1]
+            return (len(data) - i) * 8 // kbps
+        return None
+    if fmt == "m4a":
+        def find_mvhd(buf):
+            for btype, payload, ok in _mp4_boxes(buf):
+                if not ok:
+                    continue
+                if btype == b"moov":
+                    r = find_mvhd(payload)
+                    if r is not None:
+                        return r
+                elif btype == b"mvhd":
+                    ver = payload[0]
+                    if ver == 0:
+                        if len(payload) < 20:
+                            return None
+                        return (struct.unpack(">I", payload[12:16])[0],
+                                struct.unpack(">I", payload[16:20])[0])
+                    if len(payload) < 32:
+                        return None
+                    return (struct.unpack(">I", payload[20:24])[0],
+                            struct.unpack(">Q", payload[24:32])[0])
+            return None
+        r = find_mvhd(data)
+        if r is None or r[0] == 0 or r[1] == 0:
+            return None
+        return r[1] * 1000 // r[0]
+    if fmt in ("ogg", "opus"):
+        p = data.rfind(b"OggS")
+        if p < 0 or len(data) < p + 14:
+            return None
+        granule = int.from_bytes(data[p + 6:p + 14], "little")
+        if fmt == "opus":
+            h = data.find(b"OpusHead")
+            if h < 0 or len(data) < h + 12:
+                return None
+            preskip = int.from_bytes(data[h + 10:h + 12], "little")
+            v = (granule - preskip) * 1000 // 48000
+            return v if v > 0 else None
+        v = data.find(b"\x01vorbis")
+        if v < 0 or len(data) < v + 16:
+            return None
+        rate = int.from_bytes(data[v + 12:v + 16], "little")
+        if rate == 0 or granule == 0:
+            return None
+        return granule * 1000 // rate
+    if fmt == "wav":
+        if data[:4] != b"RIFF" or data[8:12] != b"WAVE":
+            return None
+        byte_rate = data_size = None
+        i = 12
+        while i + 8 <= len(data):
+            cid = data[i:i + 4]
+            csz = int.from_bytes(data[i + 4:i + 8], "little")
+            if cid == b"fmt " and csz >= 12:
+                byte_rate = int.from_bytes(data[i + 16:i + 20], "little")
+            elif cid == b"data":
+                data_size = csz
+            i += 8 + csz + (csz & 1)
+        if not byte_rate or data_size is None:
+            return None
+        return data_size * 1000 // byte_rate
+    return None
+
 FILENAME_PAT = __import__("re").compile(r"^(\d{1,3})\s-\s(.+)$")
 
 def scan_tree(root: Path) -> dict:
@@ -376,7 +475,7 @@ def scan_tree(root: Path) -> dict:
             errors.append({"code": "BAD_CONTAINER",
                            "message": f"not a valid {fmt} file", "path": rel})
             continue
-        t = make_track(rel, fmt, len(data), fields, tag_ok)
+        t = make_track(rel, fmt, len(data), fields, tag_ok, parse_duration(fmt, data))
         tracks.append(t)
     albums = group_albums(tracks)
     return {
@@ -386,7 +485,8 @@ def scan_tree(root: Path) -> dict:
         "tracks": sorted(tracks, key=lambda t: t["path"]),
     }
 
-def make_track(rel: str, fmt: str, size: int, fields: dict | None, tag_ok: bool) -> dict:
+def make_track(rel: str, fmt: str, size: int, fields: dict | None, tag_ok: bool,
+               duration_ms: int | None = None) -> dict:
     segs = rel.split("/")
     fname = segs[-1]
     stem = fname.rsplit(".", 1)[0] if "." in fname else fname
@@ -413,7 +513,7 @@ def make_track(rel: str, fmt: str, size: int, fields: dict | None, tag_ok: bool)
     return {
         "album": album, "albumArtist": album_artist,
         "albumId": f"alb|{album_artist}|{album}",
-        "artist": artist, "disc": disc, "durationMs": None, "format": fmt,
+        "artist": artist, "disc": disc, "durationMs": duration_ms, "format": fmt,
         "id": rel, "path": rel, "sizeBytes": size, "tagOk": bool(ok),
         "title": title, "trackNo": track_no, "year": year,
         "_compilation": compilation,
@@ -671,6 +771,20 @@ def rescan_check() -> int:
     print(f"OK: {len(names)} cases byte-identical to expected.json")
     return 0
 
+def update_expected() -> int:
+    """重掃已 commit 的 cases/*/lib，只改寫 expected.json（不跑 ffmpeg、不動 lib/）。
+    規格升級（如 §1.7 時長）換版 fixtures 用。"""
+    names = build_cases()
+    for name in names:
+        result = scan_tree(CASES / name / "lib")
+        for t in result["tracks"]:
+            t.pop("_compilation")
+        for e in result["errors"]:
+            e["message"] = ""
+        (CASES / name / "expected.json").write_text(canonical(result), encoding="utf-8")
+    print(f"OK: {len(names)} expected.json updated from committed lib trees")
+    return 0
+
 def main():
     if CASES.exists():
         shutil.rmtree(CASES)
@@ -724,4 +838,6 @@ def main():
 if __name__ == "__main__":
     if sys.argv[1:] == ["--rescan-check"]:
         sys.exit(rescan_check())
+    if sys.argv[1:] == ["--update-expected"]:
+        sys.exit(update_expected())
     main()
