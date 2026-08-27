@@ -648,6 +648,29 @@ def populate(name: str, lib: Path):
         write(lib, "Playlists/win.m3u8",
               b"#EXTM3U\n..\\Aurora\\Northern Lights\\01 - Rise.flac\n")
 
+def rescan_check() -> int:
+    """重掃已 commit 的 cases/*/lib，輸出必須與 expected.json byte-identical。
+    不跑 ffmpeg、純確定性 —— CI 用（規格 ↔ fixtures 防飄移）。"""
+    names = build_cases()
+    bad = []
+    for name in names:
+        result = scan_tree(CASES / name / "lib")
+        for t in result["tracks"]:
+            t.pop("_compilation")
+        for e in result["errors"]:
+            e["message"] = ""
+        expected_path = CASES / name / "expected.json"
+        actual = canonical(result)
+        if not expected_path.exists() or \
+                expected_path.read_text(encoding="utf-8") != actual:
+            bad.append(name)
+    if bad:
+        print(f"DRIFT: {len(bad)}/{len(names)} cases differ from expected.json: "
+              + ", ".join(bad))
+        return 1
+    print(f"OK: {len(names)} cases byte-identical to expected.json")
+    return 0
+
 def main():
     if CASES.exists():
         shutil.rmtree(CASES)
@@ -699,4 +722,6 @@ def main():
     print(f"OK: {len(names)} cases generated, all sanity asserts passed")
 
 if __name__ == "__main__":
+    if sys.argv[1:] == ["--rescan-check"]:
+        sys.exit(rescan_check())
     main()
