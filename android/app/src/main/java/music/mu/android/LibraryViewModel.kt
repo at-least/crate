@@ -1,6 +1,7 @@
 package music.mu.android
 
 import android.app.Application
+import android.content.Context
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.Dispatchers
@@ -13,8 +14,8 @@ import mu.core.SyncEngine
 import java.io.File
 
 /**
- * 音樂庫狀態：選定本地資料夾 → SyncEngine 首掃/增量 → 專輯/音軌 UI 狀態。
- * v0：索引在記憶體（ViewModel 存活期間）；Room 持久化下一步接。
+ * 音樂庫狀態：選定本地資料夾 → SyncEngine 首掃/增量 → 專輯/音軌/清單 UI 狀態。
+ * 上次資料夾存 SharedPreferences（重開 app 自動重掃；Room 持久化接上後改存 DB）。
  */
 class LibraryViewModel(app: Application) : AndroidViewModel(app) {
 
@@ -23,8 +24,12 @@ class LibraryViewModel(app: Application) : AndroidViewModel(app) {
         val scanning: Boolean = false,
         val albums: List<Scanner.Album> = emptyList(),
         val tracksByAlbum: Map<String, List<Scanner.Track>> = emptyMap(),
-        val playlistPaths: List<String> = emptyList(),
-    )
+        val tracksById: Map<String, Scanner.Track> = emptyMap(),
+        /** playlist → 依序音軌（未解析的 ref 略過）。 */
+        val playlists: List<PlaylistUi> = emptyList(),
+    ) {
+        data class PlaylistUi(val name: String, val tracks: List<Scanner.Track>)
+    }
 
     private val _state = MutableStateFlow(UiState())
     val state: StateFlow<UiState> = _state
@@ -35,6 +40,7 @@ class LibraryViewModel(app: Application) : AndroidViewModel(app) {
     fun open(root: File) {
         this.root = root
         val e = engine ?: SyncEngine(LocalFolderProvider(root)).also { engine = it }
+        prefs().edit().putString(KEY_ROOT, root.absolutePath).apply()
         viewModelScope.launch(Dispatchers.IO) {
             _state.value = _state.value.copy(
                 scanning = true, rootPath = root.absolutePath)
@@ -43,19 +49,40 @@ class LibraryViewModel(app: Application) : AndroidViewModel(app) {
                 .filter { it.available }
                 .map { it.track }
                 .sortedWith(compareBy { it.path })
+            val byId = tracks.associateBy { it.id }
+            val resolved = e.resolvedItems(report)
             _state.value = UiState(
                 rootPath = root.absolutePath,
                 scanning = false,
                 albums = Scanner.groupAlbums(tracks)
                     .sortedWith(compareBy({ it.albumArtist }, { it.name })),
                 tracksByAlbum = tracks.groupBy { it.albumId },
-                playlistPaths = report.playlists.keys.sorted(),
+                tracksById = byId,
+                playlists = resolved.keys.sorted().mapNotNull { p ->
+                    val raw = report.playlists[p] ?: return@mapNotNull null
+                    val ts = resolved.getValue(p).mapNotNull { byId[it] }
+                    UiState.PlaylistUi(raw.name, ts)
+                },
             )
         }
     }
 
-    /** 增量重掃（外部改檔後）。 */
+    /** 增量重掃（外部改檔後；delta：rev 未變的檔案不重讀）。 */
     fun rescan() {
         root?.let { open(it) }
     }
+
+    /** 自動重開上次的資料夾（MainActivity 啟動時呼叫一次）。 */
+    fun reopenLast() {
+        if (root != null) return
+        prefs().getString(KEY_ROOT, null)?.let { path ->
+            val f = File(path)
+            if (f.isDirectory) open(f)
+        }
+    }
+
+    private fun prefs() = getApplication<Application>()
+        .getSharedPreferences("mu_library", Context.MODE_PRIVATE)
+
+    private companion object { const val KEY_ROOT = "root" }
 }

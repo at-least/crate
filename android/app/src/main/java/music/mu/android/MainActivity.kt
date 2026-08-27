@@ -14,18 +14,25 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items as listItems
+import androidx.compose.material3.AssistChip
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -50,13 +57,22 @@ class MainActivity : ComponentActivity() {
     }
 }
 
+/** 內容區選擇：null = 專輯網格；album id / playlist 名稱 = 該清單音軌。 */
+private sealed interface View {
+    data object Library : View
+    data class Album(val id: String) : View
+    data class Playlist(val name: String) : View
+}
+
 @androidx.compose.runtime.Composable
 @OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class)
 fun MuApp(vm: LibraryViewModel = viewModel()) {
     val state by vm.state.collectAsState()
     val context = LocalContext.current
-    var selectedAlbum by remember { mutableStateOf<String?>(null) }
+    var view by remember { mutableStateOf<View>(View.Library) }
     var playerSheet by remember { mutableStateOf<PlayerBarState?>(null) }
+
+    LaunchedEffect(Unit) { vm.reopenLast() }
 
     // 本地資料夾讀取權（API 33+ READ_MEDIA_AUDIO；舊版 READ_EXTERNAL_STORAGE）
     val permLauncher = rememberLauncherForActivityResult(
@@ -82,7 +98,39 @@ fun MuApp(vm: LibraryViewModel = viewModel()) {
 
     val controller = rememberPlayerController()
 
-    Scaffold(topBar = { TopAppBar(title = { Text("Mu") }) }) { pad ->
+    fun play(tracks: List<Scanner.Track>, startIndex: Int, title: String) {
+        controller?.let { c ->
+            c.setMediaItems(PlaybackService.mediaItems(tracks, state.rootPath!!))
+            c.seekTo(startIndex, 0)
+            c.prepare()
+            c.play()
+        }
+        playerSheet = PlayerBarState(title)
+    }
+
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text("Mu") },
+                navigationIcon = {
+                    if (view !is View.Library) {
+                        IconButton(onClick = { view = View.Library }) {
+                            androidx.compose.material3.Icon(
+                                Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "返回")
+                        }
+                    }
+                },
+                actions = {
+                    if (state.rootPath != null) {
+                        IconButton(onClick = { vm.rescan() }) {
+                            androidx.compose.material3.Icon(
+                                Icons.Default.Refresh, contentDescription = "重掃")
+                        }
+                    }
+                },
+            )
+        },
+    ) { pad ->
         Column(Modifier.padding(pad).fillMaxSize()) {
             when {
                 state.scanning -> Column(
@@ -100,64 +148,99 @@ fun MuApp(vm: LibraryViewModel = viewModel()) {
                     }
                 }
 
-                selectedAlbum == null -> LazyVerticalGrid(GridCells.Adaptive(150.dp)) {
-                    items(state.albums, key = { it.id }) { album ->
-                        Card(
-                            Modifier.padding(8.dp).fillMaxWidth().clickable {
-                                selectedAlbum = album.id
-                            },
+                view is View.Playlist -> {
+                    val pl = state.playlists.first {
+                        it.name == (view as View.Playlist).name
+                    }
+                    TrackList(
+                        title = pl.name,
+                        subtitle = "${pl.tracks.size} 軌（清單）",
+                        tracks = pl.tracks,
+                        onPlay = { t, i -> play(pl.tracks, i, t.title) },
+                    )
+                    playerSheet?.let { PlayerBar(controller, it.title) }
+                }
+
+                view is View.Album -> {
+                    val album = state.albums.first { it.id == (view as View.Album).id }
+                    val tracks = state.tracksByAlbum[album.id].orEmpty()
+                    TrackList(
+                        title = album.name,
+                        subtitle = album.albumArtist +
+                            (album.year?.let { " · $it" } ?: ""),
+                        tracks = tracks,
+                        onPlay = { t, i -> play(tracks, i, t.title) },
+                    )
+                    playerSheet?.let { PlayerBar(controller, it.title) }
+                }
+
+                else -> Column(Modifier.fillMaxSize()) {
+                    if (state.playlists.isNotEmpty()) {
+                        LazyRow(
+                            Modifier.padding(horizontal = 8.dp),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
                         ) {
-                            Column(Modifier.padding(12.dp)) {
-                                Text(album.name, style = MaterialTheme.typography.titleMedium)
-                                Text(album.albumArtist, style = MaterialTheme.typography.bodySmall)
-                                Text(
-                                    "${album.trackCount} 軌" +
-                                        (album.year?.let { " · $it" } ?: ""),
-                                    style = MaterialTheme.typography.bodySmall,
-                                )
+                            listItems(state.playlists, key = { it.name }) { pl ->
+                                AssistChip(onClick = { view = View.Playlist(pl.name) },
+                                    label = { Text(pl.name) })
                             }
                         }
                     }
-                }
-
-                else -> {
-                    val album = state.albums.first { it.id == selectedAlbum }
-                    val tracks = state.tracksByAlbum[album.id].orEmpty()
-                    Column(Modifier.fillMaxSize()) {
-                        Text(
-                            "${album.name} — ${album.albumArtist}",
-                            Modifier.padding(16.dp),
-                            style = MaterialTheme.typography.titleMedium,
-                        )
-                        LazyColumn(Modifier.weight(1f)) {
-                            listItems(tracks, key = { it.id }) { t ->
-                                Row(
-                                    Modifier.fillMaxWidth().clickable {
-                                        controller?.let { c ->
-                                            c.setMediaItems(
-                                                PlaybackService.mediaItems(tracks, state.rootPath!!))
-                                            c.seekTo(tracks.indexOf(t), 0)
-                                            c.prepare()
-                                            c.play()
-                                        }
-                                        playerSheet = PlayerBarState(t.title)
-                                    }.padding(16.dp, 8.dp),
-                                ) {
+                    LazyVerticalGrid(
+                        GridCells.Adaptive(150.dp), Modifier.weight(1f)) {
+                        items(state.albums, key = { it.id }) { album ->
+                            Card(
+                                Modifier.padding(8.dp).fillMaxWidth().clickable {
+                                    view = View.Album(album.id)
+                                },
+                            ) {
+                                Column(Modifier.padding(12.dp)) {
+                                    Text(album.name, style = MaterialTheme.typography.titleMedium)
+                                    Text(album.albumArtist, style = MaterialTheme.typography.bodySmall)
                                     Text(
-                                        (t.trackNo?.let { "$it. " } ?: "") + t.title,
-                                        Modifier.weight(1f),
-                                    )
-                                    Text(
-                                        t.durationMs?.let { ms ->
-                                            "%d:%02d".format(ms / 60000, ms / 1000 % 60)
-                                        } ?: "",
+                                        "${album.trackCount} 軌" +
+                                            (album.year?.let { " · $it" } ?: ""),
                                         style = MaterialTheme.typography.bodySmall,
                                     )
                                 }
                             }
                         }
-                        playerSheet?.let { PlayerBar(controller, it.title) }
                     }
+                }
+            }
+        }
+    }
+}
+
+/** 音軌清單（專輯/playlist 共用）。 */
+@androidx.compose.runtime.Composable
+private fun TrackList(
+    title: String,
+    subtitle: String,
+    tracks: List<Scanner.Track>,
+    onPlay: (Scanner.Track, Int) -> Unit,
+) {
+    Column(Modifier.fillMaxSize()) {
+        Text(title, Modifier.padding(16.dp), style = MaterialTheme.typography.titleMedium)
+        Text(subtitle, Modifier.padding(horizontal = 16.dp),
+            style = MaterialTheme.typography.bodySmall)
+        LazyColumn(Modifier.weight(1f)) {
+            listItems(tracks, key = { it.id }) { t ->
+                Row(
+                    Modifier.fillMaxWidth().clickable {
+                        onPlay(t, tracks.indexOf(t))
+                    }.padding(16.dp, 8.dp),
+                ) {
+                    Text(
+                        (t.trackNo?.let { "$it. " } ?: "") + t.title,
+                        Modifier.weight(1f),
+                    )
+                    Text(
+                        t.durationMs?.let { ms ->
+                            "%d:%02d".format(ms / 60000, ms / 1000 % 60)
+                        } ?: "",
+                        style = MaterialTheme.typography.bodySmall,
+                    )
                 }
             }
         }

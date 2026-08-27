@@ -87,6 +87,27 @@ class SyncEngine(private val provider: LocalFolderProvider) {
             LinkedHashMap(playlists), LinkedHashMap(errors))
     }
 
+    /**
+     * raw 清單 → 已解析音軌（App 層用；解析規則與 toCanonical 的 items 完全一致：
+     * 相對 ref 對 playlist 所在目錄 join、normPath、只對 available 集合解析）。
+     * 回傳 (playlistPath, 每項 trackId 或 null)。
+     */
+    fun resolvedItems(r: SyncReport): Map<String, List<String?>> {
+        val audioOk = r.tracks.filterValues { it.available }.keys
+        return r.playlists.mapValues { (p, pl) ->
+            val base = p.substringBeforeLast('/', "")
+            pl.items.map { raw ->
+                var ref = raw.ref.replace('\\', '/')
+                while (ref.startsWith("./")) ref = ref.substring(2)
+                if (ref.startsWith("/")) null
+                else {
+                    val joined = if (base.isEmpty()) ref else "$base/$ref"
+                    Scanner.normPath(joined)?.takeIf { it in audioOk }
+                }
+            }
+        }
+    }
+
     /** SyncReport → canonical map（sync-rules §7.3）。 */
     fun toCanonical(r: SyncReport): Map<String, Any?> {
         val audioOk = r.tracks.filterValues { it.available }.keys

@@ -105,6 +105,27 @@ public final class SyncEngine {
                           tracks: tracks, playlists: playlists, errors: errors)
     }
 
+    /// raw 清單 → 已解析音軌（App 層用；解析規則與 canonical 的 items 完全一致）。
+    /// 回傳 (playlistPath, 每項 trackId 或 nil)。
+    func resolvedItems(_ r: SyncReport) -> [String: [String?]] {
+        let audioOk = Set(r.tracks.filter { $0.value.available }.keys)
+        var out: [String: [String?]] = [:]
+        for (p, pl) in r.playlists {
+            let base = p.contains("/") ? String(p[p.startIndex..<p.lastIndex(of: "/")!]) : ""
+            out[p] = pl.items.map { raw in
+                var ref = raw.ref.replacingOccurrences(of: "\\", with: "/")
+                while ref.hasPrefix("./") { ref = String(ref.dropFirst(2)) }
+                if ref.hasPrefix("/") { return nil }
+                let joined = base.isEmpty ? ref : base + "/" + ref
+                if let resolved = Scanner.normPath(joined), audioOk.contains(resolved) {
+                    return resolved
+                }
+                return nil
+            }
+        }
+        return out
+    }
+
     /// SyncReport → canonical JSON（sync-rules §7.3）。
     func canonical(_ r: SyncReport) -> CanonicalJson.JSONValue {
         let audioOk = Set(r.tracks.filter { $0.value.available }.keys)
