@@ -54,11 +54,14 @@ class PlaybackService : MediaSessionService() {
     }
 
     companion object {
-        /** 音軌清單 → MediaItems（local file Uri）。 */
-        fun mediaItems(tracks: List<Scanner.Track>, root: String): List<MediaItem> =
+        /** 音軌清單 → MediaItems；檔案由 resolveFile 決定（釘選副本優先，否則庫根原檔）。 */
+        fun mediaItems(
+            tracks: List<Scanner.Track>,
+            resolveFile: (Scanner.Track) -> File,
+        ): List<MediaItem> =
             tracks.map { t ->
                 MediaItem.Builder()
-                    .setUri(android.net.Uri.fromFile(File(root, t.path)))
+                    .setUri(android.net.Uri.fromFile(resolveFile(t)))
                     .setMediaId(t.id)
                     .setMediaMetadata(
                         MediaMetadata.Builder()

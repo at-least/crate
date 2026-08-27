@@ -72,6 +72,8 @@ CREATE TABLE cursor (
 );
 
 -- ============ 離線釘選 ============
+-- 註：實作（Room）刻意不帶 REFERENCES tracks(id) ON DELETE CASCADE——
+-- 釘選要在重掃/全量置換（replaceLibrary 清 tracks）後存活；換庫才清（PinManager.setRoot）。
 CREATE TABLE pins (
   track_id  TEXT PRIMARY KEY REFERENCES tracks(id) ON DELETE CASCADE,
   pinned_at INTEGER NOT NULL,

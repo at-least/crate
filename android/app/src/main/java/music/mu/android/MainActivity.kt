@@ -94,10 +94,14 @@ fun MuApp(vm: LibraryViewModel = viewModel()) {
     }
 
     val controller = rememberPlayerController()
+    val pinManager = (context.applicationContext as MuApp).pinManager
 
     fun play(tracks: List<Scanner.Track>, startIndex: Int, title: String) {
         controller?.let { c ->
-            c.setMediaItems(PlaybackService.mediaItems(tracks, state.rootPath!!))
+            val rootPath = state.rootPath!!
+            fun resolveFile(t: Scanner.Track): File =
+                pinManager.pinnedFile(t.id) ?: File(rootPath, t.path)
+            c.setMediaItems(PlaybackService.mediaItems(tracks, ::resolveFile))
             c.seekTo(startIndex, 0)
             c.prepare()
             c.play()
@@ -159,16 +163,55 @@ fun MuApp(vm: LibraryViewModel = viewModel()) {
                 }
 
                 view is View.Album -> {
-                    val album = state.albums.first { it.id == (view as View.Album).id }
-                    val tracks = state.tracksByAlbum[album.id].orEmpty()
-                    TrackList(
-                        title = album.name,
-                        subtitle = album.albumArtist +
-                            (album.year?.let { " · $it" } ?: ""),
-                        tracks = tracks,
-                        onPlay = { t, i -> play(tracks, i, t.title) },
-                    )
-                    playerSheet?.let { PlayerBar(controller, it.title) }
+                    // unpin 後專輯可能整個消失（全離線軌被濾掉）→ 回庫列表，別讓 first{} 炸
+                    val album = state.albums.firstOrNull { it.id == (view as View.Album).id }
+                    if (album == null) {
+                        androidx.compose.runtime.LaunchedEffect(album) { view = View.Library }
+                        Text("專輯已無可播軌", Modifier.padding(16.dp))
+                    } else {
+                        val tracks = state.tracksByAlbum[album.id].orEmpty()
+                        val states = tracks.map { state.pinStates[it.id] }
+                        val done = states.count { it == PinManager.PinState.DONE }
+                        val pending = states.count {
+                            it == PinManager.PinState.WANTED || it == PinManager.PinState.DOWNLOADING
+                        }
+                        val failed = states.count { it == PinManager.PinState.FAILED }
+                        Column(Modifier.fillMaxSize()) {
+                            AssistChip(
+                                onClick = {
+                                    if (tracks.isNotEmpty() && done == tracks.size) {
+                                        vm.unpinAlbum(album.id)
+                                    } else {
+                                        vm.pinAlbum(album.id)
+                                    }
+                                },
+                                label = {
+                                    Text(
+                                        when {
+                                            tracks.isEmpty() -> "無軌"
+                                            done == tracks.size -> "已釘選（${tracks.size} 軌，點擊取消）"
+                                            done + pending > 0 ->
+                                                "釘選中 $done/${tracks.size}" +
+                                                    if (failed > 0) " · $failed 失敗" else ""
+                                            failed > 0 -> "釘選失敗 $failed/${tracks.size}（點擊重試）"
+                                            else -> "釘選離線（${tracks.size} 軌）"
+                                        },
+                                    )
+                                },
+                                modifier = Modifier.padding(start = 16.dp, top = 8.dp),
+                            )
+                            TrackList(
+                                title = album.name,
+                                subtitle = album.albumArtist +
+                                    (album.year?.let { " · $it" } ?: ""),
+                                tracks = tracks,
+                                offlineIds = state.pinStates
+                                    .filterValues { it == PinManager.PinState.DONE }.keys,
+                                onPlay = { t, i -> play(tracks, i, t.title) },
+                            )
+                        }
+                        playerSheet?.let { PlayerBar(controller, it.title) }
+                    }
                 }
 
                 else -> Column(Modifier.fillMaxSize()) {
@@ -215,6 +258,7 @@ private fun TrackList(
     title: String,
     subtitle: String,
     tracks: List<Scanner.Track>,
+    offlineIds: Set<String> = emptySet(),
     onPlay: (Scanner.Track, Int) -> Unit,
 ) {
     Column(Modifier.fillMaxSize()) {
@@ -232,6 +276,10 @@ private fun TrackList(
                         (t.trackNo?.let { "$it. " } ?: "") + t.title,
                         Modifier.weight(1f),
                     )
+                    if (t.id in offlineIds) {
+                        Text("離線", Modifier.padding(end = 8.dp),
+                            style = MaterialTheme.typography.bodySmall)
+                    }
                     Text(
                         t.durationMs?.let { ms ->
                             "%d:%02d".format(ms / 60000, ms / 1000 % 60)

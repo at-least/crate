@@ -107,6 +107,14 @@ data class SyncStateEntity(
     val value: String,
 )
 
+/** schema.sql pins 表：wanted|downloading|done|failed（PinManager 狀態機）。 */
+@Entity(tableName = "pins")
+data class PinEntity(
+    @PrimaryKey val trackId: String,
+    val pinnedAt: Long,
+    val state: String,
+)
+
 @Dao
 interface LibraryDao {
 
@@ -158,6 +166,18 @@ interface LibraryDao {
     @Query("DELETE FROM cursor")
     suspend fun clearCursor()
 
+    @Query("SELECT * FROM pins")
+    suspend fun allPins(): List<PinEntity>
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun upsertPin(x: PinEntity)
+
+    @Query("DELETE FROM pins WHERE trackId IN (:ids)")
+    suspend fun deletePins(ids: List<String>)
+
+    @Query("DELETE FROM pins")
+    suspend fun clearPins()
+
     /** 還原引擎狀態（空 DB → null）。 */
     @Transaction
     suspend fun loadEngineState(): EngineState? {
@@ -196,8 +216,9 @@ interface LibraryDao {
     entities = [
         TrackEntity::class, PlaylistEntity::class, PlaylistItemEntity::class,
         ScanErrorEntity::class, CursorEntity::class, SyncStateEntity::class,
+        PinEntity::class,
     ],
-    version = 1,
+    version = 2, // v2 = +pins 表（開發期 fallback 破壞性重建）
     exportSchema = false,
 )
 abstract class MuDatabase : RoomDatabase() {
@@ -205,6 +226,8 @@ abstract class MuDatabase : RoomDatabase() {
 
     companion object {
         fun build(context: Context): MuDatabase =
-            Room.databaseBuilder(context, MuDatabase::class.java, "mu.db").build()
+            Room.databaseBuilder(context, MuDatabase::class.java, "mu.db")
+                .fallbackToDestructiveMigration() // 開發期 schema 變動即重建（未發布）
+                .build()
     }
 }
