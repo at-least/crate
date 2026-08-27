@@ -10,9 +10,7 @@
    - User type：**External**
    - App name：`Mu`；email 填自己
    - Scopes 手動加入：
-     - `https://www.googleapis.com/auth/drive.readonly` — 掃整個音樂庫（restricted）
-     - `https://www.googleapis.com/auth/drive.file` — 寫 app 自建檔案（m3u8、mu-state.json）
-     - （不申請 `drive` full：等需要編輯使用者自建 m3u8 再擴）
+     - `https://www.googleapis.com/auth/drive.readonly` — 掃整個音樂庫（restricted）。D12 唯讀定位後僅此一個 scope 即足夠
    - Test users：加自己的 Gmail
 4. **建 3 個 OAuth client**（Credentials → Create Credentials → OAuth client ID）：
    | 類型 | 值 | 用途 |
@@ -30,9 +28,9 @@
 - `drive.readonly`/`drive` 是 **restricted** scope（`drive.file` 才是 non-sensitive）：
   Mu 掃使用者自傳檔案 → readonly 必要；公開發佈才需正式驗證流程。
 
-## 為什麼是 readonly + file 而不是 full drive
+## 為什麼只要 readonly
 
 `drive.file` 只看得到「app 建立/開啟過」的檔案。音樂檔是使用者自己上傳的，
-所以讀取必須 `drive.readonly`。寫入面：Mu 自己建的 m3u8 / mu-state.json
-由 `drive.file` 涵蓋。唯一罩門：**編輯使用者在別處建立的 m3u8** 需要_full_
-`drive`——Phase 3 若要支援再擴 scope（重新同意一次即可）。
+所以讀取必須 `drive.readonly`。D12 唯讀定位後 app 不寫任何雲端檔案，
+不需要 `drive.file`；未來若恢復寫入需求（如 app 內編輯 m3u8）再擴 scope
+（重新同意一次即可）。

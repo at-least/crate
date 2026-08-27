@@ -11,7 +11,7 @@
 - [A5] 兩平台輸出與 `expected.json` byte-identical（A3/A4 內含）
 
 ## Phase 1（Android MVP）
-- [B0] 同步引擎契約（sync-rules §7；sync_cases 6 案例）Python/Kotlin/Swift 三方 byte-identical — ✅ 2026-08-27（機器；CI 三 job）
+- [B0] 同步引擎契約（sync-rules §3；sync_cases 6 案例）Python/Kotlin/Swift 三方 byte-identical — ✅ 2026-08-27（機器；CI 三 job）
 - [B1] core 契約測試仍全綠（CI）
 - [B2] emulator：掃描 500 張專輯模擬資料 < 5 分鐘（機器）
 - [B3] 真機：選本地音樂資料夾 → 首掃 → 專輯網格出現（人；GDrive 接通後複驗同項）
@@ -26,10 +26,9 @@
 - [C3] 鎖屏/Control Center 控制、AirPlay 可用（人）
 - [C4] B4–B6 同清單在 iPhone 複驗（人耳）
 
-## Phase 3（同步閉環）
-- [D1] m3u8 衝突測試組（sync-rules §6）綠（機器）
-- [D2] A 裝置建清單 → B 裝置 ≤60s 出現（人，雙機）
-- [D3] A 播到一半 → B 接續同位置 ≤30s（人，雙機）
+## Phase 3（擴充，選配；D12 後原「同步閉環」相位取消）
+- [D1] Dropbox provider 讀同一庫：契約測試綠 + 掃描同一資料夾索引與 GDrive 一致（機器 + 人）
+- [D2] macOS app（選單列常駐）播放同一庫（人，Mac）
 
 ## 通用品質門檻（每 Phase 結束跑）
 - core 模組測試覆蓋率 ≥ 90%（機器：jacoco / swift-coverage）

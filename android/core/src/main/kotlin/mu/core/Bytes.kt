@@ -1,6 +1,6 @@
 package mu.core
 
-/** 位元組讀取 helper — 一律顯式端序（model.md §4）。 */
+/** 位元組讀取 helper — 一律顯式端序（model.md §3）。 */
 internal object Bytes {
     fun u16be(b: ByteArray, off: Int): Int =
         ((b[off].toInt() and 0xFF) shl 8) or (b[off + 1].toInt() and 0xFF)

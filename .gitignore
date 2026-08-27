@@ -10,3 +10,6 @@ apple/MuCore/.build/
 
 # python
 __pycache__/
+
+# ide/sdk local config
+android/local.properties

@@ -46,13 +46,6 @@
     },
     {
       "type": "retry",
-      "name": "conflict_no_retry",
-      "script": [
-        "conflict"
-      ]
-    },
-    {
-      "type": "retry",
       "name": "mixed_transient_then_auth",
       "script": [
         "transient",
@@ -71,46 +64,6 @@
         "transient",
         "transient",
         "transient"
-      ]
-    },
-    {
-      "type": "put",
-      "name": "put_lifecycle",
-      "ops": [
-        {
-          "op": "seed",
-          "path": "Playlists/a.m3u8",
-          "text": "v1"
-        },
-        {
-          "op": "put",
-          "path": "Playlists/a.m3u8",
-          "text": "v2-me",
-          "parentRev": "1"
-        },
-        {
-          "op": "remote",
-          "path": "Playlists/a.m3u8",
-          "text": "v2-other"
-        },
-        {
-          "op": "put",
-          "path": "Playlists/a.m3u8",
-          "text": "v3-me",
-          "parentRev": "1"
-        },
-        {
-          "op": "put",
-          "path": "Playlists/a.m3u8",
-          "text": "v3",
-          "parentRev": null
-        },
-        {
-          "op": "put",
-          "path": "Playlists/b.m3u8",
-          "text": "new",
-          "parentRev": "9"
-        }
       ]
     }
   ]

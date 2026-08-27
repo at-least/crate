@@ -62,7 +62,7 @@ CREATE TABLE pins (
   state     TEXT NOT NULL DEFAULT 'wanted'  -- wanted|downloading|done|failed
 );
 
--- ============ 播放狀態（同步到雲端 mu-state.json） ============
+-- ============ 播放狀態（裝置本機；D12 後不上雲） ============
 CREATE TABLE play_state (
   id           INTEGER PRIMARY KEY CHECK (id = 1),  -- 單列
   track_id     TEXT,

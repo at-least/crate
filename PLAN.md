@@ -1,6 +1,6 @@
 # Mu — 個人雲端音樂庫播放器 · 專案計畫書
 
-> 版本 1.0 · 2026-08-27
+> 版本 1.1 · 2026-08-27（D12 唯讀重新定位）
 > 一人 + AI agent 開發。本文件是唯一事實來源（single source of truth）。
 
 ---
@@ -8,7 +8,8 @@
 ## 1. 一句話定位
 
 **Mu** 是一個把 Dropbox / Google Drive 當成音樂庫後端的跨平台原生音樂播放器：
-不用自架伺服器，掃描雲端資料夾建立索引，串流播放、離線釘選、播放清單透過雲端自動同步。
+不用自架伺服器，掃描雲端資料夾建立索引，串流播放、離線釘選。
+**唯讀定位（D12）**：雲端資料夾是唯一真相，app 只讀不寫——播放清單是庫裡的 `.m3u8` 檔（在雲端管理），播放進度/收藏存裝置本機 DB。
 
 平台：**iOS + macOS（Swift 原生）／ Android（Kotlin 原生）**。
 
@@ -18,8 +19,8 @@
 - 音樂檔集中存一份在雲端硬碟，所有裝置存取同一庫
 - 原生播放品質：AVFoundation（Apple）、Media3/ExoPlayer（Android）
 - 完整離線支援：釘選專輯/清單，斷網可播
-- 播放清單（`.m3u8` 檔）存雲端資料夾 → 同步免實作
-- 播放進度/收藏跨裝置同步（sidecar JSON，last-write-wins）
+- 播放清單 = 雲端資料夾裡的 `.m3u8` 檔（唯讀；清單同步免實作）
+- 播放進度/收藏：裝置本機 DB（schema.sql `play_state` / `favorites`）
 - 一人可維護：合約測試防止兩套核心行為飄移
 
 ### 非目標（明確不做）
@@ -28,6 +29,8 @@
 - ❌ 不自架伺服器（Navidrome/Subsonic 模式已評估後否決，見 D2）
 - ❌ 不做即時協作／多使用者
 - ❌ 不用跨平台 UI 框架（見 D5、D7）
+- ❌ app 內不上傳/不編輯任何雲端檔案（唯讀，見 D12）
+- ❌ 不做跨裝置狀態同步（進度/收藏各裝置獨立，見 D12）
 
 ## 3. 決策紀錄（本對話已定案，附理由）
 
@@ -44,6 +47,7 @@
 | D9 | 域名：註冊 **mu.music**（查證未註冊），備選 muplayer.app | RDAP 查證 2026-08-27 | app.mu（ccTLD 貴）；mu.app/mu.fm（已註冊） |
 | D10 | Phase 1 順序改為：**LocalFolderProvider → FakeProvider → Android 殼 → GDrive 最後**（2026-08-27 決定，暫緩實作） | 本地 provider 對應 provider.md 全部方法（delta=mtime/size、rev=size+mtime），零帳號零網路即可開發測試整條同步管線；且「本地資料夾」本來就是規劃中的正式功能（桌機情境），非拋棄式測試碼 | 一開始就做 GDrive（被 OAuth 設定卡住開發節奏） |
 | D11 | GDrive OAuth **申請延後到實際要上 production 前才做**（2026-08-27 決定） | D10 後 GDrive 不阻塞任何開發；開發期申請無收益——Testing 模式 refresh token 7 天就過期，太早申請反而要反覆重授權。操作文件已備妥（docs/gdrive-setup.md），屆時照做約 10 分鐘 | 現在就並行申請（無收益，7 天 token 過期擾人） |
+| D12 | **唯讀重新定位**（2026-08-27）：app 對雲端一律唯讀；契約移除 putText/ConflictError/LWW 衝突語意與 mu-state.json；進度/收藏改裝置本機 DB；雲端採「同一雲端同一庫」（兩平台各實作 provider 讀同一份資料夾） | 需求本質是「把雲端資料夾當音樂庫讀取」——單向資料流下衝突語義維護成本大於價值；清單編輯留在雲端原生工具即可 | m3u8 雙向編輯 + mu-state.json 跨裝置同步（原 Phase 3 方案） |
 
 ## 4. 架構
 
@@ -53,7 +57,7 @@ mu/
 │  ├─ schema.sql              SQLite schema（兩邊照搬）
 │  ├─ model.md                資料模型與語意（專輯/音軌/清單/釘選/狀態）
 │  ├─ provider.md             Provider 介面語意（list/delta/stream/put 錯誤行為）
-│  ├─ sync-rules.md           衝突規則、cursor 語意、LWW 範圍
+│  ├─ sync-rules.md           增量掃描規則、cursor 語意（唯讀）
 │  ├─ acceptance.md           MVP 驗收清單（機器可查部分）
 │  └─ fixtures/               黃金測試檔（髒檔樣本 + 期望輸出 JSON）
 │
@@ -110,7 +114,6 @@ interface CloudProvider {
   rangeRead(id, offset, len)    // HTTP Range 抓檔案片段（tag 掃描用）
   openStream(id) -> URL         // Drive: alt=media；Dropbox: get_temporary_link（CDN）
   download(id, localPath)       // 釘選用
-  put(localPath, cloudPath)     // 寫 m3u8 / 狀態檔
 }
 ```
 錯誤語意必須統一：401→重新授權、429→退避重試、5xx→標記 provider 不可用。**這些行為寫進 fixtures 測試。**
@@ -121,12 +124,12 @@ interface CloudProvider {
 - 之後全靠 delta cursor，增量、便宜。
 - 專輯歸組鍵：`album_artist + album name`（ Various Artists 合輯靠 album_artist 判別）。
 
-### 同步衝突規則（sync-rules.md 定稿）
-| 資料 | 主從 | 衝突處理 |
+### 同步規則（sync-rules.md 定稿；D12 後唯讀）
+| 資料 | 主從 | 說明 |
 |---|---|---|
-| 音訊檔 | 雲端唯讀（單向下載） | 不存在衝突；雲端刪除 → 本地索引標記 unavailable（已釘選檔案保留但提示） |
-| .m3u8 清單 | 雙向（下載為主，編輯後上傳） | last-write-wins，整檔覆蓋（記錄在案的限制） |
-| 播放狀態/收藏（mu-state.json） | 雙向 | 欄位級 last-write-wins，debounded 上傳（≤30s） |
+| 音訊檔 | 雲端唯讀（單向下載） | 雲端刪除 → 本地索引標記 unavailable（已釘選檔案保留但提示） |
+| .m3u8 清單 | 雲端唯讀 | 清單在雲端管理（雲端 app/網頁編輯），app 讀取並解析 |
+| 播放狀態/收藏 | 裝置本機 | 本地 DB，不上雲 |
 
 ## 6. 各平台方案
 
@@ -164,9 +167,9 @@ interface CloudProvider {
 
 子步骤（後項依賴前項）：
 1. **LocalFolderProvider**：實作 contract/provider.md 介面（delta = mtime/size 快照比對、rev = size+mtime、rangeRead = RandomAccessFile、putText = 寫檔）。同步引擎：首掃 → DB → 增量（增/刪/改/改名）。機器測試含髒情境：掃描中拔檔、外部改 m3u8、目錄改名。
-   > 2026-08-27 進度：契約面完成（provider.md §6 + sync-rules.md §7 + 6 個 sync_cases/fixtures）；兩平台引擎（Kotlin `SyncEngine`/`LocalFolderProvider`、Swift 同名）與 Python 參考三方 byte-identical，含掃描中拔檔情境。同日完成 model.md §1.7 時長解析（flac/mp3/m4a/ogg/opus/wav，fixtures 換版）。尚未完成：putText/listDir/錯誤語意（隨子步驟 2 FakeProvider 契約補齊）、SQLite/Room 持久化（App 層接線時做）。
-2. **FakeProvider**（in-memory、可腳本化錯誤）：測 provider.md §2 錯誤語意（401 重授權、429/5xx 指數退避、putText rev 衝突）。
-   > 2026-08-27 ✅：provider.md §2.1 釘死重試政策（退避 1/2/4/8/16s、5 次重試上限、auth 立即重試一次、NotFound/Conflict 不重試）+ FakeFiles putText 衝突語意；`err_cases/` fixtures 三方 byte-identical（Kotlin `RetryPolicy`/`FakeFiles`、Swift 同名）。引擎管線接線（sync 套重試）隨 Android 殼做。
+   > 2026-08-27 進度：契約面完成（provider.md §6 + sync-rules.md §3 + 6 個 sync_cases/fixtures）；兩平台引擎（Kotlin `SyncEngine`/`LocalFolderProvider`、Swift 同名）與 Python 參考三方 byte-identical，含掃描中拔檔情境。同日完成 model.md §1.7 時長解析（flac/mp3/m4a/ogg/opus/wav，fixtures 換版）。尚未完成：listDir/錯誤語意（隨子步驟 2 FakeProvider 契約補齊；putText 已於 D12 移除）、SQLite/Room 持久化（App 層接線時做）。
+2. **FakeProvider**（in-memory、可腳本化錯誤）：測 provider.md §2 錯誤語意（401 重授權、429/5xx 指數退避）。
+   > 2026-08-27 ✅：provider.md §2.1 釘死重試政策（退避 1/2/4/8/16s、5 次重試上限、auth 立即重試一次、NotFound 不重試）+ FakeFiles putText 衝突語意；`err_cases/` fixtures 三方 byte-identical（Kotlin `RetryPolicy`/`FakeFiles`、Swift 同名）。引擎管線接線（sync 套重試）隨 Android 殼做。**同日 D12：putText/ConflictError 自契約移除，err_cases 縮編為 7 條 retry 條目。**
 3. **Android 殼**（Compose + Media3 + Room）：瀏覽專輯/藝人、播放（串流/本地）、釘選、媒體通知/耳機控制、`.m3u8`。資料來源先接 LocalFolderProvider。
    > 2026-08-27 進度：垂直切片上線——`:app` 模組（Compose BOM / Material3）、`PlaybackService`（Media3 MediaSession：通知/鎖屏/耳機/音源焦點）、資料夾選擇 → SyncEngine 掃描 → 專輯網格 → 專輯音軌 → 點播（含 durationMs 顯示）。CI 加 `:app:assembleDebug` job。同日補：m3u8 playlist UI 與播放（core `resolvedItems()` 兩平台對等，解析規則=toCanonical items）、增量重掃按鈕（delta，rev 未變不重讀）、記住上次資料夾（SharedPreferences，重開自動重掃）。尚未完成：Room 持久化（目前索引在記憶體）、釘選離線。
 4. **GDriveProvider**（最後；需要 docs/gdrive-setup.md 的 3 個 Client ID——依 D11，申請延後到實際要上 production 前才做）：插進現有管線，UI 加帳號連結頁。
@@ -187,9 +190,10 @@ interface CloudProvider {
 3. Control Center / 鎖屏控制、AirPlay 可用
 4. 耳機驗收同 Android 清單
 
-### Phase 3 — 完整同步閉環
-m3u8 雙向編輯（app 內建清單、上傳）、mu-state.json 進度/收藏同步、Dropbox provider、macOS app（選單列常駐）。
-**驗收**：A 裝置建清單 → B 裝置 60 秒內出現；A 播到一半 → B 接續同位置。
+### Phase 3 — 擴充（選配）
+Dropbox provider（讀同一庫）、macOS app（選單列常駐）。
+> 原「同步閉環」相位（m3u8 雙向編輯、mu-state.json 跨裝置同步）隨 D12 取消——app 對雲端唯讀，清單編輯在雲端原生工具進行。
+**驗收**：見 acceptance.md Phase 3。
 
 ### Phase 4 — 打磨
 CarPlay（Media3 原生支援 + CarPlay framework）、桌面 Widget、Last.fm scrobble（選配）、ReplayGain、等化器。
@@ -199,11 +203,10 @@ CarPlay（Media3 原生支援 + CarPlay framework）、桌面 Widget、Last.fm s
 
 | 驗證 | 誰 | 工具 |
 |---|---|---|
-| 契約行為（掃描/delta/m3u8/衝突） | agent，自動 | 兩邊 core 套件測試跑同批 fixtures |
+| 契約行為（掃描/delta/m3u8/重試） | agent，自動 | 兩邊 core 套件測試跑同批 fixtures |
 | Android build/邏輯/UI 基本流程 | agent，自動 | gradle test + emulator（Linux 機） |
 | Apple build | 你 | Xcode Cmd+R（agent 的 Linux 機無法編 Apple 端——環境事實，D8 排序依據） |
 | 播放品質（gapless/藍牙/來電恢復/背景壽命） | 你，耳朵+日常使用 | 每階段末的「聽測」清單（見各 Phase） |
-| 同步跨裝置一致性 | 你（兩台實機）+ agent（雙核心契約測試代理） | Phase 3 驗收腳本 |
 
 原則：**能自動化的絕不靠人；必須靠人的（耳朵），排程式清單一次驗完。**
 
@@ -213,7 +216,6 @@ CarPlay（Media3 原生支援 + CarPlay framework）、桌面 Widget、Last.fm s
 |---|---|---|
 | 雲端 API 配額（首掃幾萬個 range request） | 中 | 併發節流 + 進度可恢復（斷點續掃）+ tag 只抓必要 bytes；Drive/Dropbox 皆有配額文件，寫進 provider.md |
 | M4A 尾部 tag 在無 Range 支援的端點上拿不到 | 低 | provider 驗證階段先測 Range 支援；不支援 → 整檔下載僅限 m4a |
-| m3u8 LWW 覆蓋丟編輯 | 低 | 單人使用情境下可接受；清單編輯加本地 undo 緩衝 |
 | AVFoundation gapless 不達標 | 低 | Apple 播放接力是成熟模式；真不行走 AVAudioEngine sample 級（Phase 4 再議） |
 | 一人專案爛尾 | 中 | 里程碑制，每 Phase 有可裝可玩的產出；MVP 之後任何時刻停住都是可用產品 |
 | 名字商標 | 低 | 上架前 TIPO/USPTO 第 9/42 類檢索；個人專案階段不阻擋 |

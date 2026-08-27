@@ -1,6 +1,6 @@
 import Foundation
 
-/// 位元組讀取 helper — 一律顯式端序（model.md §4）。
+/// 位元組讀取 helper — 一律顯式端序（model.md §3）。
 enum Bytes {
     static func u16be(_ b: [UInt8], _ off: Int) -> Int {
         Int(b[off]) << 8 | Int(b[off + 1])

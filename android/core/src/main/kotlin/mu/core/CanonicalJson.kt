@@ -100,7 +100,7 @@ object CanonicalJson {
         "tracks" to tracks.map { it.toCanonical() },
     )
 
-    // ---- SyncEngine 契約輸出用（sync-rules.md §7.3）----
+    // ---- SyncEngine 契約輸出用（sync-rules.md §3.3）----
 
     fun trackCanonical(t: Scanner.Track): Map<String, Any?> = t.toCanonical()
 

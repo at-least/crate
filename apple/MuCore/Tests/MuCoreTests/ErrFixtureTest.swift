@@ -2,7 +2,7 @@ import XCTest
 @testable import MuCore
 
 /// 錯誤語意契約測試：跑 contract/fixtures/err_cases/。
-/// RetryPolicy + FakeFiles 輸出必須與 Python 參考實作 byte-identical（provider.md §2.1）。
+/// RetryPolicy 輸出必須與 Python 參考實作 byte-identical（provider.md §2.1）。
 final class ErrFixtureTest: XCTestCase {
 
     func testAllErrFixtureCasesMatchByteForByte() throws {
@@ -29,42 +29,22 @@ final class ErrFixtureTest: XCTestCase {
                     with: try Data(contentsOf: caseDir.appendingPathComponent("script.json")))
                 as? [String: Any])
             var out: [CanonicalJson.JSONValue] = []
-            let files = FakeFiles()
             for e in try XCTUnwrap(script["entries"] as? [[String: Any]]) {
-                if e["type"] as? String == "retry" {
-                    var queue = (e["script"] as? [String]) ?? []
-                    let o = RetryPolicy.run(
-                        op: {
-                            guard let s = queue.first else { return nil }
-                            queue.removeFirst()
-                            return s == "ok" ? nil : RetryPolicy.kind(from: s)
-                        },
-                        onReauth: {},
-                        sleep: { _ in })
-                    out.append(.object([
-                        ("reauths", .int(o.reauths)),
-                        ("result", .string(o.result)),
-                        ("sleeps", .array(o.sleeps.map { .int($0) })),
-                    ]))
-                } else {
-                    for op in try XCTUnwrap(e["ops"] as? [[String: Any]]) {
-                        switch op["op"] as! String {
-                        case "seed", "remote":
-                            files.seed(op["path"] as! String, op["text"] as! String)
-                        case "put":
-                            let r = files.putText(
-                                op["path"] as! String, op["text"] as! String,
-                                parentRev: op["parentRev"] as? String)
-                            out.append(.object([
-                                ("error", r.error.map { .string($0) } ?? .null),
-                                ("ok", .bool(r.ok)),
-                                ("rev", r.rev.map { .string($0) } ?? .null),
-                            ]))
-                        default:
-                            XCTFail("unknown op")
-                        }
-                    }
-                }
+                XCTAssertEqual(e["type"] as? String, "retry", "unknown entry type in case [\(name)]")
+                var queue = (e["script"] as? [String]) ?? []
+                let o = RetryPolicy.run(
+                    op: {
+                        guard let s = queue.first else { return nil }
+                        queue.removeFirst()
+                        return s == "ok" ? nil : RetryPolicy.kind(from: s)
+                    },
+                    onReauth: {},
+                    sleep: { _ in })
+                out.append(.object([
+                    ("reauths", .int(o.reauths)),
+                    ("result", .string(o.result)),
+                    ("sleeps", .array(o.sleeps.map { .int($0) })),
+                ]))
             }
             let actual = CanonicalJson.render(.array(out))
             if expected != actual {

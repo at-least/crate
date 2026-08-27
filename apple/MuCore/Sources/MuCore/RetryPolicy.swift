@@ -7,7 +7,6 @@ public enum RetryPolicy {
     public enum ProviderErrorKind: String {
         case auth, transient
         case notFound = "notfound"
-        case conflict
     }
 
     public static let transientDelaysMs: [Int] = [1000, 2000, 4000, 8000, 16000]
@@ -34,8 +33,6 @@ public enum RetryPolicy {
             switch err {
             case .notFound:
                 return Outcome(result: "notfound", reauths: reauths, sleeps: sleeps)
-            case .conflict:
-                return Outcome(result: "conflict", reauths: reauths, sleeps: sleeps)
             case .auth:
                 if reauthUsed {
                     return Outcome(result: "auth", reauths: reauths, sleeps: sleeps)
@@ -58,47 +55,7 @@ public enum RetryPolicy {
         case "transient": return .transient
         case "auth": return .auth
         case "notfound": return .notFound
-        case "conflict": return .conflict
         default: return nil
         }
-    }
-}
-
-/// FakeProvider 的檔案面（provider.md §2.1）：in-memory、rev = 遞增整數字串。
-public final class FakeFiles {
-
-    public struct PutResult: Equatable {
-        public let ok: Bool
-        public let error: String?
-        public let rev: String?
-    }
-
-    private var files: [String: (text: String, rev: String)] = [:]
-    private var seq = 0
-
-    private func nextRev() -> String {
-        seq += 1
-        return String(seq)
-    }
-
-    @discardableResult
-    public func seed(_ path: String, _ text: String) -> String {
-        let r = nextRev()
-        files[path] = (text, r)
-        return r
-    }
-
-    public func currentRev(_ path: String) -> String? {
-        files[path]?.rev
-    }
-
-    public func putText(_ path: String, _ text: String, parentRev: String?) -> PutResult {
-        let cur = files[path]
-        if let parentRev, cur == nil || cur!.rev != parentRev {
-            return PutResult(ok: false, error: "conflict", rev: nil)
-        }
-        let r = nextRev()
-        files[path] = (text, r)
-        return PutResult(ok: true, error: nil, rev: r)
     }
 }

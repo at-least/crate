@@ -147,15 +147,7 @@ Playlist 物件：`{ "id", "name", "path", "items": [ { "durationMs", "missing" 
 - 重複條目：保留（清單是有序可重複列表）。
 - name = 檔名去副檔名。
 
-## 3. 狀態檔 mu-state.json（Phase 3 實作，格式先釘）
-```json
-{ "version": 1, "updatedAt": 1699999999999, "deviceId": "ab12…",
-  "favorites": ["trackId…"],
-  "progress": { "trackId…": { "positionMs": 123456, "updatedAt": 1699999999999 } } }
-```
-規則見 sync-rules.md §3。
-
-## 4. 版面慣例（給兩套實作的共同要求）
+## 3. 版面慣例（給兩套實作的共同要求）
 - 所有對外路徑：庫根相對、`/` 分隔、無前導 `/`。
 - 掃描為**純函式**：同輸入樹 → 同輸出。不觸網、不觸時鐘（`scanned_at` 等時間欄位由 caller 注入，不在 ScanResult 裡）。
 - 二進位讀檔一律顯式 little/big endian，禁用平台預設。

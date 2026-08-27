@@ -1,6 +1,6 @@
 import Foundation
 
-/// 同步引擎（sync-rules.md §7）：delta 變更 → 索引狀態。
+/// 同步引擎（sync-rules.md §3）：delta 變更 → 索引狀態。
 /// 純邏輯狀態機；儲存形態是實作細節。契約輸出 canonical(SyncReport)
 /// 須與 Python 參考實作 byte-identical（sync_generate.py）。
 public final class SyncEngine {
@@ -79,7 +79,7 @@ public final class SyncEngine {
         afterDelta?()
         var scanned: [String] = []
         for c in pending {
-            guard let data = provider.readBytes(c.path) else { continue } // §7.2-4 靜默丟棄
+            guard let data = provider.readBytes(c.path) else { continue } // §3.2-4 靜默丟棄
             scanned.append(c.path)
             if c.path.lowercased().hasSuffix(".m3u8") {
                 playlists[c.path] = parseM3u8Raw(
@@ -126,7 +126,7 @@ public final class SyncEngine {
         return out
     }
 
-    /// SyncReport → canonical JSON（sync-rules §7.3）。
+    /// SyncReport → canonical JSON（sync-rules §3.3）。
     func canonical(_ r: SyncReport) -> CanonicalJson.JSONValue {
         let audioOk = Set(r.tracks.filter { $0.value.available }.keys)
         let tracksOut: [CanonicalJson.JSONValue] =

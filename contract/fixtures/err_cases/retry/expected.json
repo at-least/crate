@@ -34,11 +34,6 @@
     "sleeps": []
   },
   {
-    "reauths": 0,
-    "result": "conflict",
-    "sleeps": []
-  },
-  {
     "reauths": 1,
     "result": "ok",
     "sleeps": [
@@ -55,25 +50,5 @@
       8000,
       16000
     ]
-  },
-  {
-    "error": null,
-    "ok": true,
-    "rev": "2"
-  },
-  {
-    "error": "conflict",
-    "ok": false,
-    "rev": null
-  },
-  {
-    "error": null,
-    "ok": true,
-    "rev": "4"
-  },
-  {
-    "error": "conflict",
-    "ok": false,
-    "rev": null
   }
 ]

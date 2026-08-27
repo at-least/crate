@@ -3,7 +3,7 @@ import XCTest
 
 /// 同步引擎契約測試：跑 contract/fixtures/sync_cases/ 全部案例。
 /// 驅動 = script.json 步驟 → 真實暫存目錄樹（顯式 mtime）→ 每步一輪 sync()；
-/// Swift 引擎輸出必須與 Python 參考實作的 expected.json byte-identical（sync-rules.md §7）。
+/// Swift 引擎輸出必須與 Python 參考實作的 expected.json byte-identical（sync-rules.md §3）。
 final class SyncFixtureTest: XCTestCase {
 
     func testAllSyncFixtureCasesMatchByteForByte() throws {

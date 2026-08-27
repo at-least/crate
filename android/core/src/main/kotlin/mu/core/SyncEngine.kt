@@ -1,7 +1,7 @@
 package mu.core
 
 /**
- * 同步引擎（sync-rules.md §7）：delta 變更 → 索引狀態。
+ * 同步引擎（sync-rules.md §3）：delta 變更 → 索引狀態。
  * 純邏輯狀態機；儲存形態是實作細節。契約輸出 SyncReport（canonical JSON）
  * 須與 Python 參考實作 byte-identical（sync_generate.py）。
  */
@@ -61,7 +61,7 @@ class SyncEngine(private val provider: LocalFolderProvider) {
         afterDelta?.invoke()
         val scanned = ArrayList<String>()
         for (c in pending) {
-            val data = provider.readBytes(c.path) ?: continue // §7.2-4 靜默丟棄
+            val data = provider.readBytes(c.path) ?: continue // §3.2-4 靜默丟棄
             scanned.add(c.path)
             if (c.path.lowercase().endsWith(".m3u8")) {
                 playlists[c.path] = parseM3u8Raw(data.toString(Charsets.UTF_8), c.path)
@@ -108,7 +108,7 @@ class SyncEngine(private val provider: LocalFolderProvider) {
         }
     }
 
-    /** SyncReport → canonical map（sync-rules §7.3）。 */
+    /** SyncReport → canonical map（sync-rules §3.3）。 */
     fun toCanonical(r: SyncReport): Map<String, Any?> {
         val audioOk = r.tracks.filterValues { it.available }.keys
         val tracksOut = r.tracks.keys.sorted().map { p ->

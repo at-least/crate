@@ -4,7 +4,7 @@ Mu 同步引擎契約 fixtures 產生器（兼 Python 參考實作）
 
 - sync_assets/：共享音訊資產（ffmpeg 生成後 commit；平台測試直接取用位元組）
 - sync_cases/<name>/script.json + expected.json（每步一輪 sync() 的 SyncReport）
-- 引擎規格：contract/sync-rules.md §7；本地 provider 語意：contract/provider.md §6
+- 引擎規格：contract/sync-rules.md §3；本地 provider 語意：contract/provider.md §6
 
 重跑：python3 sync_generate.py          （需 ffmpeg；產物已 commit，平時不需要重跑）
 驗證：python3 sync_generate.py --check  （重放 script 比對 expected.json；無 ffmpeg，可進 CI）
@@ -66,7 +66,7 @@ def parse_m3u8_raw(text: str, rel: str) -> dict:
 # ---------------------------------------------------------------- engine
 
 class SyncEngine:
-    """sync-rules.md §7 的參考實作。provider = 本地資料夾（provider.md §6）。"""
+    """sync-rules.md §3 的參考實作。provider = 本地資料夾（provider.md §6）。"""
 
     def __init__(self, root: Path):
         self.root = root
@@ -111,7 +111,7 @@ class SyncEngine:
             try:
                 data = (self.root / path).read_bytes()
             except FileNotFoundError:
-                continue  # §7.2-4：掃描中拔檔 → 靜默丟棄
+                continue  # §3.2-4：掃描中拔檔 → 靜默丟棄
             scanned.append(path)
             if path.lower().endswith(".m3u8"):
                 self.playlists[path] = parse_m3u8_raw(

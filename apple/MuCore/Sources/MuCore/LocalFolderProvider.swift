@@ -1,8 +1,8 @@
 import Foundation
 
 /// 本地資料夾 provider（provider.md §6）。
-/// sync 契約（sync-rules.md §7）用到的面：snapshot 快照 + 檔案讀取；
-/// putText/listDir 等其餘介面隨 FakeProvider 子步驟的錯誤語意契約一併補上。
+/// sync 契約（sync-rules.md §3）用到的面：snapshot 快照 + 檔案讀取；
+/// listDir 等其餘介面隨 FakeProvider 子步驟的錯誤語意契約一併補上（putText 已於 D12 移除）。
 public struct LocalFolderProvider {
 
     public let root: URL
@@ -32,7 +32,7 @@ public struct LocalFolderProvider {
         return out
     }
 
-    /// 掃描用讀檔；不存在 → nil（引擎靜默丟棄，sync-rules §7.2-4）。
+    /// 掃描用讀檔；不存在 → nil（引擎靜默丟棄，sync-rules §3.2-4）。
     public func readBytes(_ path: String) -> [UInt8]? {
         guard let data = try? Data(contentsOf: root.appendingPathComponent(path)) else {
             return nil
