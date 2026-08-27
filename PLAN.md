@@ -168,6 +168,7 @@ interface CloudProvider {
 2. **FakeProvider**（in-memory、可腳本化錯誤）：測 provider.md §2 錯誤語意（401 重授權、429/5xx 指數退避、putText rev 衝突）。
    > 2026-08-27 ✅：provider.md §2.1 釘死重試政策（退避 1/2/4/8/16s、5 次重試上限、auth 立即重試一次、NotFound/Conflict 不重試）+ FakeFiles putText 衝突語意；`err_cases/` fixtures 三方 byte-identical（Kotlin `RetryPolicy`/`FakeFiles`、Swift 同名）。引擎管線接線（sync 套重試）隨 Android 殼做。
 3. **Android 殼**（Compose + Media3 + Room）：瀏覽專輯/藝人、播放（串流/本地）、釘選、媒體通知/耳機控制、`.m3u8`。資料來源先接 LocalFolderProvider。
+   > 2026-08-27 進度：垂直切片上線——`:app` 模組（Compose BOM / Material3）、`PlaybackService`（Media3 MediaSession：通知/鎖屏/耳機/音源焦點）、資料夾選擇 → SyncEngine 掃描 → 專輯網格 → 專輯音軌 → 點播（含 durationMs 顯示）。CI 加 `:app:assembleDebug` job。尚未完成：Room 持久化（目前索引在記憶體）、釘選離線、playlist UI、m3u8 播放清單接入。
 4. **GDriveProvider**（最後；需要 docs/gdrive-setup.md 的 3 個 Client ID——依 D11，申請延後到實際要上 production 前才做）：插進現有管線，UI 加帳號連結頁。
 
 範圍（不變）：專輯/藝人瀏覽、Media3 播放（串流 + 下載快取）、釘選離線、媒體通知/耳機控制、`.m3u8` 讀取。

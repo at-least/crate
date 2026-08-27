@@ -133,7 +133,7 @@ object Scanner {
         )
     }
 
-    internal fun groupAlbums(tracks: List<Track>): List<Album> =
+    fun groupAlbums(tracks: List<Track>): List<Album> =
         tracks.groupBy { it.albumId }.map { (_, ts) ->
             val sorted = ts.sortedWith(compareBy { it.path })
             Album(
