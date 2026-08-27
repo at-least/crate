@@ -36,6 +36,15 @@ CloudProvider {
 | 檔案不存在/404 | `NotFoundError` | 不重試；delta 會補狀態 |
 | rev 衝突（putText） | `ConflictError` | 走 sync-rules.md §2 衝突規則 |
 
+### 2.1 重試政策（可測釘死；fixtures `err_cases/`，三實作 byte-identical）
+- `TransientError`：延遲 `1000·2^n` ms（n=0..4 → **1/2/4/8/16s**）。最多 **5 次重試**（含首次共 6 次嘗試）後傳播錯誤。60s 上限在此預算內不觸發（保留給未來調參）。
+- `AuthError`：呼叫 `authenticate()` 後**立即**重試一次（無退避）；第二次 `AuthError` → 傳播。重授權與退避**分開計數**（互不佔額度）。
+- `NotFoundError` / `ConflictError`：不重試，立即傳播（ConflictError 的後續由 sync-rules §2 處理）。
+- FakeProvider（in-memory，`err_cases` 驅動）：
+  - 呼叫腳本：每次操作從佇列取一個結果（`transient`/`auth`/`notfound`/`conflict`/`ok`），空佇列 = ok。
+  - `putText(path, content, parentRev)`：`parentRev ≠ 現值`（或帶 parentRev 但檔案不存在）→ `ConflictError`；成功 → 寫入且 rev = **遞增整數字串**（"1"、"2"…；seed/遠端寫入同規）。
+  - 時脈與 sleep 注入：fixture 記錄實際 sleep 序列與 reauth 次數。
+
 ## 3. 各後端落點
 | 能力 | Google Drive | Dropbox |
 |---|---|---|

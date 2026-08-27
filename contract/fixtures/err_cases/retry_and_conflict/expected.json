@@ -1,0 +1,79 @@
+[
+  {
+    "reauths": 0,
+    "result": "ok",
+    "sleeps": [
+      1000,
+      2000
+    ]
+  },
+  {
+    "reauths": 0,
+    "result": "transient",
+    "sleeps": [
+      1000,
+      2000,
+      4000,
+      8000,
+      16000
+    ]
+  },
+  {
+    "reauths": 1,
+    "result": "ok",
+    "sleeps": []
+  },
+  {
+    "reauths": 1,
+    "result": "auth",
+    "sleeps": []
+  },
+  {
+    "reauths": 0,
+    "result": "notfound",
+    "sleeps": []
+  },
+  {
+    "reauths": 0,
+    "result": "conflict",
+    "sleeps": []
+  },
+  {
+    "reauths": 1,
+    "result": "ok",
+    "sleeps": [
+      1000
+    ]
+  },
+  {
+    "reauths": 1,
+    "result": "transient",
+    "sleeps": [
+      1000,
+      2000,
+      4000,
+      8000,
+      16000
+    ]
+  },
+  {
+    "error": null,
+    "ok": true,
+    "rev": "2"
+  },
+  {
+    "error": "conflict",
+    "ok": false,
+    "rev": null
+  },
+  {
+    "error": null,
+    "ok": true,
+    "rev": "4"
+  },
+  {
+    "error": "conflict",
+    "ok": false,
+    "rev": null
+  }
+]

@@ -15,6 +15,7 @@ contract/    兩套核心的共同規格（唯一事實來源）
   fixtures/        黃金測試案例（含 Python 參考實作 generate.py / sync_generate.py）
     cases/         26 個掃描器案例
     sync_cases/    6 個同步引擎案例（+ sync_assets/ 共享音訊資產）
+    err_cases/     錯誤語意案例（重試政策 + putText 衝突）
 android/     Kotlin core（純 JVM，跑契約測試）+ 之後的 Compose app
 apple/       MuCore Swift package（跑契約測試）+ 之後的 iOS/macOS app
 ```
@@ -25,6 +26,7 @@ apple/       MuCore Swift package（跑契約測試）+ 之後的 iOS/macOS app
 |---|---|---|
 | 契約（參考實作重產） | `python3 contract/fixtures/generate.py`（需 ffmpeg） | ✅ 26 案例 |
 | 同步引擎（參考實作重放） | `python3 contract/fixtures/sync_generate.py --check`（無 ffmpeg，CI 用） | ✅ 6 案例 |
+| 錯誤語意（重試/衝突重放） | `python3 contract/fixtures/err_generate.py --check`（無 ffmpeg，CI 用） | ✅ 12 條目 |
 | Android core | `cd android && ./gradlew :core:test` | ✅ 全綠 |
 | Apple MuCore | `cd apple/MuCore && swift test` | ✅ macOS（Swift 6.2.4, arm64）+ Linux Swift 6.1 雙驗通過（2026-08-27） |
 

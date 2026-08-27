@@ -38,3 +38,4 @@ jobs:
           python-version: '3.13'
       - run: python3 contract/fixtures/generate.py --rescan-check
       - run: python3 contract/fixtures/sync_generate.py --check
+      - run: python3 contract/fixtures/err_generate.py --check
