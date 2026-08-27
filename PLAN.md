@@ -42,6 +42,7 @@
 | D7 | 全專案**零跨平台框架依賴** | 消除「框架倒掉」風險；播放品質每平台都是系統級天花板 | — |
 | D8 | 開發順序 = contract → **Android 先** → Apple 後 | Agent 開發機是 Linux：Android 可端到端自動驗證（build/test/emulator），閉環不經過人；Apple 端 agent 寫碼、使用者在 Mac 驗收 | Apple 先（驗證瓶頸在使用者） |
 | D9 | 域名：註冊 **mu.music**（查證未註冊），備選 muplayer.app | RDAP 查證 2026-08-27 | app.mu（ccTLD 貴）；mu.app/mu.fm（已註冊） |
+| D10 | Phase 1 順序改為：**LocalFolderProvider → FakeProvider → Android 殼 → GDrive 最後**（2026-08-27 決定，暫緩實作） | 本地 provider 對應 provider.md 全部方法（delta=mtime/size、rev=size+mtime），零帳號零網路即可開發測試整條同步管線；且「本地資料夾」本來就是規劃中的正式功能（桌機情境），非拋棄式測試碼 | 一開始就做 GDrive（被 OAuth 設定卡住開發節奏） |
 
 ## 4. 架構
 
@@ -158,10 +159,18 @@ interface CloudProvider {
 **驗收**：`fixtures/README.md` 定義的「同輸入同輸出」測試規格完成，兩邊 CI 腳本就位。
 
 ### Phase 1 — Android MVP（agent 在 Linux 開發；使用者在實機耳朵驗收）
-範圍：Google Drive provider（OAuth → 全掃 → delta）、專輯/藝人瀏覽、Media3 播放（串流 + 下載快取）、釘選離線、媒體通知/耳機控制、`.m3u8` 讀取。
+> 2026-08-27 修訂（D10）：開發順序 = LocalFolderProvider → FakeProvider → Android 殼 → GDrive。**狀態：已記錄，暫緩開工。**
+
+子步骤（後項依賴前項）：
+1. **LocalFolderProvider**：實作 contract/provider.md 介面（delta = mtime/size 快照比對、rev = size+mtime、rangeRead = RandomAccessFile、putText = 寫檔）。同步引擎：首掃 → DB → 增量（增/刪/改/改名）。機器測試含髒情境：掃描中拔檔、外部改 m3u8、目錄改名。
+2. **FakeProvider**（in-memory、可腳本化錯誤）：測 provider.md §2 錯誤語意（401 重授權、429/5xx 指數退避、putText rev 衝突）。
+3. **Android 殼**（Compose + Media3 + Room）：瀏覽專輯/藝人、播放（串流/本地）、釘選、媒體通知/耳機控制、`.m3u8`。資料來源先接 LocalFolderProvider。
+4. **GDriveProvider**（最後；需要 docs/gdrive-setup.md 的 3 個 Client ID）：插進現有管線，UI 加帳號連結頁。
+
+範圍（不變）：專輯/藝人瀏覽、Media3 播放（串流 + 下載快取）、釘選離線、媒體通知/耳機控制、`.m3u8` 讀取。
 **驗收（機器可查）**：core 契約測試全綠；emulator 上掃描 500 張專輯模擬資料 < 5 分鐘。
 **驗收（人耳，需你的 Android 機）**：
-1. 登入 Drive → 首掃 → 專輯網格出現
+1. 選本地音樂資料夾 → 首掃 → 專輯網格出現（GDrive 接通後複驗：登入 Drive 同樣成立）
 2. 點歌播放 → 鎖屏有控制 → 藍牙耳機暫停/續播
 3. 釘選一張專輯 → 飛航模式 → 正常播放
 4. 連續播放接縫無爆音
