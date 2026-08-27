@@ -7,3 +7,6 @@ apple/MuCore/.build/
 # tmp
 *.log
 .DS_Store
+
+# python
+__pycache__/
