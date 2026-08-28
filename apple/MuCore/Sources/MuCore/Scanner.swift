@@ -60,16 +60,20 @@ public struct Scanner {
             throw NSError(domain: "MuCore", code: 1,
                           userInfo: [NSLocalizedDescriptionKey: "cannot enumerate \(root)"])
         }
+        // /var → /private/var 等 symlink 兩邊都展開，rel 切除才會對齊（同 LocalFolderProvider）
+        let resolvedRoot = root.resolvingSymlinksInPath()
+        let rootPrefix = resolvedRoot.path + "/"
         var files: [String] = []
         for case let url as URL in enumerator {
             var isDir: ObjCBool = false
             if fm.fileExists(atPath: url.path, isDirectory: &isDir), !isDir.boolValue {
-                let rel = url.path.replacingOccurrences(of: root.path + "/", with: "")
-                files.append(rel)
+                let p = url.resolvingSymlinksInPath().path
+                guard p.hasPrefix(rootPrefix) else { continue }
+                files.append(String(p.dropFirst(rootPrefix.count)))
             }
         }
         return try scan(files: files, read: { rel, maxBytes in
-            try FileHandle(forReadingFrom: root.appendingPathComponent(rel))
+            try FileHandle(forReadingFrom: resolvedRoot.appendingPathComponent(rel))
                 .read(upToCount: maxBytes)?.bytes ?? []
         })
     }

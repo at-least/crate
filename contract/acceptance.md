@@ -32,5 +32,5 @@
 - [D2] macOS app（選單列常駐）播放同一庫（人，Mac）
 
 ## 通用品質門檻（每 Phase 結束跑）
-- core 模組測試覆蓋率 ≥ 90%（機器：jacoco / swift-coverage）
+- core 模組測試覆蓋率 ≥ 90%（機器：jacoco / swift-coverage）— ✅ 2026-08-28 Phase 2：MuCore 98.51% 行覆蓋（llvm-cov export；CoverageGapTest 補齊契約 fixtures 未走到的分支）
 - 無未解釋的契約 diff（機器：CI）
