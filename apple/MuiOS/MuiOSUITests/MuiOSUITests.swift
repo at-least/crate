@@ -41,16 +41,20 @@ final class MuiOSUITests: XCTestCase {
         XCTAssertTrue(albumCell.waitForExistence(timeout: 30))
         albumCell.tap()
 
-        let track = app.staticTexts["1. Rise"]
+        let track = app.buttons["track.0"]
         XCTAssertTrue(track.waitForExistence(timeout: 10))
         track.tap()
 
-        // 迷你播放列出現（現正播放標題）
-        XCTAssertTrue(app.staticTexts["Rise"].waitForExistence(timeout: 10))
+        // 迷你播放卡出現（現正播放標題）
+        let title = app.staticTexts["player.title"]
+        XCTAssertTrue(title.waitForExistence(timeout: 10))
+        XCTAssertEqual(title.label, "Rise")
 
         // 下一首 → 佇列推進
         app.buttons["player.next"].tap()
-        XCTAssertTrue(app.staticTexts["Awakening"].waitForExistence(timeout: 10))
+        let advanced = expectation(
+            for: NSPredicate(format: "label == %@", "Awakening"), evaluatedWith: title)
+        wait(for: [advanced], timeout: 10)
 
         // 播/暫 toggle 不炸
         app.buttons["player.toggle"].tap()
@@ -71,8 +75,8 @@ final class MuiOSUITests: XCTestCase {
             evaluatedWith: chip)
         wait(for: [done], timeout: 15)
 
-        // 離線標記出現（釘選完成 → 該軌顯示「離線」）
-        XCTAssertTrue(app.staticTexts["離線"].firstMatch.waitForExistence(timeout: 5))
+        // 離線標記出現（釘選完成 → 該軌顯示「離線」圖示）
+        XCTAssertTrue(app.images["離線"].firstMatch.waitForExistence(timeout: 5))
 
         // 重啟：索引與釘選都從 DB 還原（同庫不清釘）
         app.terminate()

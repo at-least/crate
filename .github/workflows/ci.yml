@@ -52,6 +52,15 @@ jobs:
       - uses: actions/checkout@v4
       - run: xcodebuild -project MuiOS.xcodeproj -scheme MuiOS -destination 'generic/platform=iOS Simulator' CODE_SIGNING_ALLOWED=NO build
 
+  mac-app:
+    runs-on: macos-latest
+    defaults:
+      run:
+        working-directory: apple/MuMac
+    steps:
+      - uses: actions/checkout@v4
+      - run: xcodebuild -project MuMac.xcodeproj -scheme MuMac -configuration Debug CODE_SIGNING_ALLOWED=NO build
+
   fixtures:
     runs-on: ubuntu-latest
     steps:

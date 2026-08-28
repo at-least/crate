@@ -1,5 +1,6 @@
 import Foundation
 import MuCore
+import MuKit
 
 /// 音樂庫狀態：SyncEngine 首掃/增量 → 專輯/音軌/清單 UI 狀態（≈ Android LibraryViewModel）。
 /// 索引與庫根持久化於 MuDatabase（schema.sql v0.2）：冷啟動先還原（即時 UI）再 delta 同步
@@ -26,6 +27,7 @@ final class AppModel: ObservableObject {
     @Published private(set) var ui = UiState()
 
     let player = PlayerManager()
+    let artwork = ArtworkLoader()
     let pinManager: PinManager
     private let db: MuDatabase
     private let runner: SyncRunner
@@ -89,10 +91,23 @@ final class AppModel: ObservableObject {
     /// 播放（專輯/清單共用）：釘選副本優先，否則庫根原檔。
     func play(_ tracks: [Track], startIndex: Int) {
         player.play(tracks, startIndex: startIndex) { [weak self] t in
-            guard let self, let rootPath else { return URL(fileURLWithPath: t.path) }
-            return pinManager.pinnedFile(t.id)
-                ?? URL(fileURLWithPath: rootPath).appendingPathComponent(t.path)
+            self?.fileURL(for: t) ?? URL(fileURLWithPath: t.path)
         }
+    }
+
+    /// 音軌實體檔：釘選副本優先，否則庫根原檔。
+    func fileURL(for t: Track) -> URL? {
+        guard let rootPath else { return nil }
+        return pinManager.pinnedFile(t.id)
+            ?? URL(fileURLWithPath: rootPath).appendingPathComponent(t.path)
+    }
+
+    /// 封面線索檔：artTrackId（有 tag 的軌）優先，否則專輯第一軌（資料夾封面）。
+    func artworkURL(for albumId: String) -> URL? {
+        guard let tracks = ui.tracksByAlbum[albumId], let first = tracks.first else { return nil }
+        let art = ui.albums.first { $0.id == albumId }?.artTrackId
+        let t = tracks.first { $0.id == art } ?? first
+        return fileURL(for: t)
     }
 
     private func apply(_ out: SyncRunner.Outcome) {
@@ -140,87 +155,6 @@ final class AppModel: ObservableObject {
     }
 }
 
-/// 同步執行器：引擎只在自有的序列 queue 上觸碰（≈ Android syncMutex + Dispatchers.IO）。
-/// open 排隊而非丟棄：冷啟動還原中選新資料夾，等這輪完照樣生效。
-private final class SyncRunner {
-
-    struct Outcome {
-        let rootPath: String
-        let scanning: Bool
-        let state: EngineState
-        let resolved: [String: [String?]]
-    }
-
-    private let db: MuDatabase
-    private let pinManager: PinManager
-    private let queue = DispatchQueue(label: "mu.sync", qos: .userInitiated)
-    private var engine: SyncEngine?
-    private var root: URL?
-
-    init(db: MuDatabase, pinManager: PinManager) {
-        self.db = db
-        self.pinManager = pinManager
-    }
-
-    func open(url rawUrl: URL, bookmark: Data?, hydrate: Bool,
-              onMain: @escaping (Outcome) -> Void) {
-        // 書籤解析回來的路徑一律展開 symlink（/tmp → /private/tmp）；
-        // 統一正規化，否則冷啟動 root 字串與首次挑選不一致 → setRootSync 誤判換庫而清釘選
-        let url = rawUrl.resolvingSymlinksInPath()
-        queue.async { [weak self] in
-            guard let self else { return }
-            if self.root?.path != url.path {
-                let e = SyncEngine(provider: LocalFolderProvider(root: url))
-                self.engine = e
-                self.root = url
-                // 換庫清釘選（同庫冷啟動不清）——先於 replaceLibrary 落庫新 root，
-                // 此時 DB 仍是舊 root，setRootSync 據此判斷同庫/換庫
-                self.pinManager.setRootSync(url)
-                if hydrate, let st = self.db.loadEngineState() {
-                    e.restoreState(st)
-                    self.publish(scanning: true, state: st, url: url, onMain) // 還原即顯示
-                }
-            }
-            guard let engine = self.engine else { return }
-            // 每輪 sync 前都亮掃描中（= Android syncLocked；非僅 hydrate 分支）
-            self.publish(scanning: true, state: engine.exportState(), url: url, onMain)
-            _ = engine.sync()
-            let st = engine.exportState()
-            self.publish(scanning: false, state: st, url: url, onMain)
-            // 同庫沿用既有書籤；換庫一律寫新書籤（nil = 清除——寫回舊書籤會讓冷啟動開錯庫）。
-            // 此時 DB 仍是舊 root（setRootSync 不寫 root），與其判斷同源。
-            let persistedRoot = self.db.root()
-            self.db.replaceLibrary(
-                root: url.path,
-                bookmark: persistedRoot == nil || persistedRoot == url.path
-                    ? (bookmark ?? self.db.bookmark()) : bookmark,
-                state: st)
-        }
-    }
-
-    func rescan(_ onMain: @escaping (Outcome) -> Void) {
-        queue.async { [weak self] in
-            guard let self, let url = self.root, let engine = self.engine else { return }
-            self.publish(scanning: true, state: engine.exportState(), url: url, onMain)
-            _ = engine.sync()
-            let st = engine.exportState()
-            self.publish(scanning: false, state: st, url: url, onMain)
-            self.db.replaceLibrary(root: url.path, bookmark: self.db.bookmark(), state: st)
-        }
-    }
-
-    private func publish(scanning: Bool, state: EngineState, url: URL,
-                         _ onMain: @escaping (Outcome) -> Void) {
-        let resolved = engine?.resolvedItems(Self.report(state)) ?? [:]
-        let out = Outcome(rootPath: url.path, scanning: scanning, state: state, resolved: resolved)
-        DispatchQueue.main.async { onMain(out) }
-    }
-
-    private static func report(_ st: EngineState) -> SyncEngine.SyncReport {
-        SyncEngine.SyncReport(changes: [], scanned: [], tracks: st.tracks,
-                              playlists: st.playlists, errors: st.errors)
-    }
-}
 
 /// Kotlin String.compareTo 對等（UTF-16 字典序；Swift 的 `<` 是正規等價比較，非此序）。
 private func utf16Less(_ a: String, _ b: String) -> Bool {

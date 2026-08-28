@@ -9,18 +9,22 @@ import MuCore
 /// - 不建任何 FK（Room 版僅 playlist_items 有 CASCADE，這裡改為顯式 DELETE playlist_items）
 /// - pins 不參照 tracks（釘選要在 replaceLibrary 清 tracks 後存活；換庫才清——PinManager.setRoot）
 /// 所有方法同步且執行緒安全（內部序列 queue）；呼叫端自行決定在哪個執行緒跑。
-final class MuDatabase {
+public final class MuDatabase {
 
-    struct PinRow {
-        let trackId: String
-        let pinnedAt: Int64
-        let state: String
+    public struct PinRow {
+        public let trackId: String
+        public let pinnedAt: Int64
+        public let state: String
+
+        public init(trackId: String, pinnedAt: Int64, state: String) {
+            self.trackId = trackId; self.pinnedAt = pinnedAt; self.state = state
+        }
     }
 
     private var db: OpaquePointer?
     private let queue = DispatchQueue(label: "mu.db")
 
-    init(url: URL) throws {
+    public init(url: URL) throws {
         try FileManager.default.createDirectory(
             at: url.deletingLastPathComponent(), withIntermediateDirectories: true)
         var handle: OpaquePointer?
@@ -41,17 +45,17 @@ final class MuDatabase {
     // MARK: - 引擎狀態
 
     /// sync_state 的 'root'（目前庫根路徑；無 → nil）。
-    func root() -> String? {
+public     func root() -> String? {
         kvGet("root")
     }
 
     /// iOS 挑選資料夾的 security-scoped bookmark（無/已清 → nil）。
-    func bookmark() -> Data? {
+public     func bookmark() -> Data? {
         kvGet("root_bookmark").flatMap { $0.isEmpty ? nil : Data(base64Encoded: $0) }
     }
 
     /// 還原引擎狀態（空 DB → nil；= Android loadEngineState）。
-    func loadEngineState() -> EngineState? {
+public     func loadEngineState() -> EngineState? {
         queue.sync {
             var cursor: [String: String] = [:]
             try? query("SELECT path, rev FROM cursor") { s in
@@ -81,7 +85,7 @@ final class MuDatabase {
 
     /// 全量置換（每輪 sync 後或換庫時；交易內完成；= Android replaceLibrary）。
     /// bookmark：新庫帶入 nil 會沿用既有值（同庫重掃不換書籤）。
-    func replaceLibrary(root: String, bookmark: Data?, state: EngineState) {
+public     func replaceLibrary(root: String, bookmark: Data?, state: EngineState) {
         queue.sync {
             try? exec("BEGIN IMMEDIATE")
             exec("DELETE FROM tracks")
@@ -127,7 +131,7 @@ final class MuDatabase {
 
     // MARK: - 釘選（schema pins 表；狀態機見 PinManager）
 
-    func allPins() -> [PinRow] {
+public     func allPins() -> [PinRow] {
         queue.sync {
             var rows: [PinRow] = []
             try? query("SELECT track_id, pinned_at, state FROM pins") { s in
@@ -137,7 +141,7 @@ final class MuDatabase {
         }
     }
 
-    func upsertPin(trackId: String, state: String) {
+public     func upsertPin(trackId: String, state: String) {
         queue.sync {
             run("INSERT OR REPLACE INTO pins VALUES (?,?,?)", [
                 .text(trackId), .int(Self.nowMs()), .text(state),
@@ -145,7 +149,7 @@ final class MuDatabase {
         }
     }
 
-    func deletePins(_ ids: [String]) {
+public     func deletePins(_ ids: [String]) {
         guard !ids.isEmpty else { return }
         queue.sync {
             for id in ids {
@@ -154,7 +158,7 @@ final class MuDatabase {
         }
     }
 
-    func clearPins() {
+public     func clearPins() {
         queue.sync { exec("DELETE FROM pins") }
     }
 

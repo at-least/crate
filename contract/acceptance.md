@@ -28,8 +28,8 @@
 - [C4] B4–B6 同清單在 iPhone 複驗（人耳）
 
 ## Phase 3（擴充，選配；D12 後原「同步閉環」相位取消）
-- [D1] Dropbox provider 讀同一庫：契約測試綠 + 掃描同一資料夾索引與 GDrive 一致（機器 + 人）
-- [D2] macOS app（選單列常駐）播放同一庫（人，Mac）
+- [D1] Dropbox provider 讀同一庫：契約測試綠 + 掃描同一資料夾索引與 GDrive 一致（機器 + 人）— 依 D11 隨 OAuth 申請延後
+- [D2] macOS app（選單列常駐）播放同一庫（人，Mac）— 2026-08-28 實作上線（MuMac：選單列 popover、瀏覽/播放/釘選；MU_ROOT 冒煙已驗掃描落庫與 root 持久化）；真機點開選單列確認屬人驗
 
 ## 通用品質門檻（每 Phase 結束跑）
 - core 模組測試覆蓋率 ≥ 90%（機器：jacoco / swift-coverage）— ✅ 2026-08-28 Phase 2：MuCore 98.51% 行覆蓋（llvm-cov export；CoverageGapTest 補齊契約 fixtures 未走到的分支）

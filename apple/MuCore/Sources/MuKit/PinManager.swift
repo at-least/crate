@@ -5,16 +5,16 @@ import MuCore
 /// 來源消失後仍可由 [pinnedFile] 播放。循序佇列；本地 provider = 檔案複製，
 /// 雲端 provider 進場時換 provider.download，語意不變（provider.md §1）。
 /// 狀態發布永遠在主執行緒（onStatesChanged）。
-final class PinManager {
+public final class PinManager {
 
-    enum PinState: String {
+    public enum PinState: String {
         case wanted, downloading, done, failed
 
-        var isPending: Bool { self == .wanted || self == .downloading }
+        public var isPending: Bool { self == .wanted || self == .downloading }
     }
 
     /// 狀態變動時於主執行緒回呼（AppModel 重建 UI 用）。
-    var onStatesChanged: (([String: PinState]) -> Void)?
+    public var onStatesChanged: (([String: PinState]) -> Void)?
 
     private let db: MuDatabase
     private let pinsDir: URL
@@ -24,7 +24,7 @@ final class PinManager {
     private var states: [String: PinState] = [:]
     private var root: URL?
 
-    init(db: MuDatabase, pinsDir: URL) {
+    public init(db: MuDatabase, pinsDir: URL) {
         self.db = db
         self.pinsDir = pinsDir
         try? FileManager.default.createDirectory(at: pinsDir, withIntermediateDirectories: true)
@@ -46,7 +46,7 @@ final class PinManager {
     /// 換庫 = 清釘選（單庫語意）；同庫冷啟動 = 接回 root，不清。
     /// 以 DB 持久化的 root 判斷（sync 流程在 replaceLibrary 之前呼叫，此時 DB 仍是舊 root）。
     /// 同步執行——呼叫端（sync 序列 queue）需等待語意定案後才落庫新 root。
-    func setRootSync(_ newRoot: URL) {
+public     func setRootSync(_ newRoot: URL) {
         queue.sync {
             self.lock.lock()
             defer { self.lock.unlock() }
@@ -68,7 +68,7 @@ final class PinManager {
         drain()
     }
 
-    func pin(_ trackIds: [String]) {
+public     func pin(_ trackIds: [String]) {
         guard !trackIds.isEmpty else { return }
         queue.async {
             self.pinLocked(trackIds)
@@ -76,7 +76,7 @@ final class PinManager {
         drain()
     }
 
-    func unpin(_ trackIds: [String]) {
+public     func unpin(_ trackIds: [String]) {
         guard !trackIds.isEmpty else { return }
         queue.async {
             self.unpinLocked(trackIds)
@@ -84,7 +84,7 @@ final class PinManager {
     }
 
     /// 釘選完成且檔案在 → 副本 URL；否則 nil。同步呼叫（播放解析用）。
-    func pinnedFile(_ trackId: String) -> URL? {
+public     func pinnedFile(_ trackId: String) -> URL? {
         lock.lock()
         defer { lock.unlock() }
         guard states[trackId] == .done else { return nil }
@@ -93,7 +93,7 @@ final class PinManager {
     }
 
     /// 目前狀態快照（任意執行緒）。
-    func snapshot() -> [String: PinState] {
+public     func snapshot() -> [String: PinState] {
         lock.lock()
         defer { lock.unlock() }
         return states

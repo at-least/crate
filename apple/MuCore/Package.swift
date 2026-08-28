@@ -6,9 +6,12 @@ let package = Package(
     platforms: [.macOS(.v13), .iOS(.v16)],
     products: [
         .library(name: "MuCore", targets: ["MuCore"]),
+        .library(name: "MuKit", targets: ["MuKit"]),
     ],
     targets: [
         .target(name: "MuCore"),
+        .target(name: "MuKit", dependencies: ["MuCore"]),
+        .executableTarget(name: "PerfCheck", dependencies: ["MuCore"]),
         .testTarget(name: "MuCoreTests", dependencies: ["MuCore"]),
     ]
 )

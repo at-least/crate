@@ -13,6 +13,10 @@ final class PlayerManager: NSObject, ObservableObject {
     @Published private(set) var nowArtist: String?
     @Published private(set) var isPlaying = false
     @Published private(set) var hasQueue = false
+    @Published private(set) var nowTrack: Track?
+    /// 進度（秒）——由 periodic observer 每 0.5s 推送；NowPlaying 進度條用。
+    @Published private(set) var elapsed: Double = 0
+    @Published private(set) var duration: Double = 0
 
     private let player = AVQueuePlayer()
     private var tracks: [Track] = []
@@ -60,7 +64,21 @@ final class PlayerManager: NSObject, ObservableObject {
 
     func next() { start(at: index + 1) }
 
-    func previous() { start(at: index - 1) }
+    /// 上一首：播放超過 3 秒則回到本首開頭（慣例），否則退一首。
+    func previous() {
+        if player.currentTime().seconds > 3 || index == 0 {
+            player.seek(to: .zero)
+        } else {
+            start(at: index - 1)
+        }
+    }
+
+    func seek(to seconds: Double) {
+        player.seek(to: CMTime(seconds: seconds, preferredTimescale: 600),
+                    toleranceBefore: .zero, toleranceAfter: .zero)
+        elapsed = seconds
+        updateNowPlaying()
+    }
 
     private func start(at i: Int) {
         guard tracks.indices.contains(i) else { return }
@@ -89,8 +107,11 @@ final class PlayerManager: NSObject, ObservableObject {
             index = queueStart + pos
         }
         let t = tracks.indices.contains(index) ? tracks[index] : nil
+        nowTrack = t
         nowTitle = t?.title
         nowArtist = t?.artist
+        elapsed = 0
+        duration = Double(t?.durationMs ?? 0) / 1000
         updateNowPlaying()
     }
 
@@ -117,8 +138,12 @@ final class PlayerManager: NSObject, ObservableObject {
     }
 
     private func updateElapsed() {
-        guard hasQueue, var info = MPNowPlayingInfoCenter.default().nowPlayingInfo else { return }
-        info[MPNowPlayingInfoPropertyElapsedPlaybackTime] = player.currentTime().seconds
+        guard hasQueue else { return }
+        let now = player.currentTime().seconds
+        if now.isFinite { elapsed = now }
+        if let d = player.currentItem?.duration.seconds, d.isFinite, d > 0 { duration = d }
+        guard var info = MPNowPlayingInfoCenter.default().nowPlayingInfo else { return }
+        info[MPNowPlayingInfoPropertyElapsedPlaybackTime] = now
         MPNowPlayingInfoCenter.default().nowPlayingInfo = info
     }
 

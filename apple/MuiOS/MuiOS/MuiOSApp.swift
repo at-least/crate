@@ -1,4 +1,5 @@
 import SwiftUI
+import MuKit
 
 /// App 進入點：持有 DB 與釘選管理器（≈ Android MuApp）。
 @main
