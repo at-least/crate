@@ -2,12 +2,12 @@ import Foundation
 import SQLite3
 import MuCore
 
-/// 音樂庫索引 DB（contract/schema.sql v0.2 的 raw-sqlite3 化；≈ Android 的 Room MuDatabase）。
+/// 音樂庫索引 DB（contract/schema.sql v0.3 的 raw-sqlite3 化；≈ Android 的 Room MuDatabase）。
 /// 單庫語意：replaceLibrary 全量置換（換資料夾 = 換庫）；
 /// trackId 不落庫（ref 輸出時解析——sync-rules §3.2-5）；albums 派生不落庫（§3.2-6）。
 /// 與 schema.sql / Room 版的刻意差異（見 schema.sql pins 表註）：
 /// - 不建任何 FK（Room 版僅 playlist_items 有 CASCADE，這裡改為顯式 DELETE playlist_items）
-/// - pins 不參照 tracks（釘選要在 replaceLibrary 清 tracks 後存活；換庫才清——PinManager.setRoot）
+/// - pins 不參照 tracks（記錄層 root-scoped、換庫休眠——見 PinManager；replaceLibrary 不動 pins）
 /// 所有方法同步且執行緒安全（內部序列 queue）；呼叫端自行決定在哪個執行緒跑。
 public final class MuDatabase {
 
@@ -15,11 +15,18 @@ public final class MuDatabase {
         public let trackId: String
         public let pinnedAt: Int64
         public let state: String
+        public let contentHash: String?
+        public let rev: String
 
-        public init(trackId: String, pinnedAt: Int64, state: String) {
+        public init(trackId: String, pinnedAt: Int64, state: String,
+                    contentHash: String?, rev: String) {
             self.trackId = trackId; self.pinnedAt = pinnedAt; self.state = state
+            self.contentHash = contentHash; self.rev = rev
         }
     }
+
+    /// schema.sql 的 PRAGMA user_version（v0.3 = 2）。
+    private static let schemaVersion = 2
 
     private var db: OpaquePointer?
     private let queue = DispatchQueue(label: "mu.db")
@@ -35,7 +42,18 @@ public final class MuDatabase {
                           userInfo: [NSLocalizedDescriptionKey: "cannot open \(url.path)"])
         }
         db = handle
-        try exec(Self.schema)
+        // 讀失敗即丟（init throws）——靜默當 0 會跳過破壞性重建，舊表形狀留著炸 runtime
+        var version = 0
+        try query("PRAGMA user_version") { s in version = int(s, 0) ?? 0 }
+        if version != 0 && version != Self.schemaVersion {
+            // 開發期破壞性重建（未發布）：索引可重掃、pins 由 PinManager 重抓，
+            // play_state/favorites 尚未接線——無不可失資料
+            for t in ["tracks", "albums", "playlists", "playlist_items", "scan_errors",
+                      "cursor", "pins", "play_state", "favorites", "sync_state"] {
+                exec("DROP TABLE IF EXISTS \(t)")
+            }
+        }
+        exec(Self.schema)
     }
 
     deinit {
@@ -129,36 +147,51 @@ public     func replaceLibrary(root: String, bookmark: Data?, state: EngineState
         }
     }
 
-    // MARK: - 釘選（schema pins 表；狀態機見 PinManager）
+    // MARK: - 釘選（schema pins 表 v0.3；狀態機見 PinManager）
 
-public     func allPins() -> [PinRow] {
+    /// 指定庫根的釘選 rows（App 只載當前 root——顯示單庫視角）。
+public     func allPins(root: String) -> [PinRow] {
         queue.sync {
             var rows: [PinRow] = []
-            try? query("SELECT track_id, pinned_at, state FROM pins") { s in
-                rows.append(PinRow(trackId: text(s, 0), pinnedAt: int(s, 1).map(Int64.init) ?? 0, state: text(s, 2)))
+            try? query("SELECT track_id, pinned_at, state, content_hash, rev FROM pins WHERE root = ?",
+                       [.text(root)]) { s in
+                rows.append(PinRow(trackId: text(s, 0), pinnedAt: Int64(int(s, 1) ?? 0),
+                                   state: text(s, 2), contentHash: textOpt(s, 3), rev: text(s, 4)))
             }
             return rows
         }
     }
 
-public     func upsertPin(trackId: String, state: String) {
+public     func upsertPin(root: String, trackId: String, contentHash: String?, rev: String, state: String) {
         queue.sync {
-            run("INSERT OR REPLACE INTO pins VALUES (?,?,?)", [
-                .text(trackId), .int(Self.nowMs()), .text(state),
+            run("INSERT OR REPLACE INTO pins VALUES (?,?,?,?,?,?)", [
+                .text(root), .text(trackId), .textOpt(contentHash), .text(rev),
+                .int(Self.nowMs()), .text(state),
             ])
         }
     }
 
-public     func deletePins(_ ids: [String]) {
-        guard !ids.isEmpty else { return }
+public     func deletePins(root: String, trackIds: [String]) {
+        guard !trackIds.isEmpty else { return }
         queue.sync {
-            for id in ids {
-                run("DELETE FROM pins WHERE track_id = ?", [.text(id)])
-            }
+            let ph = trackIds.map { _ in "?" }.joined(separator: ",")
+            run("DELETE FROM pins WHERE root = ? AND track_id IN (\(ph))",
+                [.text(root)] + trackIds.map(Val.text))
         }
     }
 
-public     func clearPins() {
+    /// 引用同 content_hash 的釘選數（跨庫）——unpin 時的刪檔依據（0 = 可刪）。
+public     func pinCount(contentHash: String) -> Int {
+        queue.sync {
+            var n = 0
+            try? query("SELECT COUNT(*) FROM pins WHERE content_hash = ?", [.text(contentHash)]) { s in
+                n = int(s, 0) ?? 0
+            }
+            return n
+        }
+    }
+
+public     func clearAllPins() {
         queue.sync { exec("DELETE FROM pins") }
     }
 
@@ -194,7 +227,7 @@ public     func clearPins() {
     }
 
     private enum Val {
-        case text(String), int(Int64), intOpt(Int?), bool(Bool), null
+        case text(String), textOpt(String?), int(Int64), intOpt(Int?), bool(Bool), null
     }
 
     private func exec(_ sql: String) {
@@ -209,6 +242,9 @@ public     func clearPins() {
             let idx = Int32(i + 1)
             switch v {
             case .text(let s): sqlite3_bind_text(stmt, idx, s, -1, Self.transient)
+            case .textOpt(let s):
+                if let s { sqlite3_bind_text(stmt, idx, s, -1, Self.transient) }
+                else { sqlite3_bind_null(stmt, idx) }
             case .int(let n): sqlite3_bind_int64(stmt, idx, n)
             case .intOpt(let n):
                 if let n { sqlite3_bind_int64(stmt, idx, Int64(n)) } else { sqlite3_bind_null(stmt, idx) }
@@ -230,6 +266,9 @@ public     func clearPins() {
             let idx = Int32(i + 1)
             switch v {
             case .text(let s): sqlite3_bind_text(stmt, idx, s, -1, Self.transient)
+            case .textOpt(let s):
+                if let s { sqlite3_bind_text(stmt, idx, s, -1, Self.transient) }
+                else { sqlite3_bind_null(stmt, idx) }
             case .int(let n): sqlite3_bind_int64(stmt, idx, n)
             case .intOpt(let n):
                 if let n { sqlite3_bind_int64(stmt, idx, Int64(n)) } else { sqlite3_bind_null(stmt, idx) }
@@ -244,6 +283,10 @@ public     func clearPins() {
         sqlite3_column_text(s, i).map { String(cString: $0) } ?? ""
     }
 
+    private func textOpt(_ s: OpaquePointer, _ i: Int32) -> String? {
+        sqlite3_column_type(s, i) == SQLITE_NULL ? nil : text(s, i)
+    }
+
     private func int(_ s: OpaquePointer, _ i: Int32) -> Int? {
         sqlite3_column_type(s, i) == SQLITE_NULL ? nil : Int(sqlite3_column_int64(s, i))
     }
@@ -255,9 +298,9 @@ public     func clearPins() {
     /// SQLITE_TRANSIENT（bind 立即複製）。
     private static let transient = unsafeBitCast(-1, to: sqlite3_destructor_type.self)
 
-    /// contract/schema.sql v0.2 的鏡像（FK 移除理由見類型註解；albums/play_state/favorites 保留未用）。
+    /// contract/schema.sql v0.3 的鏡像（FK 移除理由見類型註解；albums/play_state/favorites 保留未用）。
     private static let schema = """
-        PRAGMA user_version = 1;
+        PRAGMA user_version = 2;
         CREATE TABLE IF NOT EXISTS tracks (
           id           TEXT PRIMARY KEY,
           path         TEXT NOT NULL UNIQUE,
@@ -309,10 +352,15 @@ public     func clearPins() {
           rev  TEXT NOT NULL
         );
         CREATE TABLE IF NOT EXISTS pins (
-          track_id  TEXT PRIMARY KEY,
-          pinned_at INTEGER NOT NULL,
-          state     TEXT NOT NULL DEFAULT 'wanted'
+          root         TEXT NOT NULL,
+          track_id     TEXT NOT NULL,
+          content_hash TEXT,
+          rev          TEXT NOT NULL,
+          pinned_at    INTEGER NOT NULL,
+          state        TEXT NOT NULL DEFAULT 'wanted',
+          PRIMARY KEY (root, track_id)
         );
+        CREATE INDEX IF NOT EXISTS idx_pins_hash ON pins(content_hash);
         CREATE TABLE IF NOT EXISTS play_state (
           id           INTEGER PRIMARY KEY CHECK (id = 1),
           track_id     TEXT,

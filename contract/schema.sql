@@ -1,10 +1,10 @@
 -- Mu · contract/schema.sql
 -- 唯一事實來源。Android (Room) 與 Apple (GRDB/raw sqlite3) 都從這份檔案出發。
--- 版本：v0.2（D12 後重塑：playlist raw 化、cursor/scan_errors 落庫、移除衝突偵測欄位）。
+-- 版本：v0.3（D13：pins 記錄層 root-scoped、下載層內容定址——content_hash/rev 入表）。
 -- schema migration 一律加新檔 schema/NNN_*.sql，不改這份歷史。
 -- 所有時間戳 = Unix epoch 毫秒（INTEGER）。所有 TEXT = UTF-8。
 
-PRAGMA user_version = 1;
+PRAGMA user_version = 2;
 
 -- ============ 音軌 ============
 -- id: provider 的檔案唯一鍵（fixture provider 以 path 為 id；見 fixtures/README.md）
@@ -71,14 +71,22 @@ CREATE TABLE cursor (
   rev  TEXT NOT NULL
 );
 
--- ============ 離線釘選 ============
--- 註：實作（Room）刻意不帶 REFERENCES tracks(id) ON DELETE CASCADE——
--- 釘選要在重掃/全量置換（replaceLibrary 清 tracks）後存活；換庫才清（PinManager.setRoot）。
+-- ============ 離線釘選（v0.3 / D13：記錄層 root-scoped、下載層內容定址） ============
+-- 兩層分離：
+-- - 下載層（檔案系統）：downloads/<sha256>——bytes 相同 = 同一份副本，跨庫共用、只抓一次；
+--   換庫休眠不清、切回即重連（rev 重驗）；unpin 以 content_hash 引用計數決定是否刪檔。
+-- - 記錄層（本表）：釘選意圖屬於庫，按 (root, track_id) 歸屬；App 只載入當前 root 的 rows（顯示單庫視角）。
+-- 註：刻意不帶 REFERENCES tracks(id)——釘選要在重掃/全量置換（replaceLibrary 清 tracks）後存活。
 CREATE TABLE pins (
-  track_id  TEXT PRIMARY KEY REFERENCES tracks(id) ON DELETE CASCADE,
-  pinned_at INTEGER NOT NULL,
-  state     TEXT NOT NULL DEFAULT 'wanted'  -- wanted|downloading|done|failed
+  root         TEXT NOT NULL,           -- 庫根路徑（單一 active 庫；他庫 rows = 休眠）
+  track_id     TEXT NOT NULL,
+  content_hash TEXT,                    -- 下載副本 SHA-256 hex；wanted/downloading = null
+  rev          TEXT NOT NULL,           -- 釘選時的軌 rev（sync 後重驗：rev 變 → 重抓）
+  pinned_at    INTEGER NOT NULL,
+  state        TEXT NOT NULL DEFAULT 'wanted',  -- wanted|downloading|done|failed
+  PRIMARY KEY (root, track_id)
 );
+CREATE INDEX idx_pins_hash ON pins(content_hash);
 
 -- ============ 播放狀態（裝置本機；D12 後不上雲） ============
 CREATE TABLE play_state (

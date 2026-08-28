@@ -1,6 +1,6 @@
 # Mu — 個人雲端音樂庫播放器 · 專案計畫書
 
-> 版本 1.1 · 2026-08-27（D12 唯讀重新定位）
+> 版本 1.2 · 2026-08-29（D13 下載層內容定址）
 > 一人 + AI agent 開發。本文件是唯一事實來源（single source of truth）。
 
 ---
@@ -48,6 +48,7 @@
 | D10 | Phase 1 順序改為：**LocalFolderProvider → FakeProvider → Android 殼 → GDrive 最後**（2026-08-27 決定，暫緩實作） | 本地 provider 對應 provider.md 全部方法（delta=mtime/size、rev=size+mtime），零帳號零網路即可開發測試整條同步管線；且「本地資料夾」本來就是規劃中的正式功能（桌機情境），非拋棄式測試碼 | 一開始就做 GDrive（被 OAuth 設定卡住開發節奏） |
 | D11 | GDrive OAuth **申請延後到實際要上 production 前才做**（2026-08-27 決定） | D10 後 GDrive 不阻塞任何開發；開發期申請無收益——Testing 模式 refresh token 7 天就過期，太早申請反而要反覆重授權。操作文件已備妥（docs/gdrive-setup.md），屆時照做約 10 分鐘 | 現在就並行申請（無收益，7 天 token 過期擾人） |
 | D12 | **唯讀重新定位**（2026-08-27）：app 對雲端一律唯讀；契約移除 putText/ConflictError/LWW 衝突語意與 mu-state.json；進度/收藏改裝置本機 DB；雲端採「同一雲端同一庫」（兩平台各實作 provider 讀同一份資料夾） | 需求本質是「把雲端資料夾當音樂庫讀取」——單向資料流下衝突語義維護成本大於價值；清單編輯留在雲端原生工具即可 | m3u8 雙向編輯 + mu-state.json 跨裝置同步（原 Phase 3 方案） |
+| D13 | **下載層內容定址**（2026-08-29）：支援多 provider、單一 active 庫（換庫＝索引重掃，但下載不重來）——離線副本存 `downloads/<sha256>`（bytes 相同＝同一份，跨庫只抓一次）；pins 記錄按 (root, track_id) 換庫休眠、切回重連（sync 後 rev 重驗，hash 即終極 rev）；unpin 以 content_hash 引用計數 GC；儲存與顯示解耦（狀態只載當前 root，顯示永遠單庫視角） | 使用者語意「兩朵雲存了同樣的檔案＝不用重新抓」；雲端 API 免費附贈內容指紋（Drive md5Checksum / Dropbox content_hash），mapping 最便宜處正是重抓最貴處 | root-scoped 下載（跨庫同相對路徑撞 id＋重抓浪費）；「同一首歌」跨版本自動替換（AcoustID 指紋——靜播錯版風險，刻意不做）；合併多雲單一視圖（身分/dedup/部分失效/清單歸屬全破產） |
 
 ## 4. 架構
 
@@ -185,7 +186,8 @@ interface CloudProvider {
 
 ### Phase 2 — Apple MVP（agent 寫碼；你在 Mac 上跑）
 範圍：MuCore package（provider/delta/掃描/m3u8/DB + 契約測試）→ iOS app（瀏覽/播放/釘選/遠端控制）。
-> 2026-08-28 進度：**本地資料夾垂直切片上線**——MuCore 補 App 層 API 面（`resolvedItems`/`groupAlbums` 轉 public、六個資料型別補 public init——Kotlin data class 天生 public，Swift 隱式 memberwise init 是 internal）、Package.swift 補 `products`（Xcode 得以連結本地套件）。`apple/MuiOS`：raw sqlite3 `MuDatabase`（schema.sql v0.2 鏡像；FK 全不建——playlist_items cascade 改顯式 DELETE、pins 照 Room 慣例不參照 tracks）、`PinManager`（pins 狀態機：循序佇列、DOWNLOADING 殘留自動續傳、換庫清釘/同庫保留、root 路徑統一 `resolvingSymlinksInPath` 否則冷啟動誤判換庫）、`PlayerManager`（AVQueuePlayer + MPNowPlayingInfoCenter/MPRemoteCommandCenter + 來電中斷 + 拔耳機暫停 + AVRoutePickerView AirPlay 入口）、SwiftUI `ContentView`（專輯網格/清單列/釘選列/離線標記/迷你播放列——播放列掛 NavigationStack 外，掛 root 會被推入頁蓋住）、資料夾挑選 + security-scoped bookmark 記住庫根。`MuiOSUITests`（XCUITest，MU_ROOT 環境注入 fixture 庫）：掃描→瀏覽→點播→佇列推進、專輯釘選→離線標記→重啟 DB 還原，全綠（B3/B5 的 iOS 機器版）。CI 加 `ios-app` job（generic iOS Simulator build）。同日（Phase 3 相位）：共享層提升為 `MuKit` library target、MuMac 選單列 app 上線（見 Phase 3）；掃描效能：`swift run PerfCheck`（500 專輯 ×8 軌合成庫）= 快照 0.09s + 首掃 0.35s，遠低於 B2 的 5 分鐘預算（檔案數為成本主軸的估計——真實庫 IO 量更大，GDrive 相位以 rangeRead 上限複校）。已知取捨：DB/PinManager 放 App 層比照 Android `:app`（Room 亦在 app 層；MuMac 進場時再提升共享 target）；pins state 存小寫（schema.sql 原文；Room 版存大寫 enum name——兩邊 DB 不互通無影響）；playlist 的 unavailable-pinned 軌不現身清單 UI（同 Android 取捨）。**尚未完成**：GDrive provider（D11 延後）→ C2 的「同一個 Drive」複驗待其進場；C3/C4（鎖屏/Control Center/AirPlay/耳機）需真機人耳驗收；macOS app 屬 Phase 3。
+> 2026-08-28 進度：**本地資料夾垂直切片上線**——MuCore 補 App 層 API 面（`resolvedItems`/`groupAlbums` 轉 public、六個資料型別補 public init——Kotlin data class 天生 public，Swift 隱式 memberwise init 是 internal）、Package.swift 補 `products`（Xcode 得以連結本地套件）。`apple/MuiOS`：raw sqlite3 `MuDatabase`（schema.sql v0.2 鏡像；FK 全不建——playlist_items cascade 改顯式 DELETE、pins 照 Room 慣例不參照 tracks）、`PinManager`（pins 狀態機：循序佇列、DOWNLOADING 殘留自動續傳、換庫清釘/同庫保留、root 路徑統一 `resolvingSymlinksInPath` 否則冷啟動誤判換庫）、`PlayerManager`（AVQueuePlayer + MPNowPlayingInfoCenter/MPRemoteCommandCenter + 來電中斷 + 拔耳機暫停 + AVRoutePickerView AirPlay 入口）、SwiftUI `ContentView`（專輯網格/清單列/釘選列/離線標記/迷你播放列——播放列掛 NavigationStack 外，掛 root 會被推入頁蓋住）、資料夾挑選 + security-scoped bookmark 記住庫根。`MuiOSUITests`（XCUITest，MU_ROOT 環境注入 fixture 庫）：掃描→瀏覽→點播→佇列推進、專輯釘選→離線標記→重啟 DB 還原，全綠（B3/B5 的 iOS 機器版）。CI 加 `ios-app` job（generic iOS Simulator build）。同日（Phase 3 相位）：共享層提升為 `MuKit` library target、MuMac 選單列 app 上線（見 Phase 3）；掃描效能：`swift run PerfCheck`（500 專輯 ×8 軌合成庫）= 快照 0.09s + 首掃 0.35s，遠低於 B2 的 5 分鐘預算（檔案數為成本主軸的估計——真實庫 IO 量更大，GDrive 相位以 rangeRead 上限複校）。已知取捨：DB/PinManager 放 App 層比照 Android `:app`（Room 亦在 app 層；MuMac 進場時再提升共享 target）；pins state 存小寫（schema.sql 原文；Room 版存大寫 enum name——兩邊 DB 不互通無影響）；playlist 的 unavailable-pinned 軌不現身清單 UI（同 Android 取捨）。> 2026-08-29（D13）進度：**下載層內容定址上線（Android＋Apple 對等）**——schema.sql v0.3（pins：root-scoped 記錄層＋content_hash/rev；user_version=2，開發期破壞性重建）；兩平台 PinManager 重塑：`downloads/<sha256>` 邊抓邊算 hash（本地零額外 IO）、跨庫 dedup、換庫休眠不清（切回即重連）、unpin 以 hash 引用計數 GC、sync 後 rev 重驗（rev 變→重抓、舊 hash 回收；重抓失敗保留舊 rev 由下次 sync 重試）、舊 pins/ 檔案自動搬遷為內容定址；provider.md §7 契約（雲端 entries 必帶原生 checksum）。pin() 改帶 rev（AppModel/VM 自引擎索引取）。經獨立 reviewer 審查修 畢（Kotlin pump 丟失喚醒防護、sync 管線不被整批下載阻塞、GC/unpin 競態防護、revalidate 失敗重試、legacy 遷移移出建構執行緒等 10 項）。測試：MuKitTests 7 條＋Android app 單元測試同套 7 條（FakeDao 純 JVM）全綠；swift test 契約全綠；iOS/MuMac build 與 :app:assembleDebug 通過；MuiOSUITests（掃描→點播→佇列、釘選→離線標記→重啟還原）模擬器全綠——fixture 兩軌同內容，順帶覆蓋同庫 dedup 路徑。
+**尚未完成**：GDrive provider（D11 延後）→ C2 的「同一個 Drive」複驗待其進場；C3/C4（鎖屏/Control Center/AirPlay/耳機）需真機人耳驗收；macOS app 屬 Phase 3。
 **驗收（你的 Mac + iPhone）**：
 1. `swift test` 契約測試全綠（與 Android 同輸出）— ✅ 機器已驗（Mac, Swift 6.2.4）
 2. Cmd+R 跑起來 → 登入同一個 Drive → 索引與 Android 一致（GDrive 依 D11 延後；本地資料夾情境已於模擬器 UI 測試覆蓋）

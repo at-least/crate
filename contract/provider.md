@@ -89,3 +89,18 @@ CloudProvider {
 v0 已知限制（釘死）：
 - **改名 = removed(舊) + added(新)**（本地無穩定 file id；tag 會重掃）。
 - mtime 變但內容未變 → 仍算 modified（rev 含 mtime 的直接後果；保守重掃可接受）。
+
+## 7. 內容指紋與離線重用（D13；schema v0.3）
+
+離線下載層為**內容定址**：副本檔名 = 檔案內容的 SHA-256 hex（`downloads/<sha256>`）。
+bytes 相同 = 同一份副本——跨庫共用、只抓一次。釘選記錄（pins 表）按 (root, trackId) 歸屬：
+換庫休眠不清、切回即重連（rev 重驗，rev 變 → 重抓）；unpin 以 content_hash 引用計數決定是否刪檔。
+
+- **LocalFolderProvider**：不提供內容指紋；SHA-256 於釘選抓取時計算（邊讀邊算，零額外 IO）。
+- **雲端 provider（進場時的硬性要求）**：entries 必須帶原生 checksum——GDrive = `md5Checksum`、
+  Dropbox = `content_hash`（皆 list metadata 免費欄位，一 byte 都不用下載）。用途：掃描期即知
+  兩軌是否同內容（離線重用預判、重抓決策）；與下載層 SHA-256 的鍵對應在下載時建立
+  （md5→sha256 映射的落地形狀，雲端子步驟定案）。
+
+邊界（刻意）：內容定址保證「**同一個檔案**」的重用，不做「同一首歌」的跨版本 mapping——
+不同轉檔（FLAC/MP3）視為不同內容，各自下載；跨版本比對需音訊指紋（AcoustID），不在此範圍。

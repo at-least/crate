@@ -16,7 +16,10 @@ struct MuiOSApp: App {
         } catch {
             fatalError("mu.db open failed: \(error)")
         }
-        let pinManager = PinManager(db: db, pinsDir: support.appendingPathComponent("pins"))
+        let pinManager = PinManager(
+            db: db,
+            downloadsDir: support.appendingPathComponent("downloads"),
+            legacyPinsDir: support.appendingPathComponent("pins"))
         _model = StateObject(wrappedValue: AppModel(db: db, pinManager: pinManager))
     }
 

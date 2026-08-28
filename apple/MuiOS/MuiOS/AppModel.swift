@@ -79,9 +79,12 @@ final class AppModel: ObservableObject {
         runner.rescan { [weak self] out in self?.apply(out) }
     }
 
-    /// 釘選/取消釘選整張專輯（可見軌 = available 或已釘）。
+    /// 釘選整張專輯（可見軌 = available 或已釘）；rev 取自引擎索引（sync 後重驗用）。
     func pinAlbum(_ albumId: String) {
-        pinManager.pin(ui.tracksByAlbum[albumId]?.map(\.id) ?? [])
+        let reqs = (ui.tracksByAlbum[albumId] ?? []).map { t in
+            PinManager.PinRequest(trackId: t.id, rev: lastIndex?.tracks[t.path]?.rev ?? "")
+        }
+        pinManager.pin(reqs)
     }
 
     func unpinAlbum(_ albumId: String) {

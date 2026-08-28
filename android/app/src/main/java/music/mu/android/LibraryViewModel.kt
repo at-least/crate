@@ -85,10 +85,12 @@ class LibraryViewModel(app: Application) : AndroidViewModel(app) {
         root?.let { open(it) }
     }
 
-    /** 釘選/取消釘選整張專輯（可見軌 = available 或已釘）。 */
+    /** 釘選整張專輯（可見軌 = available 或已釘）；rev 取自引擎索引（sync 後重驗用）。 */
     fun pinAlbum(albumId: String) {
-        val ids = _state.value.tracksByAlbum[albumId].orEmpty().map { it.id }
-        pinManager.pin(ids)
+        val reqs = _state.value.tracksByAlbum[albumId].orEmpty().map { t ->
+            PinManager.PinReq(t.id, lastIndex?.tracks?.get(t.path)?.rev ?: "")
+        }
+        pinManager.pin(reqs)
     }
 
     fun unpinAlbum(albumId: String) {
@@ -102,7 +104,7 @@ class LibraryViewModel(app: Application) : AndroidViewModel(app) {
             val e = SyncEngine(LocalFolderProvider(rootFile))
             engine = e
             root = rootFile
-            pinManager.setRoot(rootFile) // 換庫清釘選（同庫冷啟動不清；suspend 等待完成）
+            pinManager.setRoot(rootFile) // 換庫記錄休眠（同庫冷啟動不清；suspend 等待完成）
             if (hydrate) {
                 dao.loadEngineState()?.let { st ->
                     e.restoreState(st)
@@ -115,6 +117,8 @@ class LibraryViewModel(app: Application) : AndroidViewModel(app) {
         _state.value = _state.value.copy(scanning = true, rootPath = rootFile.absolutePath)
         e.sync()
         lastIndex = e.exportState()
+        // done 釘選的來源 rev 已變 → 重抓（hash 即終極 rev；來源消失的軌不動）
+        pinManager.revalidate(lastIndex!!.tracks.mapValues { it.value.rev })
         rebuildUi(scanning = false)
         dao.replaceLibrary(rootFile.absolutePath, lastIndex!!)
     }

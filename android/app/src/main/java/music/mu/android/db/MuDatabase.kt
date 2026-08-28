@@ -5,6 +5,7 @@ import androidx.room.Dao
 import androidx.room.Database
 import androidx.room.Entity
 import androidx.room.ForeignKey
+import androidx.room.Index
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.PrimaryKey
@@ -17,7 +18,7 @@ import mu.core.Scanner
 import mu.core.SyncEngine
 
 /**
- * 音樂庫索引 DB（contract/schema.sql v0.2 的 Room 化）。
+ * 音樂庫索引 DB（contract/schema.sql v0.3 的 Room 化）。
  * 單庫語意：replaceLibrary 全量置換（換資料夾 = 換庫）；
  * trackId 不落庫（ref 輸出時解析——sync-rules §3.2-5）；albums 派生不落庫（§3.2-6）。
  */
@@ -107,10 +108,20 @@ data class SyncStateEntity(
     val value: String,
 )
 
-/** schema.sql pins 表：wanted|downloading|done|failed（PinManager 狀態機）。 */
-@Entity(tableName = "pins")
+/**
+ * schema.sql v0.3 pins 表（D13）：記錄層 root-scoped（換庫休眠不清、切回重連）＋
+ * 下載層內容定址（contentHash = 副本 SHA-256，跨庫 dedup 的鍵）。wanted|downloading|done|failed。
+ */
+@Entity(
+    tableName = "pins",
+    primaryKeys = ["root", "trackId"],
+    indices = [Index("contentHash")],
+)
 data class PinEntity(
-    @PrimaryKey val trackId: String,
+    val root: String,
+    val trackId: String,
+    val contentHash: String?,           // 下載副本 SHA-256 hex；wanted/downloading = null
+    val rev: String,                    // 釘選時的軌 rev（sync 後重驗：rev 變 → 重抓）
     val pinnedAt: Long,
     val state: String,
 )
@@ -166,14 +177,18 @@ interface LibraryDao {
     @Query("DELETE FROM cursor")
     suspend fun clearCursor()
 
-    @Query("SELECT * FROM pins")
-    suspend fun allPins(): List<PinEntity>
+    @Query("SELECT * FROM pins WHERE root = :root")
+    suspend fun allPins(root: String): List<PinEntity>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun upsertPin(x: PinEntity)
 
-    @Query("DELETE FROM pins WHERE trackId IN (:ids)")
-    suspend fun deletePins(ids: List<String>)
+    @Query("DELETE FROM pins WHERE root = :root AND trackId IN (:ids)")
+    suspend fun deletePins(root: String, ids: List<String>)
+
+    /** 引用同 content_hash 的釘選數（跨庫）——unpin 時的刪檔依據（0 = 可刪）。 */
+    @Query("SELECT COUNT(*) FROM pins WHERE contentHash = :hash")
+    suspend fun pinCountForHash(hash: String): Int
 
     @Query("DELETE FROM pins")
     suspend fun clearPins()
@@ -218,7 +233,7 @@ interface LibraryDao {
         ScanErrorEntity::class, CursorEntity::class, SyncStateEntity::class,
         PinEntity::class,
     ],
-    version = 2, // v2 = +pins 表（開發期 fallback 破壞性重建）
+    version = 3, // v3 = pins root-scoped + content_hash/rev（D13；開發期 fallback 破壞性重建）
     exportSchema = false,
 )
 abstract class MuDatabase : RoomDatabase() {

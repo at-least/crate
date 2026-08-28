@@ -13,5 +13,6 @@ let package = Package(
         .target(name: "MuKit", dependencies: ["MuCore"]),
         .executableTarget(name: "PerfCheck", dependencies: ["MuCore"]),
         .testTarget(name: "MuCoreTests", dependencies: ["MuCore"]),
+        .testTarget(name: "MuKitTests", dependencies: ["MuKit"]),
     ]
 )

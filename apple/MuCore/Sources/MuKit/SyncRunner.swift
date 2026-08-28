@@ -48,6 +48,8 @@ public final class SyncRunner {
             self.publish(scanning: true, state: engine.exportState(), url: url, onMain)
             _ = engine.sync()
             let st = engine.exportState()
+            // done 釘選的來源 rev 已變 → 重抓（hash 即終極 rev；來源消失的軌不動）
+            self.pinManager.revalidateSync(st.tracks.mapValues(\.rev))
             self.publish(scanning: false, state: st, url: url, onMain)
             // 同庫沿用既有書籤；換庫一律寫新書籤（nil = 清除——寫回舊書籤會讓冷啟動開錯庫）。
             // 此時 DB 仍是舊 root（setRootSync 不寫 root），與其判斷同源。
@@ -66,6 +68,7 @@ public final class SyncRunner {
             self.publish(scanning: true, state: engine.exportState(), url: url, onMain)
             _ = engine.sync()
             let st = engine.exportState()
+            self.pinManager.revalidateSync(st.tracks.mapValues(\.rev))
             self.publish(scanning: false, state: st, url: url, onMain)
             self.db.replaceLibrary(root: url.path, bookmark: self.db.bookmark(), state: st)
         }
