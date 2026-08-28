@@ -32,7 +32,7 @@ final class EngineStateTest: XCTestCase {
 
         // 首掃
         let e1 = SyncEngine(provider: LocalFolderProvider(root: root))
-        let r1 = e1.sync()
+        let r1 = try e1.sync()
         XCTAssertFalse(r1.scanned.isEmpty, "first scan should read files")
 
         // 匯出 → 新引擎（模擬重啟）→ 還原 → delta：零變更零重讀
@@ -40,7 +40,7 @@ final class EngineStateTest: XCTestCase {
         XCTAssertNotNil(state.cursor, "cursor exported")
         let e2 = SyncEngine(provider: LocalFolderProvider(root: root))
         e2.restoreState(state)
-        let r2 = e2.sync()
+        let r2 = try e2.sync()
         XCTAssertTrue(r2.changes.isEmpty, "no changes after restore, got \(r2.changes)")
         XCTAssertTrue(r2.scanned.isEmpty, "no rescans after restore, got \(r2.scanned)")
         XCTAssertEqual(r1.tracks, r2.tracks)
@@ -51,7 +51,7 @@ final class EngineStateTest: XCTestCase {
         let touched = root.appendingPathComponent("A/a2.flac")
         try FileManager.default.setAttributes([.modificationDate: Date(timeIntervalSince1970: 999)],
                                               ofItemAtPath: touched.path)
-        let r3 = e2.sync()
+        let r3 = try e2.sync()
         XCTAssertEqual(r3.changes.count, 1)
         XCTAssertEqual(r3.changes.first?.path, "A/a2.flac")
         XCTAssertEqual(r3.changes.first?.kind, .modified)

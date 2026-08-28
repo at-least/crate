@@ -65,17 +65,17 @@ def parse_m3u8_raw(text: str, rel: str) -> dict:
 
 # ---------------------------------------------------------------- engine
 
-class SyncEngine:
-    """sync-rules.md §3 的參考實作。provider = 本地資料夾（provider.md §6）。"""
+class ProviderError(Exception):
+    """provider 層非 NotFound 的失敗（重試耗盡等）；引擎據此走 §3.2-8 續掃。"""
+
+
+class LocalProvider:
+    """provider.md §6：snapshot = 全量 walk（path -> "{size}:{mtimeMs}"）；read_bytes None = NotFound。"""
 
     def __init__(self, root: Path):
         self.root = root
-        self.cursor: dict[str, str] | None = None  # path -> rev（上次快照）
-        self.tracks: dict[str, dict] = {}           # path -> make_track 輸出 + _rev/_available
-        self.playlists: dict[str, dict] = {}        # path -> raw（items/name）
-        self.errors: dict[str, dict] = {}           # path -> error（message 恆空）
 
-    def sync(self, after_delta=None) -> dict:
+    def snapshot(self) -> dict[str, str]:
         snap: dict[str, str] = {}
         for dirpath, _, fns in os.walk(self.root):
             for fn in fns:
@@ -83,6 +83,28 @@ class SyncEngine:
                 rel = p.relative_to(self.root).as_posix()
                 st = p.stat()
                 snap[rel] = f"{st.st_size}:{int(round(st.st_mtime * 1000))}"
+        return snap
+
+    def read_bytes(self, path: str) -> bytes | None:
+        try:
+            return (self.root / path).read_bytes()
+        except FileNotFoundError:
+            return None
+
+
+class SyncEngine:
+    """sync-rules.md §3 的參考實作。provider = snapshot()/read_bytes() 兩面（§6 本地、§8 GDrive）。"""
+
+    def __init__(self, provider):
+        self.provider = provider
+        self.cursor: dict[str, str] | None = None  # path -> rev（上次快照）
+        self.tracks: dict[str, dict] = {}           # path -> make_track 輸出 + _rev/_available
+        self.playlists: dict[str, dict] = {}        # path -> raw（items/name）
+        self.errors: dict[str, dict] = {}           # path -> error（message 恆空）
+        self.unscanned: list[str] = []              # 上輪 §3.2-8 未掃 path（非 canonical）
+
+    def sync(self, after_delta=None) -> dict:
+        snap = self.provider.snapshot()  # 失敗 → 整輪拋錯，狀態不動（§3.2-8）
         prev = self.cursor or {}
         changes = []
         for path in sorted(set(snap) | set(prev)):
@@ -107,10 +129,14 @@ class SyncEngine:
         if after_delta:
             after_delta()
         scanned = []
-        for path, rev in pending:
+        unscanned: list[str] = []
+        for i, (path, rev) in enumerate(pending):
             try:
-                data = (self.root / path).read_bytes()
-            except FileNotFoundError:
+                data = self.provider.read_bytes(path)
+            except ProviderError:
+                unscanned = [p for p, _ in pending[i:]]  # §3.2-8：本輪剩餘全部續掃
+                break
+            if data is None:
                 continue  # §3.2-4：掃描中拔檔 → 靜默丟棄
             scanned.append(path)
             if path.lower().endswith(".m3u8"):
@@ -129,7 +155,14 @@ class SyncEngine:
             t["_rev"] = rev
             t["_available"] = True
             self.tracks[path] = t
-        self.cursor = snap
+        cursor = dict(snap)
+        for p in unscanned:  # cursor 保留上一輪值，下輪再列為 added/modified
+            if p in prev:
+                cursor[p] = prev[p]
+            else:
+                cursor.pop(p, None)
+        self.cursor = cursor
+        self.unscanned = sorted(unscanned)
         return self._report(relevant, scanned)
 
     def _report(self, changes, scanned) -> dict:
@@ -202,7 +235,7 @@ def run_case(case_dir: Path) -> list[dict]:
     with tempfile.TemporaryDirectory() as td:
         root = Path(td) / "lib"
         root.mkdir()
-        engine = SyncEngine(root)
+        engine = SyncEngine(LocalProvider(root))
         reports = []
         for step in script["steps"]:
             delete_after: list[str] = []

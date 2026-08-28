@@ -20,6 +20,10 @@
 - [B6] 真機：專輯連播接縫無爆音（人耳）
 - [B7] m3u8 清單出現且可播（人 + 機器：清單契約測試）
 
+### Phase 1 補充：GDrive provider（子步驟 4；OAuth 依 D11 延後）
+- [B8] GDrive provider 契約（provider.md §8；`gdrive_cases/` 7 案例：首掃/分頁/變更/reset/重試/續掃/同名碰撞）Python/Kotlin/Swift 三方 byte-identical — ✅ 2026-08-29（機器；CI 三 job）
+- [B9] 真帳號：填入 client ID → 登入 → 索引與本地資料夾一致；Range 支援與 5,000 檔請求數量測（人 + 機器；待 OAuth 進場）
+
 ## Phase 2（Apple MVP）
 - [C1] `swift test` 契約測試全綠（Mac）— ✅ 2026-08-28（機器；Swift 6.2.4 / macOS 15）
 - [C1b] （補充項）iOS app 模擬器 UI 測試：掃描→瀏覽→點播→佇列推進、專輯釘選→離線標記→重啟 DB 還原 — ✅ 2026-08-28（機器；`xcodebuild test`，B3/B5 的 iOS 等效覆蓋）

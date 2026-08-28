@@ -90,7 +90,7 @@ final class CoverageGapTest: XCTestCase {
         try Data("#EXTM3U\r\n#EXTINF:1.5\r\n./a.flac\r\n".utf8)
             .write(to: root.appendingPathComponent("root.m3u8"))
         let engine = SyncEngine(provider: LocalFolderProvider(root: root))
-        let report = engine.sync()
+        let report = try engine.sync()
         XCTAssertEqual(1, report.errors.count)
         XCTAssertEqual("BAD_CONTAINER", report.errors["bad.flac"]?.code)
         // root 層清單：名稱去副檔名；ref 去 ./

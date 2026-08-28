@@ -56,13 +56,15 @@ public final class SyncEngine {
         }
     }
 
-    private let provider: LocalFolderProvider
+    private let provider: any SyncProvider
     private var cursor: [String: String]?
     private var tracks: [String: IndexedTrack] = [:]
     private var playlists: [String: RawPlaylist] = [:]
     private var errors: [String: Scanner.ScanError] = [:]
+    /// 上輪 §3.2-8 未掃 path（provider 讀檔失敗而續掃；非 canonical，App 層顯示「未完成」用）。
+    public private(set) var unscanned: [String] = []
 
-    public init(provider: LocalFolderProvider) {
+    public init(provider: any SyncProvider) {
         self.provider = provider
     }
 
@@ -81,8 +83,9 @@ public final class SyncEngine {
     }
 
     /// 一輪同步。afterDelta：測試縫（delta 後、掃描前；模擬掃描中拔檔）。
-    public func sync(afterDelta: (() -> Void)? = nil) -> SyncReport {
-        let snap = provider.snapshot()
+    /// 拋錯 = provider 快照失敗（§3.2-8）：索引與 cursor 不動。
+    public func sync(afterDelta: (() -> Void)? = nil) throws -> SyncReport {
+        let snap = try provider.snapshot()
         let prev = cursor ?? [:]
         var changes: [SyncChange] = []
         for path in Set(snap.keys).union(prev.keys).sorted(by: codePointCompare) {
@@ -111,8 +114,16 @@ public final class SyncEngine {
         }
         afterDelta?()
         var scanned: [String] = []
-        for c in pending {
-            guard let data = provider.readBytes(c.path) else { continue } // §3.2-4 靜默丟棄
+        var unscannedNow: [String] = []
+        for (i, c) in pending.enumerated() {
+            let data: [UInt8]?
+            do {
+                data = try provider.readBytes(c.path)
+            } catch {
+                unscannedNow = pending[i...].map(\.path) // §3.2-8：本輪剩餘全部續掃
+                break
+            }
+            guard let data else { continue } // §3.2-4 靜默丟棄
             scanned.append(c.path)
             if c.path.lowercased().hasSuffix(".m3u8") {
                 playlists[c.path] = parseM3u8Raw(
@@ -133,7 +144,12 @@ public final class SyncEngine {
                     durationMs: ContainerParsers.parseDuration(fmt, data)),
                 rev: c.rev, available: true)
         }
-        cursor = snap
+        var next = snap
+        for p in unscannedNow { // cursor 保留上一輪值，下輪再列為 added/modified
+            if let old = prev[p] { next[p] = old } else { next.removeValue(forKey: p) }
+        }
+        cursor = next
+        unscanned = unscannedNow.sorted(by: codePointCompare)
         return SyncReport(changes: relevant, scanned: scanned,
                           tracks: tracks, playlists: playlists, errors: errors)
     }

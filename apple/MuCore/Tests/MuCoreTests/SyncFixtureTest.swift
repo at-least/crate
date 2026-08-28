@@ -44,7 +44,7 @@ final class SyncFixtureTest: XCTestCase {
                 for op in try XCTUnwrap(step["ops"] as? [[String: Any]]) {
                     try applyOp(root: root, assetsDir: assetsDir, op: op, deleteAfter: &deleteAfter)
                 }
-                let r = engine.sync(afterDelta: deleteAfter.isEmpty ? nil : {
+                let r = try engine.sync(afterDelta: deleteAfter.isEmpty ? nil : {
                     for p in deleteAfter {
                         try? FileManager.default.removeItem(
                             at: root.appendingPathComponent(p))

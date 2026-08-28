@@ -115,7 +115,11 @@ class LibraryViewModel(app: Application) : AndroidViewModel(app) {
         }
         val e = engine!!
         _state.value = _state.value.copy(scanning = true, rootPath = rootFile.absolutePath)
-        e.sync()
+        try {
+            e.sync()
+        } catch (ex: mu.core.ProviderException) {
+            // 本地 provider 不拋；雲端失敗 = 本輪跳過，狀態不動（sync-rules §3.2-8）
+        }
         lastIndex = e.exportState()
         // done 釘選的來源 rev 已變 → 重抓（hash 即終極 rev；來源消失的軌不動）
         pinManager.revalidate(lastIndex!!.tracks.mapValues { it.value.rev })

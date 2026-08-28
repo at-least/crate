@@ -52,11 +52,11 @@ let snapSec = Date().timeIntervalSince(t0)
 
 let engine = SyncEngine(provider: provider)
 let t1 = Date()
-let report = engine.sync()
+let report = try engine.sync()
 let firstSec = Date().timeIntervalSince(t1)
 
 let t2 = Date()
-let report2 = engine.sync()
+let report2 = try engine.sync()
 let deltaSec = Date().timeIntervalSince(t2)
 
 print("""

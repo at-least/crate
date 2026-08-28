@@ -1,0 +1,111 @@
+{
+  "steps": [
+    {
+      "ops": [
+        {
+          "op": "mkdir",
+          "id": "d-aurora",
+          "name": "Aurora",
+          "parent": "root0"
+        },
+        {
+          "op": "mkdir",
+          "id": "d-nl",
+          "name": "Northern Lights",
+          "parent": "d-aurora"
+        },
+        {
+          "op": "put",
+          "id": "f-rise",
+          "name": "01 - Rise.flac",
+          "parent": "d-nl",
+          "asset": "flac_a",
+          "mtime": 1700000100
+        },
+        {
+          "op": "put",
+          "id": "f-drift",
+          "name": "02 - Drift.flac",
+          "parent": "d-nl",
+          "asset": "flac_b",
+          "mtime": 1700000101
+        },
+        {
+          "op": "put",
+          "id": "f-cover",
+          "name": "cover.jpg",
+          "parent": "d-nl",
+          "text": "not-a-real-jpg",
+          "mtime": 1700000102
+        },
+        {
+          "op": "mkdir",
+          "id": "d-va",
+          "name": "Various Artists",
+          "parent": "root0"
+        },
+        {
+          "op": "mkdir",
+          "id": "d-mix",
+          "name": "Dream Mixtape",
+          "parent": "d-va"
+        },
+        {
+          "op": "put",
+          "id": "f-unknown",
+          "name": "07 - Unknown.flac",
+          "parent": "d-mix",
+          "asset": "flac_notags",
+          "mtime": 1700000103
+        },
+        {
+          "op": "put",
+          "id": "f-gdoc",
+          "name": "notes.flac",
+          "parent": "d-nl",
+          "text": "",
+          "mtime": 1700000104,
+          "mime": "application/vnd.google-apps.document",
+          "md5": false
+        },
+        {
+          "op": "mkdir",
+          "id": "d-other",
+          "name": "Other",
+          "parent": "drive-root"
+        },
+        {
+          "op": "put",
+          "id": "f-other",
+          "name": "03 - Elsewhere.flac",
+          "parent": "d-other",
+          "asset": "flac_a",
+          "mtime": 1700000105
+        },
+        {
+          "op": "put",
+          "id": "f-trashed",
+          "name": "04 - Gone.flac",
+          "parent": "d-nl",
+          "asset": "flac_b",
+          "mtime": 1700000106
+        },
+        {
+          "op": "trash",
+          "id": "f-trashed"
+        },
+        {
+          "op": "put",
+          "id": "f-orphan",
+          "name": "05 - Orphan.flac",
+          "parent": "d-missing",
+          "asset": "flac_b",
+          "mtime": 1700000107
+        }
+      ]
+    },
+    {
+      "ops": []
+    }
+  ]
+}

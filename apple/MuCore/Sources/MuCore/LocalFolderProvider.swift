@@ -3,7 +3,7 @@ import Foundation
 /// 本地資料夾 provider（provider.md §6）。
 /// sync 契約（sync-rules.md §3）用到的面：snapshot 快照 + 檔案讀取；
 /// listDir 等其餘介面隨 FakeProvider 子步驟的錯誤語意契約一併補上（putText 已於 D12 移除）。
-public struct LocalFolderProvider {
+public struct LocalFolderProvider: SyncProvider {
 
     public let root: URL
 

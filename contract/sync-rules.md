@@ -1,6 +1,6 @@
 # 增量掃描規則（sync-rules.md）
 
-> 契約 v0.2（D12：唯讀重新定位）。原則：**雲端資料夾為唯一真相，app 是唯讀取用端**。
+> 契約 v0.3（§3.2-8 續掃語意；D12：唯讀重新定位）。原則：**雲端資料夾為唯一真相，app 是唯讀取用端**。
 > 索引可隨時重掃重建；播放清單在雲端管理（app 只讀）；播放進度/收藏為裝置本機資料，不上雲。
 
 ## 1. 資料流向總表
@@ -35,6 +35,7 @@
 5. m3u8 內部只存 raw refs（position/ref/durationMs）；`ref → trackId` 解析在**每次輸出時**對索引內 `available=1` 的音訊 path 集合進行（正規化規則同 model.md §2.3）。音訊可用度變動因此自動反映到清單，無需重讀 m3u8 檔。
 6. albums 每輪由索引全量重導（含 unavailable 軌；歸組鍵同 model.md §1.5）；errors = 現存（available 檔案的）BAD_CONTAINER。
 7. rev 未變 → 不進 pending（斷點續掃的基礎；以 `scanned` 清單可觀測）。
+8. **續掃**（雲端 provider 進場，v0.3）：`snapshot()`/delta 失敗 → 整輪拋錯，索引與 cursor 不動。掃描階段某檔 `readBytes` 以非 NotFound 錯誤失敗（重試耗盡）→ 該檔與本輪**剩餘** pending 全部列入 `unscanned`（不掃、不進索引），cursor 對這些 path **保留上一輪值**（首見者不寫入）；下輪 delta 因而再次列為 added/modified 接續掃描。本地 provider 永不觸發（readBytes 只有 NotFound）。`unscanned` 不屬 SyncReport canonical（sync_cases 不變），由 provider 契約 fixtures（`gdrive_cases/`）以 `provider.unscanned` 觀測。
 
 ### 3.3 SyncReport（每輪輸出，契約核心）
 ```json

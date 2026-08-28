@@ -7,10 +7,10 @@ import java.io.File
  * sync 契約（sync-rules.md §3）用到的面：snapshot 快照 + 檔案讀取；
  * listDir 等其餘介面隨 FakeProvider 子步驟的錯誤語意契約一併補上（putText 已於 D12 移除）。
  */
-class LocalFolderProvider(private val root: File) {
+class LocalFolderProvider(private val root: File) : SyncProvider {
 
     /** path -> rev（"{size}:{mtimeMs}"）。全部檔案（含非音訊；過濾是引擎的事）。 */
-    fun snapshot(): Map<String, String> {
+    override fun snapshot(): Map<String, String> {
         val out = LinkedHashMap<String, String>()
         if (!root.isDirectory) return out
         root.walkTopDown()
@@ -25,7 +25,7 @@ class LocalFolderProvider(private val root: File) {
     }
 
     /** 掃描用讀檔；不存在 → null（引擎靜默丟棄，sync-rules §3.2-4）。 */
-    fun readBytes(path: String): ByteArray? {
+    override fun readBytes(path: String): ByteArray? {
         val f = File(root, path)
         return if (f.isFile) f.readBytes() else null
     }

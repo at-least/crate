@@ -1,0 +1,60 @@
+{
+  "steps": [
+    {
+      "ops": [
+        {
+          "op": "mkdir",
+          "id": "d-a",
+          "name": "Aurora",
+          "parent": "root0"
+        },
+        {
+          "op": "mkdir",
+          "id": "d-b",
+          "name": "Northern Lights",
+          "parent": "d-a"
+        },
+        {
+          "op": "put",
+          "id": "f-2",
+          "name": "01 - Rise.flac",
+          "parent": "d-b",
+          "asset": "flac_b",
+          "mtime": 1700001000
+        },
+        {
+          "op": "put",
+          "id": "f-1",
+          "name": "01 - Rise.flac",
+          "parent": "d-b",
+          "asset": "flac_a",
+          "mtime": 1700001001
+        },
+        {
+          "op": "put",
+          "id": "f-slash",
+          "name": "02 - A/B.flac",
+          "parent": "d-b",
+          "asset": "flac_b",
+          "mtime": 1700001002
+        },
+        {
+          "op": "put",
+          "id": "f-noparent",
+          "name": "03 - Shared.flac",
+          "parent": null,
+          "asset": "flac_b",
+          "mtime": 1700001003
+        }
+      ]
+    },
+    {
+      "ops": [
+        {
+          "op": "delete",
+          "id": "f-1"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,1213 @@
+[
+  {
+    "provider": {
+      "error": null,
+      "reauths": 0,
+      "requests": 5,
+      "reset": false,
+      "sleeps": [],
+      "unscanned": []
+    },
+    "report": {
+      "changes": [
+        {
+          "kind": "added",
+          "path": "Aurora/Northern Lights/01 - Rise.flac",
+          "rev": "647f25c3a5570aa5237c977bc91c1057"
+        },
+        {
+          "kind": "added",
+          "path": "Aurora/Northern Lights/02 - Drift.flac",
+          "rev": "008a2b9b0a812c705968008072d83b4c"
+        },
+        {
+          "kind": "added",
+          "path": "Various Artists/Dream Mixtape/07 - Unknown.flac",
+          "rev": "929745fc59c9d657cddbfec4a3f3f6c9"
+        }
+      ],
+      "index": {
+        "albums": [
+          {
+            "albumArtist": "Aurora",
+            "artTrackId": "Aurora/Northern Lights/01 - Rise.flac",
+            "compilation": false,
+            "id": "alb|Aurora|Northern Lights",
+            "name": "Northern Lights",
+            "trackCount": 2,
+            "year": 2021
+          },
+          {
+            "albumArtist": "Various Artists",
+            "artTrackId": null,
+            "compilation": true,
+            "id": "alb|Various Artists|Dream Mixtape",
+            "name": "Dream Mixtape",
+            "trackCount": 1,
+            "year": null
+          }
+        ],
+        "errors": [],
+        "playlists": [],
+        "tracks": [
+          {
+            "album": "Northern Lights",
+            "albumArtist": "Aurora",
+            "albumId": "alb|Aurora|Northern Lights",
+            "artist": "Aurora",
+            "available": true,
+            "disc": 1,
+            "durationMs": 300,
+            "format": "flac",
+            "id": "Aurora/Northern Lights/01 - Rise.flac",
+            "path": "Aurora/Northern Lights/01 - Rise.flac",
+            "rev": "647f25c3a5570aa5237c977bc91c1057",
+            "sizeBytes": 8540,
+            "tagOk": true,
+            "title": "Rise",
+            "trackNo": 1,
+            "year": 2021
+          },
+          {
+            "album": "Northern Lights",
+            "albumArtist": "Aurora",
+            "albumId": "alb|Aurora|Northern Lights",
+            "artist": "Aurora",
+            "available": true,
+            "disc": 1,
+            "durationMs": 300,
+            "format": "flac",
+            "id": "Aurora/Northern Lights/02 - Drift.flac",
+            "path": "Aurora/Northern Lights/02 - Drift.flac",
+            "rev": "008a2b9b0a812c705968008072d83b4c",
+            "sizeBytes": 8541,
+            "tagOk": true,
+            "title": "Drift",
+            "trackNo": 2,
+            "year": 2021
+          },
+          {
+            "album": "Dream Mixtape",
+            "albumArtist": "Various Artists",
+            "albumId": "alb|Various Artists|Dream Mixtape",
+            "artist": "Various Artists",
+            "available": true,
+            "disc": 1,
+            "durationMs": 300,
+            "format": "flac",
+            "id": "Various Artists/Dream Mixtape/07 - Unknown.flac",
+            "path": "Various Artists/Dream Mixtape/07 - Unknown.flac",
+            "rev": "929745fc59c9d657cddbfec4a3f3f6c9",
+            "sizeBytes": 8431,
+            "tagOk": false,
+            "title": "Unknown",
+            "trackNo": 7,
+            "year": null
+          }
+        ]
+      },
+      "scanned": [
+        "Aurora/Northern Lights/01 - Rise.flac",
+        "Aurora/Northern Lights/02 - Drift.flac",
+        "Various Artists/Dream Mixtape/07 - Unknown.flac"
+      ]
+    }
+  },
+  {
+    "provider": {
+      "error": null,
+      "reauths": 0,
+      "requests": 2,
+      "reset": false,
+      "sleeps": [],
+      "unscanned": []
+    },
+    "report": {
+      "changes": [
+        {
+          "kind": "modified",
+          "path": "Aurora/Northern Lights/01 - Rise.flac",
+          "rev": "008a2b9b0a812c705968008072d83b4c"
+        }
+      ],
+      "index": {
+        "albums": [
+          {
+            "albumArtist": "Aurora",
+            "artTrackId": "Aurora/Northern Lights/01 - Rise.flac",
+            "compilation": false,
+            "id": "alb|Aurora|Northern Lights",
+            "name": "Northern Lights",
+            "trackCount": 2,
+            "year": 2021
+          },
+          {
+            "albumArtist": "Various Artists",
+            "artTrackId": null,
+            "compilation": true,
+            "id": "alb|Various Artists|Dream Mixtape",
+            "name": "Dream Mixtape",
+            "trackCount": 1,
+            "year": null
+          }
+        ],
+        "errors": [],
+        "playlists": [],
+        "tracks": [
+          {
+            "album": "Northern Lights",
+            "albumArtist": "Aurora",
+            "albumId": "alb|Aurora|Northern Lights",
+            "artist": "Aurora",
+            "available": true,
+            "disc": 1,
+            "durationMs": 300,
+            "format": "flac",
+            "id": "Aurora/Northern Lights/01 - Rise.flac",
+            "path": "Aurora/Northern Lights/01 - Rise.flac",
+            "rev": "008a2b9b0a812c705968008072d83b4c",
+            "sizeBytes": 8541,
+            "tagOk": true,
+            "title": "Drift",
+            "trackNo": 1,
+            "year": 2021
+          },
+          {
+            "album": "Northern Lights",
+            "albumArtist": "Aurora",
+            "albumId": "alb|Aurora|Northern Lights",
+            "artist": "Aurora",
+            "available": true,
+            "disc": 1,
+            "durationMs": 300,
+            "format": "flac",
+            "id": "Aurora/Northern Lights/02 - Drift.flac",
+            "path": "Aurora/Northern Lights/02 - Drift.flac",
+            "rev": "008a2b9b0a812c705968008072d83b4c",
+            "sizeBytes": 8541,
+            "tagOk": true,
+            "title": "Drift",
+            "trackNo": 2,
+            "year": 2021
+          },
+          {
+            "album": "Dream Mixtape",
+            "albumArtist": "Various Artists",
+            "albumId": "alb|Various Artists|Dream Mixtape",
+            "artist": "Various Artists",
+            "available": true,
+            "disc": 1,
+            "durationMs": 300,
+            "format": "flac",
+            "id": "Various Artists/Dream Mixtape/07 - Unknown.flac",
+            "path": "Various Artists/Dream Mixtape/07 - Unknown.flac",
+            "rev": "929745fc59c9d657cddbfec4a3f3f6c9",
+            "sizeBytes": 8431,
+            "tagOk": false,
+            "title": "Unknown",
+            "trackNo": 7,
+            "year": null
+          }
+        ]
+      },
+      "scanned": [
+        "Aurora/Northern Lights/01 - Rise.flac"
+      ]
+    }
+  },
+  {
+    "provider": {
+      "error": null,
+      "reauths": 0,
+      "requests": 2,
+      "reset": false,
+      "sleeps": [],
+      "unscanned": []
+    },
+    "report": {
+      "changes": [
+        {
+          "kind": "removed",
+          "path": "Aurora/Northern Lights/02 - Drift.flac",
+          "rev": "008a2b9b0a812c705968008072d83b4c"
+        },
+        {
+          "kind": "added",
+          "path": "Aurora/Northern Lights/02 - Drifted.flac",
+          "rev": "008a2b9b0a812c705968008072d83b4c"
+        }
+      ],
+      "index": {
+        "albums": [
+          {
+            "albumArtist": "Aurora",
+            "artTrackId": "Aurora/Northern Lights/01 - Rise.flac",
+            "compilation": false,
+            "id": "alb|Aurora|Northern Lights",
+            "name": "Northern Lights",
+            "trackCount": 3,
+            "year": 2021
+          },
+          {
+            "albumArtist": "Various Artists",
+            "artTrackId": null,
+            "compilation": true,
+            "id": "alb|Various Artists|Dream Mixtape",
+            "name": "Dream Mixtape",
+            "trackCount": 1,
+            "year": null
+          }
+        ],
+        "errors": [],
+        "playlists": [],
+        "tracks": [
+          {
+            "album": "Northern Lights",
+            "albumArtist": "Aurora",
+            "albumId": "alb|Aurora|Northern Lights",
+            "artist": "Aurora",
+            "available": true,
+            "disc": 1,
+            "durationMs": 300,
+            "format": "flac",
+            "id": "Aurora/Northern Lights/01 - Rise.flac",
+            "path": "Aurora/Northern Lights/01 - Rise.flac",
+            "rev": "008a2b9b0a812c705968008072d83b4c",
+            "sizeBytes": 8541,
+            "tagOk": true,
+            "title": "Drift",
+            "trackNo": 1,
+            "year": 2021
+          },
+          {
+            "album": "Northern Lights",
+            "albumArtist": "Aurora",
+            "albumId": "alb|Aurora|Northern Lights",
+            "artist": "Aurora",
+            "available": false,
+            "disc": 1,
+            "durationMs": 300,
+            "format": "flac",
+            "id": "Aurora/Northern Lights/02 - Drift.flac",
+            "path": "Aurora/Northern Lights/02 - Drift.flac",
+            "rev": "008a2b9b0a812c705968008072d83b4c",
+            "sizeBytes": 8541,
+            "tagOk": true,
+            "title": "Drift",
+            "trackNo": 2,
+            "year": 2021
+          },
+          {
+            "album": "Northern Lights",
+            "albumArtist": "Aurora",
+            "albumId": "alb|Aurora|Northern Lights",
+            "artist": "Aurora",
+            "available": true,
+            "disc": 1,
+            "durationMs": 300,
+            "format": "flac",
+            "id": "Aurora/Northern Lights/02 - Drifted.flac",
+            "path": "Aurora/Northern Lights/02 - Drifted.flac",
+            "rev": "008a2b9b0a812c705968008072d83b4c",
+            "sizeBytes": 8541,
+            "tagOk": true,
+            "title": "Drift",
+            "trackNo": 2,
+            "year": 2021
+          },
+          {
+            "album": "Dream Mixtape",
+            "albumArtist": "Various Artists",
+            "albumId": "alb|Various Artists|Dream Mixtape",
+            "artist": "Various Artists",
+            "available": true,
+            "disc": 1,
+            "durationMs": 300,
+            "format": "flac",
+            "id": "Various Artists/Dream Mixtape/07 - Unknown.flac",
+            "path": "Various Artists/Dream Mixtape/07 - Unknown.flac",
+            "rev": "929745fc59c9d657cddbfec4a3f3f6c9",
+            "sizeBytes": 8431,
+            "tagOk": false,
+            "title": "Unknown",
+            "trackNo": 7,
+            "year": null
+          }
+        ]
+      },
+      "scanned": [
+        "Aurora/Northern Lights/02 - Drifted.flac"
+      ]
+    }
+  },
+  {
+    "provider": {
+      "error": null,
+      "reauths": 0,
+      "requests": 1,
+      "reset": false,
+      "sleeps": [],
+      "unscanned": []
+    },
+    "report": {
+      "changes": [],
+      "index": {
+        "albums": [
+          {
+            "albumArtist": "Aurora",
+            "artTrackId": "Aurora/Northern Lights/01 - Rise.flac",
+            "compilation": false,
+            "id": "alb|Aurora|Northern Lights",
+            "name": "Northern Lights",
+            "trackCount": 3,
+            "year": 2021
+          },
+          {
+            "albumArtist": "Various Artists",
+            "artTrackId": null,
+            "compilation": true,
+            "id": "alb|Various Artists|Dream Mixtape",
+            "name": "Dream Mixtape",
+            "trackCount": 1,
+            "year": null
+          }
+        ],
+        "errors": [],
+        "playlists": [],
+        "tracks": [
+          {
+            "album": "Northern Lights",
+            "albumArtist": "Aurora",
+            "albumId": "alb|Aurora|Northern Lights",
+            "artist": "Aurora",
+            "available": true,
+            "disc": 1,
+            "durationMs": 300,
+            "format": "flac",
+            "id": "Aurora/Northern Lights/01 - Rise.flac",
+            "path": "Aurora/Northern Lights/01 - Rise.flac",
+            "rev": "008a2b9b0a812c705968008072d83b4c",
+            "sizeBytes": 8541,
+            "tagOk": true,
+            "title": "Drift",
+            "trackNo": 1,
+            "year": 2021
+          },
+          {
+            "album": "Northern Lights",
+            "albumArtist": "Aurora",
+            "albumId": "alb|Aurora|Northern Lights",
+            "artist": "Aurora",
+            "available": false,
+            "disc": 1,
+            "durationMs": 300,
+            "format": "flac",
+            "id": "Aurora/Northern Lights/02 - Drift.flac",
+            "path": "Aurora/Northern Lights/02 - Drift.flac",
+            "rev": "008a2b9b0a812c705968008072d83b4c",
+            "sizeBytes": 8541,
+            "tagOk": true,
+            "title": "Drift",
+            "trackNo": 2,
+            "year": 2021
+          },
+          {
+            "album": "Northern Lights",
+            "albumArtist": "Aurora",
+            "albumId": "alb|Aurora|Northern Lights",
+            "artist": "Aurora",
+            "available": true,
+            "disc": 1,
+            "durationMs": 300,
+            "format": "flac",
+            "id": "Aurora/Northern Lights/02 - Drifted.flac",
+            "path": "Aurora/Northern Lights/02 - Drifted.flac",
+            "rev": "008a2b9b0a812c705968008072d83b4c",
+            "sizeBytes": 8541,
+            "tagOk": true,
+            "title": "Drift",
+            "trackNo": 2,
+            "year": 2021
+          },
+          {
+            "album": "Dream Mixtape",
+            "albumArtist": "Various Artists",
+            "albumId": "alb|Various Artists|Dream Mixtape",
+            "artist": "Various Artists",
+            "available": true,
+            "disc": 1,
+            "durationMs": 300,
+            "format": "flac",
+            "id": "Various Artists/Dream Mixtape/07 - Unknown.flac",
+            "path": "Various Artists/Dream Mixtape/07 - Unknown.flac",
+            "rev": "929745fc59c9d657cddbfec4a3f3f6c9",
+            "sizeBytes": 8431,
+            "tagOk": false,
+            "title": "Unknown",
+            "trackNo": 7,
+            "year": null
+          }
+        ]
+      },
+      "scanned": []
+    }
+  },
+  {
+    "provider": {
+      "error": null,
+      "reauths": 0,
+      "requests": 2,
+      "reset": false,
+      "sleeps": [],
+      "unscanned": []
+    },
+    "report": {
+      "changes": [
+        {
+          "kind": "added",
+          "path": "Kyary/Jelly/02 - Ninjya.mp3",
+          "rev": "b8f00c20630789056bb00974d76c1bfc"
+        }
+      ],
+      "index": {
+        "albums": [
+          {
+            "albumArtist": "Aurora",
+            "artTrackId": "Aurora/Northern Lights/01 - Rise.flac",
+            "compilation": false,
+            "id": "alb|Aurora|Northern Lights",
+            "name": "Northern Lights",
+            "trackCount": 3,
+            "year": 2021
+          },
+          {
+            "albumArtist": "Kyary",
+            "artTrackId": "Kyary/Jelly/02 - Ninjya.mp3",
+            "compilation": false,
+            "id": "alb|Kyary|Jelly",
+            "name": "Jelly",
+            "trackCount": 1,
+            "year": null
+          },
+          {
+            "albumArtist": "Various Artists",
+            "artTrackId": null,
+            "compilation": true,
+            "id": "alb|Various Artists|Dream Mixtape",
+            "name": "Dream Mixtape",
+            "trackCount": 1,
+            "year": null
+          }
+        ],
+        "errors": [],
+        "playlists": [],
+        "tracks": [
+          {
+            "album": "Northern Lights",
+            "albumArtist": "Aurora",
+            "albumId": "alb|Aurora|Northern Lights",
+            "artist": "Aurora",
+            "available": true,
+            "disc": 1,
+            "durationMs": 300,
+            "format": "flac",
+            "id": "Aurora/Northern Lights/01 - Rise.flac",
+            "path": "Aurora/Northern Lights/01 - Rise.flac",
+            "rev": "008a2b9b0a812c705968008072d83b4c",
+            "sizeBytes": 8541,
+            "tagOk": true,
+            "title": "Drift",
+            "trackNo": 1,
+            "year": 2021
+          },
+          {
+            "album": "Northern Lights",
+            "albumArtist": "Aurora",
+            "albumId": "alb|Aurora|Northern Lights",
+            "artist": "Aurora",
+            "available": false,
+            "disc": 1,
+            "durationMs": 300,
+            "format": "flac",
+            "id": "Aurora/Northern Lights/02 - Drift.flac",
+            "path": "Aurora/Northern Lights/02 - Drift.flac",
+            "rev": "008a2b9b0a812c705968008072d83b4c",
+            "sizeBytes": 8541,
+            "tagOk": true,
+            "title": "Drift",
+            "trackNo": 2,
+            "year": 2021
+          },
+          {
+            "album": "Northern Lights",
+            "albumArtist": "Aurora",
+            "albumId": "alb|Aurora|Northern Lights",
+            "artist": "Aurora",
+            "available": true,
+            "disc": 1,
+            "durationMs": 300,
+            "format": "flac",
+            "id": "Aurora/Northern Lights/02 - Drifted.flac",
+            "path": "Aurora/Northern Lights/02 - Drifted.flac",
+            "rev": "008a2b9b0a812c705968008072d83b4c",
+            "sizeBytes": 8541,
+            "tagOk": true,
+            "title": "Drift",
+            "trackNo": 2,
+            "year": 2021
+          },
+          {
+            "album": "Jelly",
+            "albumArtist": "Kyary",
+            "albumId": "alb|Kyary|Jelly",
+            "artist": "Kyary",
+            "available": true,
+            "disc": 1,
+            "durationMs": 365,
+            "format": "mp3",
+            "id": "Kyary/Jelly/02 - Ninjya.mp3",
+            "path": "Kyary/Jelly/02 - Ninjya.mp3",
+            "rev": "b8f00c20630789056bb00974d76c1bfc",
+            "sizeBytes": 3020,
+            "tagOk": true,
+            "title": "Ninjya",
+            "trackNo": 2,
+            "year": null
+          },
+          {
+            "album": "Dream Mixtape",
+            "albumArtist": "Various Artists",
+            "albumId": "alb|Various Artists|Dream Mixtape",
+            "artist": "Various Artists",
+            "available": true,
+            "disc": 1,
+            "durationMs": 300,
+            "format": "flac",
+            "id": "Various Artists/Dream Mixtape/07 - Unknown.flac",
+            "path": "Various Artists/Dream Mixtape/07 - Unknown.flac",
+            "rev": "929745fc59c9d657cddbfec4a3f3f6c9",
+            "sizeBytes": 8431,
+            "tagOk": false,
+            "title": "Unknown",
+            "trackNo": 7,
+            "year": null
+          }
+        ]
+      },
+      "scanned": [
+        "Kyary/Jelly/02 - Ninjya.mp3"
+      ]
+    }
+  },
+  {
+    "provider": {
+      "error": null,
+      "reauths": 0,
+      "requests": 1,
+      "reset": false,
+      "sleeps": [],
+      "unscanned": []
+    },
+    "report": {
+      "changes": [
+        {
+          "kind": "removed",
+          "path": "Kyary/Jelly/02 - Ninjya.mp3",
+          "rev": "b8f00c20630789056bb00974d76c1bfc"
+        }
+      ],
+      "index": {
+        "albums": [
+          {
+            "albumArtist": "Aurora",
+            "artTrackId": "Aurora/Northern Lights/01 - Rise.flac",
+            "compilation": false,
+            "id": "alb|Aurora|Northern Lights",
+            "name": "Northern Lights",
+            "trackCount": 3,
+            "year": 2021
+          },
+          {
+            "albumArtist": "Kyary",
+            "artTrackId": "Kyary/Jelly/02 - Ninjya.mp3",
+            "compilation": false,
+            "id": "alb|Kyary|Jelly",
+            "name": "Jelly",
+            "trackCount": 1,
+            "year": null
+          },
+          {
+            "albumArtist": "Various Artists",
+            "artTrackId": null,
+            "compilation": true,
+            "id": "alb|Various Artists|Dream Mixtape",
+            "name": "Dream Mixtape",
+            "trackCount": 1,
+            "year": null
+          }
+        ],
+        "errors": [],
+        "playlists": [],
+        "tracks": [
+          {
+            "album": "Northern Lights",
+            "albumArtist": "Aurora",
+            "albumId": "alb|Aurora|Northern Lights",
+            "artist": "Aurora",
+            "available": true,
+            "disc": 1,
+            "durationMs": 300,
+            "format": "flac",
+            "id": "Aurora/Northern Lights/01 - Rise.flac",
+            "path": "Aurora/Northern Lights/01 - Rise.flac",
+            "rev": "008a2b9b0a812c705968008072d83b4c",
+            "sizeBytes": 8541,
+            "tagOk": true,
+            "title": "Drift",
+            "trackNo": 1,
+            "year": 2021
+          },
+          {
+            "album": "Northern Lights",
+            "albumArtist": "Aurora",
+            "albumId": "alb|Aurora|Northern Lights",
+            "artist": "Aurora",
+            "available": false,
+            "disc": 1,
+            "durationMs": 300,
+            "format": "flac",
+            "id": "Aurora/Northern Lights/02 - Drift.flac",
+            "path": "Aurora/Northern Lights/02 - Drift.flac",
+            "rev": "008a2b9b0a812c705968008072d83b4c",
+            "sizeBytes": 8541,
+            "tagOk": true,
+            "title": "Drift",
+            "trackNo": 2,
+            "year": 2021
+          },
+          {
+            "album": "Northern Lights",
+            "albumArtist": "Aurora",
+            "albumId": "alb|Aurora|Northern Lights",
+            "artist": "Aurora",
+            "available": true,
+            "disc": 1,
+            "durationMs": 300,
+            "format": "flac",
+            "id": "Aurora/Northern Lights/02 - Drifted.flac",
+            "path": "Aurora/Northern Lights/02 - Drifted.flac",
+            "rev": "008a2b9b0a812c705968008072d83b4c",
+            "sizeBytes": 8541,
+            "tagOk": true,
+            "title": "Drift",
+            "trackNo": 2,
+            "year": 2021
+          },
+          {
+            "album": "Jelly",
+            "albumArtist": "Kyary",
+            "albumId": "alb|Kyary|Jelly",
+            "artist": "Kyary",
+            "available": false,
+            "disc": 1,
+            "durationMs": 365,
+            "format": "mp3",
+            "id": "Kyary/Jelly/02 - Ninjya.mp3",
+            "path": "Kyary/Jelly/02 - Ninjya.mp3",
+            "rev": "b8f00c20630789056bb00974d76c1bfc",
+            "sizeBytes": 3020,
+            "tagOk": true,
+            "title": "Ninjya",
+            "trackNo": 2,
+            "year": null
+          },
+          {
+            "album": "Dream Mixtape",
+            "albumArtist": "Various Artists",
+            "albumId": "alb|Various Artists|Dream Mixtape",
+            "artist": "Various Artists",
+            "available": true,
+            "disc": 1,
+            "durationMs": 300,
+            "format": "flac",
+            "id": "Various Artists/Dream Mixtape/07 - Unknown.flac",
+            "path": "Various Artists/Dream Mixtape/07 - Unknown.flac",
+            "rev": "929745fc59c9d657cddbfec4a3f3f6c9",
+            "sizeBytes": 8431,
+            "tagOk": false,
+            "title": "Unknown",
+            "trackNo": 7,
+            "year": null
+          }
+        ]
+      },
+      "scanned": []
+    }
+  },
+  {
+    "provider": {
+      "error": null,
+      "reauths": 0,
+      "requests": 2,
+      "reset": false,
+      "sleeps": [],
+      "unscanned": []
+    },
+    "report": {
+      "changes": [
+        {
+          "kind": "added",
+          "path": "Kyary/Jelly/02 - Ninjya.mp3",
+          "rev": "b8f00c20630789056bb00974d76c1bfc"
+        },
+        {
+          "kind": "removed",
+          "path": "Various Artists/Dream Mixtape/07 - Unknown.flac",
+          "rev": "929745fc59c9d657cddbfec4a3f3f6c9"
+        }
+      ],
+      "index": {
+        "albums": [
+          {
+            "albumArtist": "Aurora",
+            "artTrackId": "Aurora/Northern Lights/01 - Rise.flac",
+            "compilation": false,
+            "id": "alb|Aurora|Northern Lights",
+            "name": "Northern Lights",
+            "trackCount": 3,
+            "year": 2021
+          },
+          {
+            "albumArtist": "Kyary",
+            "artTrackId": "Kyary/Jelly/02 - Ninjya.mp3",
+            "compilation": false,
+            "id": "alb|Kyary|Jelly",
+            "name": "Jelly",
+            "trackCount": 1,
+            "year": null
+          },
+          {
+            "albumArtist": "Various Artists",
+            "artTrackId": null,
+            "compilation": true,
+            "id": "alb|Various Artists|Dream Mixtape",
+            "name": "Dream Mixtape",
+            "trackCount": 1,
+            "year": null
+          }
+        ],
+        "errors": [],
+        "playlists": [],
+        "tracks": [
+          {
+            "album": "Northern Lights",
+            "albumArtist": "Aurora",
+            "albumId": "alb|Aurora|Northern Lights",
+            "artist": "Aurora",
+            "available": true,
+            "disc": 1,
+            "durationMs": 300,
+            "format": "flac",
+            "id": "Aurora/Northern Lights/01 - Rise.flac",
+            "path": "Aurora/Northern Lights/01 - Rise.flac",
+            "rev": "008a2b9b0a812c705968008072d83b4c",
+            "sizeBytes": 8541,
+            "tagOk": true,
+            "title": "Drift",
+            "trackNo": 1,
+            "year": 2021
+          },
+          {
+            "album": "Northern Lights",
+            "albumArtist": "Aurora",
+            "albumId": "alb|Aurora|Northern Lights",
+            "artist": "Aurora",
+            "available": false,
+            "disc": 1,
+            "durationMs": 300,
+            "format": "flac",
+            "id": "Aurora/Northern Lights/02 - Drift.flac",
+            "path": "Aurora/Northern Lights/02 - Drift.flac",
+            "rev": "008a2b9b0a812c705968008072d83b4c",
+            "sizeBytes": 8541,
+            "tagOk": true,
+            "title": "Drift",
+            "trackNo": 2,
+            "year": 2021
+          },
+          {
+            "album": "Northern Lights",
+            "albumArtist": "Aurora",
+            "albumId": "alb|Aurora|Northern Lights",
+            "artist": "Aurora",
+            "available": true,
+            "disc": 1,
+            "durationMs": 300,
+            "format": "flac",
+            "id": "Aurora/Northern Lights/02 - Drifted.flac",
+            "path": "Aurora/Northern Lights/02 - Drifted.flac",
+            "rev": "008a2b9b0a812c705968008072d83b4c",
+            "sizeBytes": 8541,
+            "tagOk": true,
+            "title": "Drift",
+            "trackNo": 2,
+            "year": 2021
+          },
+          {
+            "album": "Jelly",
+            "albumArtist": "Kyary",
+            "albumId": "alb|Kyary|Jelly",
+            "artist": "Kyary",
+            "available": true,
+            "disc": 1,
+            "durationMs": 365,
+            "format": "mp3",
+            "id": "Kyary/Jelly/02 - Ninjya.mp3",
+            "path": "Kyary/Jelly/02 - Ninjya.mp3",
+            "rev": "b8f00c20630789056bb00974d76c1bfc",
+            "sizeBytes": 3020,
+            "tagOk": true,
+            "title": "Ninjya",
+            "trackNo": 2,
+            "year": null
+          },
+          {
+            "album": "Dream Mixtape",
+            "albumArtist": "Various Artists",
+            "albumId": "alb|Various Artists|Dream Mixtape",
+            "artist": "Various Artists",
+            "available": false,
+            "disc": 1,
+            "durationMs": 300,
+            "format": "flac",
+            "id": "Various Artists/Dream Mixtape/07 - Unknown.flac",
+            "path": "Various Artists/Dream Mixtape/07 - Unknown.flac",
+            "rev": "929745fc59c9d657cddbfec4a3f3f6c9",
+            "sizeBytes": 8431,
+            "tagOk": false,
+            "title": "Unknown",
+            "trackNo": 7,
+            "year": null
+          }
+        ]
+      },
+      "scanned": [
+        "Kyary/Jelly/02 - Ninjya.mp3"
+      ]
+    }
+  },
+  {
+    "provider": {
+      "error": null,
+      "reauths": 0,
+      "requests": 2,
+      "reset": false,
+      "sleeps": [],
+      "unscanned": []
+    },
+    "report": {
+      "changes": [
+        {
+          "kind": "added",
+          "path": "best.m3u8",
+          "rev": "179275fee9607060bb253bebe6d32780"
+        }
+      ],
+      "index": {
+        "albums": [
+          {
+            "albumArtist": "Aurora",
+            "artTrackId": "Aurora/Northern Lights/01 - Rise.flac",
+            "compilation": false,
+            "id": "alb|Aurora|Northern Lights",
+            "name": "Northern Lights",
+            "trackCount": 3,
+            "year": 2021
+          },
+          {
+            "albumArtist": "Kyary",
+            "artTrackId": "Kyary/Jelly/02 - Ninjya.mp3",
+            "compilation": false,
+            "id": "alb|Kyary|Jelly",
+            "name": "Jelly",
+            "trackCount": 1,
+            "year": null
+          },
+          {
+            "albumArtist": "Various Artists",
+            "artTrackId": null,
+            "compilation": true,
+            "id": "alb|Various Artists|Dream Mixtape",
+            "name": "Dream Mixtape",
+            "trackCount": 1,
+            "year": null
+          }
+        ],
+        "errors": [],
+        "playlists": [
+          {
+            "id": "best.m3u8",
+            "items": [
+              {
+                "durationMs": 213500,
+                "missing": false,
+                "position": 0,
+                "ref": "Aurora/Northern Lights/01 - Rise.flac",
+                "trackId": "Aurora/Northern Lights/01 - Rise.flac"
+              },
+              {
+                "durationMs": null,
+                "missing": false,
+                "position": 1,
+                "ref": "Kyary/Jelly/02 - Ninjya.mp3",
+                "trackId": "Kyary/Jelly/02 - Ninjya.mp3"
+              }
+            ],
+            "name": "best",
+            "path": "best.m3u8"
+          }
+        ],
+        "tracks": [
+          {
+            "album": "Northern Lights",
+            "albumArtist": "Aurora",
+            "albumId": "alb|Aurora|Northern Lights",
+            "artist": "Aurora",
+            "available": true,
+            "disc": 1,
+            "durationMs": 300,
+            "format": "flac",
+            "id": "Aurora/Northern Lights/01 - Rise.flac",
+            "path": "Aurora/Northern Lights/01 - Rise.flac",
+            "rev": "008a2b9b0a812c705968008072d83b4c",
+            "sizeBytes": 8541,
+            "tagOk": true,
+            "title": "Drift",
+            "trackNo": 1,
+            "year": 2021
+          },
+          {
+            "album": "Northern Lights",
+            "albumArtist": "Aurora",
+            "albumId": "alb|Aurora|Northern Lights",
+            "artist": "Aurora",
+            "available": false,
+            "disc": 1,
+            "durationMs": 300,
+            "format": "flac",
+            "id": "Aurora/Northern Lights/02 - Drift.flac",
+            "path": "Aurora/Northern Lights/02 - Drift.flac",
+            "rev": "008a2b9b0a812c705968008072d83b4c",
+            "sizeBytes": 8541,
+            "tagOk": true,
+            "title": "Drift",
+            "trackNo": 2,
+            "year": 2021
+          },
+          {
+            "album": "Northern Lights",
+            "albumArtist": "Aurora",
+            "albumId": "alb|Aurora|Northern Lights",
+            "artist": "Aurora",
+            "available": true,
+            "disc": 1,
+            "durationMs": 300,
+            "format": "flac",
+            "id": "Aurora/Northern Lights/02 - Drifted.flac",
+            "path": "Aurora/Northern Lights/02 - Drifted.flac",
+            "rev": "008a2b9b0a812c705968008072d83b4c",
+            "sizeBytes": 8541,
+            "tagOk": true,
+            "title": "Drift",
+            "trackNo": 2,
+            "year": 2021
+          },
+          {
+            "album": "Jelly",
+            "albumArtist": "Kyary",
+            "albumId": "alb|Kyary|Jelly",
+            "artist": "Kyary",
+            "available": true,
+            "disc": 1,
+            "durationMs": 365,
+            "format": "mp3",
+            "id": "Kyary/Jelly/02 - Ninjya.mp3",
+            "path": "Kyary/Jelly/02 - Ninjya.mp3",
+            "rev": "b8f00c20630789056bb00974d76c1bfc",
+            "sizeBytes": 3020,
+            "tagOk": true,
+            "title": "Ninjya",
+            "trackNo": 2,
+            "year": null
+          },
+          {
+            "album": "Dream Mixtape",
+            "albumArtist": "Various Artists",
+            "albumId": "alb|Various Artists|Dream Mixtape",
+            "artist": "Various Artists",
+            "available": false,
+            "disc": 1,
+            "durationMs": 300,
+            "format": "flac",
+            "id": "Various Artists/Dream Mixtape/07 - Unknown.flac",
+            "path": "Various Artists/Dream Mixtape/07 - Unknown.flac",
+            "rev": "929745fc59c9d657cddbfec4a3f3f6c9",
+            "sizeBytes": 8431,
+            "tagOk": false,
+            "title": "Unknown",
+            "trackNo": 7,
+            "year": null
+          }
+        ]
+      },
+      "scanned": [
+        "best.m3u8"
+      ]
+    }
+  },
+  {
+    "provider": {
+      "error": null,
+      "reauths": 0,
+      "requests": 1,
+      "reset": false,
+      "sleeps": [],
+      "unscanned": []
+    },
+    "report": {
+      "changes": [
+        {
+          "kind": "removed",
+          "path": "best.m3u8",
+          "rev": "179275fee9607060bb253bebe6d32780"
+        }
+      ],
+      "index": {
+        "albums": [
+          {
+            "albumArtist": "Aurora",
+            "artTrackId": "Aurora/Northern Lights/01 - Rise.flac",
+            "compilation": false,
+            "id": "alb|Aurora|Northern Lights",
+            "name": "Northern Lights",
+            "trackCount": 3,
+            "year": 2021
+          },
+          {
+            "albumArtist": "Kyary",
+            "artTrackId": "Kyary/Jelly/02 - Ninjya.mp3",
+            "compilation": false,
+            "id": "alb|Kyary|Jelly",
+            "name": "Jelly",
+            "trackCount": 1,
+            "year": null
+          },
+          {
+            "albumArtist": "Various Artists",
+            "artTrackId": null,
+            "compilation": true,
+            "id": "alb|Various Artists|Dream Mixtape",
+            "name": "Dream Mixtape",
+            "trackCount": 1,
+            "year": null
+          }
+        ],
+        "errors": [],
+        "playlists": [],
+        "tracks": [
+          {
+            "album": "Northern Lights",
+            "albumArtist": "Aurora",
+            "albumId": "alb|Aurora|Northern Lights",
+            "artist": "Aurora",
+            "available": true,
+            "disc": 1,
+            "durationMs": 300,
+            "format": "flac",
+            "id": "Aurora/Northern Lights/01 - Rise.flac",
+            "path": "Aurora/Northern Lights/01 - Rise.flac",
+            "rev": "008a2b9b0a812c705968008072d83b4c",
+            "sizeBytes": 8541,
+            "tagOk": true,
+            "title": "Drift",
+            "trackNo": 1,
+            "year": 2021
+          },
+          {
+            "album": "Northern Lights",
+            "albumArtist": "Aurora",
+            "albumId": "alb|Aurora|Northern Lights",
+            "artist": "Aurora",
+            "available": false,
+            "disc": 1,
+            "durationMs": 300,
+            "format": "flac",
+            "id": "Aurora/Northern Lights/02 - Drift.flac",
+            "path": "Aurora/Northern Lights/02 - Drift.flac",
+            "rev": "008a2b9b0a812c705968008072d83b4c",
+            "sizeBytes": 8541,
+            "tagOk": true,
+            "title": "Drift",
+            "trackNo": 2,
+            "year": 2021
+          },
+          {
+            "album": "Northern Lights",
+            "albumArtist": "Aurora",
+            "albumId": "alb|Aurora|Northern Lights",
+            "artist": "Aurora",
+            "available": true,
+            "disc": 1,
+            "durationMs": 300,
+            "format": "flac",
+            "id": "Aurora/Northern Lights/02 - Drifted.flac",
+            "path": "Aurora/Northern Lights/02 - Drifted.flac",
+            "rev": "008a2b9b0a812c705968008072d83b4c",
+            "sizeBytes": 8541,
+            "tagOk": true,
+            "title": "Drift",
+            "trackNo": 2,
+            "year": 2021
+          },
+          {
+            "album": "Jelly",
+            "albumArtist": "Kyary",
+            "albumId": "alb|Kyary|Jelly",
+            "artist": "Kyary",
+            "available": true,
+            "disc": 1,
+            "durationMs": 365,
+            "format": "mp3",
+            "id": "Kyary/Jelly/02 - Ninjya.mp3",
+            "path": "Kyary/Jelly/02 - Ninjya.mp3",
+            "rev": "b8f00c20630789056bb00974d76c1bfc",
+            "sizeBytes": 3020,
+            "tagOk": true,
+            "title": "Ninjya",
+            "trackNo": 2,
+            "year": null
+          },
+          {
+            "album": "Dream Mixtape",
+            "albumArtist": "Various Artists",
+            "albumId": "alb|Various Artists|Dream Mixtape",
+            "artist": "Various Artists",
+            "available": false,
+            "disc": 1,
+            "durationMs": 300,
+            "format": "flac",
+            "id": "Various Artists/Dream Mixtape/07 - Unknown.flac",
+            "path": "Various Artists/Dream Mixtape/07 - Unknown.flac",
+            "rev": "929745fc59c9d657cddbfec4a3f3f6c9",
+            "sizeBytes": 8431,
+            "tagOk": false,
+            "title": "Unknown",
+            "trackNo": 7,
+            "year": null
+          }
+        ]
+      },
+      "scanned": []
+    }
+  }
+]

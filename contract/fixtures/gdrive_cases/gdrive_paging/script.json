@@ -1,0 +1,90 @@
+{
+  "maxPage": 2,
+  "steps": [
+    {
+      "ops": [
+        {
+          "op": "mkdir",
+          "id": "d-aurora",
+          "name": "Aurora",
+          "parent": "root0"
+        },
+        {
+          "op": "mkdir",
+          "id": "d-nl",
+          "name": "Northern Lights",
+          "parent": "d-aurora"
+        },
+        {
+          "op": "put",
+          "id": "f-rise",
+          "name": "01 - Rise.flac",
+          "parent": "d-nl",
+          "asset": "flac_a",
+          "mtime": 1700000100
+        },
+        {
+          "op": "put",
+          "id": "f-drift",
+          "name": "02 - Drift.flac",
+          "parent": "d-nl",
+          "asset": "flac_b",
+          "mtime": 1700000101
+        },
+        {
+          "op": "put",
+          "id": "f-cover",
+          "name": "cover.jpg",
+          "parent": "d-nl",
+          "text": "not-a-real-jpg",
+          "mtime": 1700000102
+        },
+        {
+          "op": "mkdir",
+          "id": "d-va",
+          "name": "Various Artists",
+          "parent": "root0"
+        },
+        {
+          "op": "mkdir",
+          "id": "d-mix",
+          "name": "Dream Mixtape",
+          "parent": "d-va"
+        },
+        {
+          "op": "put",
+          "id": "f-unknown",
+          "name": "07 - Unknown.flac",
+          "parent": "d-mix",
+          "asset": "flac_notags",
+          "mtime": 1700000103
+        }
+      ]
+    },
+    {
+      "ops": [
+        {
+          "op": "put",
+          "id": "f-ninjya",
+          "name": "02 - Ninjya.mp3",
+          "parent": "d-mix",
+          "asset": "mp3_tags",
+          "mtime": 1700000200
+        },
+        {
+          "op": "touch",
+          "id": "f-rise",
+          "mtime": 1700000201
+        },
+        {
+          "op": "touch",
+          "id": "f-drift",
+          "mtime": 1700000202
+        }
+      ]
+    },
+    {
+      "ops": []
+    }
+  ]
+}

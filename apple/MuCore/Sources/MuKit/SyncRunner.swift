@@ -46,7 +46,7 @@ public final class SyncRunner {
             guard let engine = self.engine else { return }
             // 每輪 sync 前都亮掃描中（= Android syncLocked；非僅 hydrate 分支）
             self.publish(scanning: true, state: engine.exportState(), url: url, onMain)
-            _ = engine.sync()
+            _ = try? engine.sync() // 本地 provider 不拋；雲端失敗 = 本輪跳過，狀態不動（§3.2-8）
             let st = engine.exportState()
             // done 釘選的來源 rev 已變 → 重抓（hash 即終極 rev；來源消失的軌不動）
             self.pinManager.revalidateSync(st.tracks.mapValues(\.rev))
@@ -66,7 +66,7 @@ public final class SyncRunner {
         queue.async { [weak self] in
             guard let self, let url = self.root, let engine = self.engine else { return }
             self.publish(scanning: true, state: engine.exportState(), url: url, onMain)
-            _ = engine.sync()
+            _ = try? engine.sync() // 本地 provider 不拋；雲端失敗 = 本輪跳過，狀態不動（§3.2-8）
             let st = engine.exportState()
             self.pinManager.revalidateSync(st.tracks.mapValues(\.rev))
             self.publish(scanning: false, state: st, url: url, onMain)

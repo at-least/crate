@@ -5,7 +5,7 @@ package mu.core
  * 純邏輯狀態機；儲存形態是實作細節。契約輸出 SyncReport（canonical JSON）
  * 須與 Python 參考實作 byte-identical（sync_generate.py）。
  */
-class SyncEngine(private val provider: LocalFolderProvider) {
+class SyncEngine(private val provider: SyncProvider) {
 
     enum class Kind { ADDED, REMOVED, MODIFIED }
 
@@ -31,6 +31,10 @@ class SyncEngine(private val provider: LocalFolderProvider) {
     private val playlists = LinkedHashMap<String, RawPlaylist>()
     private val errors = LinkedHashMap<String, Scanner.ScanError>()
 
+    /** 上輪 §3.2-8 未掃 path（provider 讀檔失敗而續掃；非 canonical，App 層顯示「未完成」用）。 */
+    var unscanned: List<String> = emptyList()
+        private set
+
     /** 匯出引擎狀態（App 層持久化用；儲存形態是實作細節——sync-rules §3）。 */
     fun exportState(): EngineState = EngineState(
         cursor?.let(::LinkedHashMap),
@@ -44,7 +48,10 @@ class SyncEngine(private val provider: LocalFolderProvider) {
         errors.clear(); errors.putAll(s.errors)
     }
 
-    /** 一輪同步。afterDelta：測試縫（delta 後、掃描前；模擬掃描中拔檔）。 */
+    /**
+     * 一輪同步。afterDelta：測試縫（delta 後、掃描前；模擬掃描中拔檔）。
+     * 拋 [ProviderException] = provider 快照失敗（§3.2-8）：索引與 cursor 不動。
+     */
     fun sync(afterDelta: (() -> Unit)? = null): SyncReport {
         val snap = provider.snapshot()
         val prev = cursor ?: emptyMap()
@@ -73,8 +80,14 @@ class SyncEngine(private val provider: LocalFolderProvider) {
         }
         afterDelta?.invoke()
         val scanned = ArrayList<String>()
-        for (c in pending) {
-            val data = provider.readBytes(c.path) ?: continue // §3.2-4 靜默丟棄
+        var unscannedNow: List<String> = emptyList()
+        for ((i, c) in pending.withIndex()) {
+            val data = try {
+                provider.readBytes(c.path)
+            } catch (e: ProviderException) {
+                unscannedNow = pending.subList(i, pending.size).map { it.path } // §3.2-8：本輪剩餘全部續掃
+                break
+            } ?: continue // §3.2-4 靜默丟棄
             scanned.add(c.path)
             if (c.path.lowercase().endsWith(".m3u8")) {
                 playlists[c.path] = parseM3u8Raw(data.toString(Charsets.UTF_8), c.path)
@@ -95,7 +108,13 @@ class SyncEngine(private val provider: LocalFolderProvider) {
                 rev = c.rev, available = true,
             )
         }
-        cursor = snap
+        val next = LinkedHashMap(snap)
+        for (p in unscannedNow) { // cursor 保留上一輪值，下輪再列為 added/modified
+            val old = prev[p]
+            if (old != null) next[p] = old else next.remove(p)
+        }
+        cursor = next
+        unscanned = unscannedNow.sorted()
         return SyncReport(relevant, scanned, LinkedHashMap(tracks),
             LinkedHashMap(playlists), LinkedHashMap(errors))
     }
