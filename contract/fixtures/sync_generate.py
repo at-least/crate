@@ -9,11 +9,13 @@ Mu 同步引擎契約 fixtures 產生器（兼 Python 參考實作）
 重跑：python3 sync_generate.py          （需 ffmpeg；產物已 commit，平時不需要重跑）
 驗證：python3 sync_generate.py --check  （重放 script 比對 expected.json；無 ffmpeg，可進 CI）
 """
-import json, os, sys, tempfile
+import json, os, struct, sys, tempfile
 from pathlib import Path
 
 from generate import (audio_bytes, parse_tags, parse_duration, fmt_for, make_track,
-                      group_albums, canonical, _norm_path, _extinf_to_ms)
+                      group_albums, canonical, _norm_path, _extinf_to_ms,
+                      ByteSource, FileSource, ChunkedReader, _id3v23_frame, _text_frame,
+                      _apic_frame, id3v23_wrap)
 
 HERE = Path(__file__).parent
 ASSETS = HERE / "sync_assets"
@@ -39,7 +41,38 @@ def build_assets():
     ASSETS.mkdir(exist_ok=True)
     for name, spec in ASSET_SPECS.items():
         (ASSETS / name).write_bytes(audio_bytes(spec["fmt"], spec["meta"]))
+    build_synth_assets()
     print(f"OK: {len(ASSET_SPECS)} assets -> {ASSETS}")
+
+
+def _box(t: bytes, payload: bytes) -> bytes:
+    return struct.pack(">I", 8 + len(payload)) + t + payload
+
+
+def build_synth_assets():
+    """視窗化掃描驗證用的合成大檔（model.md §1.8；gdrive_windowed_scan）。純位元組組裝，確定性。"""
+    ASSETS.mkdir(exist_ok=True)
+    # flac_bigpic：flac_a 的 STREAMINFO 之後插入 150000B PICTURE block → VORBIS_COMMENT 落在 chunk 2
+    fa = (ASSETS / "flac_a").read_bytes()
+    pic = bytes([6]) + (150000).to_bytes(3, "big") + bytes(150000)
+    (ASSETS / "flac_bigpic").write_bytes(fa[:42] + pic + fa[42:])
+    # mp3_bigapic：APIC 150000B 在文字 frame 之前；frame sync 在 tag 之後
+    frames = [_apic_frame("image/png", 3, bytes(150000)),
+              _text_frame("TIT2", 3, "Big Cover".encode()),
+              _text_frame("TPE1", 3, "Aurora".encode()),
+              _text_frame("TALB", 3, "Northern Lights".encode()),
+              _text_frame("TRCK", 3, b"3")]
+    body = b"\xff\xfb\x90\x00" + bytes(4000)
+    (ASSETS / "mp3_bigapic").write_bytes(id3v23_wrap(body, frames))
+    # m4a_tail_big：ftyp + mdat(200000B) + moov（mvhd v0 + udta/meta/ilst）→ moov 在 chunk 3
+    mvhd = bytes(4) + bytes(8) + struct.pack(">II", 44100, 441000) + bytes(80)
+    def data_text(t): return _box(b"data", struct.pack(">II", 1, 0) + t)
+    ilst = (_box(b"\xa9nam", data_text(b"Tail Moov")) + _box(b"\xa9ART", data_text(b"Becko")) +
+            _box(b"\xa9alb", data_text(b"Vector")) +
+            _box(b"trkn", _box(b"data", bytes(4) + struct.pack(">HH", 2, 10) + bytes(2))))
+    moov = _box(b"moov", _box(b"mvhd", mvhd) + _box(b"udta", _box(b"meta", bytes(4) + _box(b"ilst", ilst))))
+    (ASSETS / "m4a_tail_big").write_bytes(
+        _box(b"ftyp", b"M4A " + bytes(4) + b"M4A mp42isom") + _box(b"mdat", bytes(200000)) + moov)
 
 # ---------------------------------------------------------------- m3u8 raw parse
 
@@ -69,8 +102,12 @@ class ProviderError(Exception):
     """provider 層非 NotFound 的失敗（重試耗盡等）；引擎據此走 §3.2-8 續掃。"""
 
 
+class NotFoundError(Exception):
+    """讀取中檔案消失（open 之後的 read 404）；引擎靜默丟棄該 pending（§3.2-4）。"""
+
+
 class LocalProvider:
-    """provider.md §6：snapshot = 全量 walk（path -> "{size}:{mtimeMs}"）；read_bytes None = NotFound。"""
+    """provider.md §6：snapshot = 全量 walk（path -> "{size}:{mtimeMs}"）；open None = NotFound。"""
 
     def __init__(self, root: Path):
         self.root = root
@@ -85,9 +122,9 @@ class LocalProvider:
                 snap[rel] = f"{st.st_size}:{int(round(st.st_mtime * 1000))}"
         return snap
 
-    def read_bytes(self, path: str) -> bytes | None:
+    def open(self, path: str) -> ByteSource | None:
         try:
-            return (self.root / path).read_bytes()
+            return FileSource(self.root / path)
         except FileNotFoundError:
             return None
 
@@ -132,26 +169,33 @@ class SyncEngine:
         unscanned: list[str] = []
         for i, (path, rev) in enumerate(pending):
             try:
-                data = self.provider.read_bytes(path)
+                src = self.provider.open(path)
+                if src is None:
+                    continue  # §3.2-4：掃描中拔檔 → 靜默丟棄
+                r = ChunkedReader(src)
+                scanned.append(path)
+                if path.lower().endswith(".m3u8"):
+                    self.playlists[path] = parse_m3u8_raw(
+                        r.bytes(0, r.size).decode("utf-8", "replace"), path)
+                    continue
+                fields, tag_ok = parse_tags(fmt_for(path), r)
+                if fields is None:
+                    self.tracks.pop(path, None)
+                    self.errors[path] = {"code": "BAD_CONTAINER",
+                                         "message": "", "path": path}
+                    continue
+                t = make_track(path, fmt_for(path), r.size, fields, tag_ok,
+                               parse_duration(fmt_for(path), r))
+            except NotFoundError:
+                if path in scanned:
+                    scanned.remove(path)
+                continue  # 讀取中 404 → 同靜默丟棄
             except ProviderError:
                 unscanned = [p for p, _ in pending[i:]]  # §3.2-8：本輪剩餘全部續掃
+                if path in scanned:
+                    scanned.remove(path)
                 break
-            if data is None:
-                continue  # §3.2-4：掃描中拔檔 → 靜默丟棄
-            scanned.append(path)
-            if path.lower().endswith(".m3u8"):
-                self.playlists[path] = parse_m3u8_raw(
-                    data.decode("utf-8", "replace"), path)
-                continue
-            fields, tag_ok = parse_tags(fmt_for(path), data)
-            if fields is None:
-                self.tracks.pop(path, None)
-                self.errors[path] = {"code": "BAD_CONTAINER",
-                                     "message": "", "path": path}
-                continue
             self.errors.pop(path, None)
-            t = make_track(path, fmt_for(path), len(data), fields, tag_ok,
-                           parse_duration(fmt_for(path), data))
             t["_rev"] = rev
             t["_available"] = True
             self.tracks[path] = t
@@ -419,4 +463,7 @@ if __name__ == "__main__":
         sys.exit(check())
     if sys.argv[1:] == ["--update-expected"]:
         sys.exit(update_expected())
+    if sys.argv[1:] == ["--synth"]:
+        build_synth_assets()
+        sys.exit(0)
     main()

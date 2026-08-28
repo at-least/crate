@@ -32,11 +32,14 @@ public struct LocalFolderProvider: SyncProvider {
         return out
     }
 
-    /// 掃描用讀檔；不存在 → nil（引擎靜默丟棄，sync-rules §3.2-4）。
+    /// 掃描用開檔；不存在 → nil（引擎靜默丟棄，sync-rules §3.2-4）。
+    public func open(_ path: String) throws -> (any ByteSource)? {
+        FileSource(url: root.appendingPathComponent(path))
+    }
+
+    /// 便利：整檔讀取（App 層小檔用）；不存在 → nil。
     public func readBytes(_ path: String) -> [UInt8]? {
-        guard let data = try? Data(contentsOf: root.appendingPathComponent(path)) else {
-            return nil
-        }
+        guard let data = try? Data(contentsOf: root.appendingPathComponent(path)) else { return nil }
         return [UInt8](data)
     }
 

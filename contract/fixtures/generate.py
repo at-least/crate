@@ -123,169 +123,243 @@ def _decode_id3_text(enc: int, raw: bytes) -> str:
         return raw.decode("utf-8", "replace")
     return ""
 
-def parse_id3v2(data: bytes) -> dict | None:
-    """→ tag dict 或 None（不支援/壞掉 → caller 走 fallback）。"""
-    if len(data) < 10 or data[:3] != b"ID3":
+# ---------------------------------------------------------------- 讀取視窗化（model.md §1.8）
+
+CHUNK = 65536
+
+
+class ByteSource:
+    """size + read(offset, length)（裁切到 size）。"""
+    size: int
+
+    def read(self, offset: int, length: int) -> bytes:
+        raise NotImplementedError
+
+
+class BytesSource(ByteSource):
+    def __init__(self, data: bytes):
+        self.data = data
+        self.size = len(data)
+
+    def read(self, offset: int, length: int) -> bytes:
+        return self.data[offset:offset + length]
+
+
+class FileSource(ByteSource):
+    def __init__(self, path: Path):
+        self.path = path
+        self.size = path.stat().st_size
+
+    def read(self, offset: int, length: int) -> bytes:
+        with open(self.path, "rb") as f:
+            f.seek(offset)
+            return f.read(length)
+
+
+class ChunkedReader:
+    """64 KiB 對齊 chunk、每 chunk 抓一次；三實作同算法 → 觸碰 chunk 集合一致。"""
+
+    def __init__(self, src: ByteSource):
+        self.src = src
+        self.size = src.size
+        self._chunks: dict[int, bytes] = {}
+        self.fetches = 0
+
+    def bytes(self, off: int, length: int) -> bytes:
+        if off < 0 or off >= self.size or length <= 0:
+            return b""
+        end = min(self.size, off + length)
+        parts = []
+        for k in range(off // CHUNK, (end - 1) // CHUNK + 1):
+            if k not in self._chunks:
+                start = k * CHUNK
+                self._chunks[k] = self.src.read(start, min(CHUNK, self.size - start))
+                self.fetches += 1
+            c = self._chunks[k]
+            parts.append(c[max(off, k * CHUNK) - k * CHUNK:min(end, (k + 1) * CHUNK) - k * CHUNK])
+        return b"".join(parts)
+
+
+def _u32be(b: bytes) -> int: return struct.unpack(">I", b)[0]
+def _u32le(b: bytes) -> int: return struct.unpack("<I", b)[0]
+def _u64be(b: bytes) -> int: return struct.unpack(">Q", b)[0]
+def _ss(b: bytes) -> int:
+    return ((b[0] & 0x7F) << 21) | ((b[1] & 0x7F) << 14) | ((b[2] & 0x7F) << 7) | (b[3] & 0x7F)
+
+
+FRAME_KEY = {b"TIT2": "TITLE", b"TPE1": "ARTIST", b"TALB": "ALBUM",
+             b"TPE2": "ALBUMARTIST", b"TRCK": "TRACKNUMBER",
+             b"TPOS": "DISCNUMBER", b"TYER": "YEAR", b"TDRC": "DATE",
+             b"TCMP": "COMPILATION", b"TCP": "COMPILATION"}
+
+
+def parse_id3v2(r: ChunkedReader) -> dict | None:
+    """→ tag dict 或 None（不支援/壞掉 → caller 走 fallback）。只讀 frame header，跳過非關注 payload。"""
+    if r.size < 10:
         return None
-    ver_major = data[3]
-    flags = data[5]
-    size = ((data[6] & 0x7F) << 21) | ((data[7] & 0x7F) << 14) | \
-           ((data[8] & 0x7F) << 7) | (data[9] & 0x7F)
-    body = data[10:10 + size]
+    h = r.bytes(0, 10)
+    if h[:3] != b"ID3":
+        return None
+    ver_major = h[3]
+    flags = h[5]
+    body_start = 10
+    body_end = min(r.size, 10 + _ss(h[6:10]))
     if ver_major not in (3, 4):
         return None
     if flags & 0x40:  # extended header：v3 4B size, v4 syncsafe
-        if len(body) < 4:
+        if body_end - body_start < 4:
             return None
-        if ver_major == 3:
-            ext = struct.unpack(">I", body[:4])[0] + 4
-        else:
-            ext = ((body[0] & 0x7F) << 21) | ((body[1] & 0x7F) << 14) | \
-                  ((body[2] & 0x7F) << 7) | (body[3] & 0x7F)
-        body = body[ext:]
+        e = r.bytes(body_start, 4)
+        ext = _u32be(e) + 4 if ver_major == 3 else _ss(e)
+        body_start = min(body_end, body_start + ext)
     out: dict[str, str] = {}
-    FRAME_KEY = {b"TIT2": "TITLE", b"TPE1": "ARTIST", b"TALB": "ALBUM",
-                 b"TPE2": "ALBUMARTIST", b"TRCK": "TRACKNUMBER",
-                 b"TPOS": "DISCNUMBER", b"TYER": "YEAR", b"TDRC": "DATE",
-                 b"TCMP": "COMPILATION", b"TCP": "COMPILATION"}
-    i = 0
-    while i + 10 <= len(body):
-        fid = body[i:i+4]
+    i = body_start
+    while i + 10 <= body_end:
+        fh = r.bytes(i, 10)
+        fid = fh[:4]
         if fid == b"\x00\x00\x00\x00":
             break
-        if ver_major == 3:
-            fsize = struct.unpack(">I", body[i+4:i+8])[0]
-        else:
-            b4 = body[i+4:i+8]
-            fsize = ((b4[0] & 0x7F) << 21) | ((b4[1] & 0x7F) << 14) | \
-                    ((b4[2] & 0x7F) << 7) | (b4[3] & 0x7F)
-        fdata = body[i+10:i+10+fsize]
-        if fid in FRAME_KEY:
-            if len(fdata) < 1:
-                i += 10 + fsize
-                continue
+        fsize = _u32be(fh[4:8]) if ver_major == 3 else _ss(fh[4:8])
+        fstart = i + 10
+        fend = min(body_end, fstart + fsize)
+        if fid in FRAME_KEY and fend > fstart:
+            fdata = r.bytes(fstart, fend - fstart)
             enc = fdata[0]
             raw = fdata[1:].split(b"\x00")[0]  # 只取第一個 null 結尾字串
             val = _trim(_decode_id3_text(enc, raw))
             key = FRAME_KEY[fid]
             if val and key not in out:
                 out[key] = val
-        i += 10 + fsize
+        i = fstart + fsize
     return out
 
-def parse_flac_tags(data: bytes) -> dict | None:
-    if data[:4] != b"fLaC":
+
+def _vorbis_comments(buf: bytes, j: int, to: int) -> dict[str, str]:
+    """從 magic 之後解析 vendor/count/kv（越界即停，回已解析部分）。"""
+    comments: dict[str, str] = {}
+    if j + 4 > to:
+        return comments
+    j += _u32le(buf[j:j + 4]) + 4
+    if j + 4 > to:
+        return comments
+    count = _u32le(buf[j:j + 4])
+    j += 4
+    for _ in range(count):
+        if j + 4 > to:
+            return comments
+        vlen = _u32le(buf[j:j + 4])
+        j += 4
+        if j + vlen > to:
+            return comments
+        kv = buf[j:j + vlen].decode("utf-8", "replace")
+        j += vlen
+        eq = kv.find("=")
+        if eq > 0:
+            k = kv[:eq].upper()
+            if k not in comments:
+                comments[k] = _trim(kv[eq + 1:])
+    return comments
+
+
+def parse_flac_tags(r: ChunkedReader) -> dict | None:
+    if r.bytes(0, 4) != b"fLaC":
         return None
     i = 4
     comments: dict[str, str] = {}
-    while i + 4 <= len(data):
-        last = data[i] & 0x80
-        btype = data[i] & 0x7F
-        blen = int.from_bytes(data[i+1:i+4], "big")
-        block = data[i+4:i+4+blen]
-        if btype == 4:  # VORBIS_COMMENT
-            j = struct.unpack("<I", block[:4])[0]
-            j += 4
-            count = struct.unpack("<I", block[j:j+4])[0]
-            j += 4
-            for _ in range(count):
-                vlen = struct.unpack("<I", block[j:j+4])[0]
-                j += 4
-                kv = block[j:j+vlen].decode("utf-8", "replace")
-                j += vlen
-                if "=" in kv:
-                    k, v = kv.split("=", 1)
-                    k = k.upper()
-                    if k not in comments:
-                        comments[k] = _trim(v)
+    while i + 4 <= r.size:
+        h = r.bytes(i, 4)
+        last = h[0] & 0x80
+        btype = h[0] & 0x7F
+        blen = int.from_bytes(h[1:4], "big")
+        start = i + 4
+        end = min(r.size, start + blen)
+        if btype == 4 and end > start:  # VORBIS_COMMENT；PICTURE 等跳過
+            block = r.bytes(start, end - start)
+            for k, v in _vorbis_comments(block, 0, len(block)).items():
+                if k not in comments:
+                    comments[k] = v
         if last:
             break
-        i += 4 + blen
+        i = start + blen
     return comments
 
-def _parse_vorbis_comment_struct(buf: bytes) -> dict[str, str]:
-    """從 magic 之後解析 vendor/count/kv。"""
-    comments: dict[str, str] = {}
-    j = struct.unpack("<I", buf[:4])[0] + 4
-    count = struct.unpack("<I", buf[j:j+4])[0]
-    j += 4
-    for _ in range(count):
-        vlen = struct.unpack("<I", buf[j:j+4])[0]
-        j += 4
-        kv = buf[j:j+vlen].decode("utf-8", "replace")
-        j += vlen
-        if "=" in kv:
-            k, v = kv.split("=", 1)
-            k = k.upper()
-            if k not in comments:
-                comments[k] = _trim(v)
-    return comments
 
-def parse_ogg_tags(data: bytes) -> dict | None:
-    if data[:4] != b"OggS":
+def parse_ogg_tags(r: ChunkedReader) -> dict | None:
+    if r.size < 4:
         return None
-    window = data[:65536]
-    for magic, is_opus in ((b"OpusTags", True), (b"\x03vorbis", False)):
+    window = r.bytes(0, min(CHUNK, r.size))
+    if window[:4] != b"OggS":
+        return None
+    for magic in (b"OpusTags", b"\x03vorbis"):
         pos = window.find(magic)
         if pos >= 0:
-            return _parse_vorbis_comment_struct(window[pos + len(magic):])
+            return _vorbis_comments(window, pos + len(magic), len(window))
     return {}
 
-def _mp4_boxes(buf: bytes):
-    i = 0
-    while i + 8 <= len(buf):
-        size = struct.unpack(">I", buf[i:i+4])[0]
-        btype = buf[i+4:i+8]
+
+def _mp4_boxes(r: ChunkedReader, frm: int, to: int):
+    """只讀 box header；yield (type, payloadStart, payloadEnd)。size < header 或越界 → 停。"""
+    i = frm
+    while i + 8 <= to:
+        h = r.bytes(i, 8)
+        size = _u32be(h[:4])
+        btype = h[4:8]
         hdr = 8
         if size == 1:
-            if i + 16 > len(buf):
+            if i + 16 > to:
                 break
-            size = struct.unpack(">Q", buf[i+8:i+16])[0]
+            size = _u64be(r.bytes(i + 8, 8))
             hdr = 16
         elif size == 0:
-            size = len(buf) - i
-        yield btype, buf[i+hdr:i+size], i + size <= len(buf)
+            size = to - i
+        if size < hdr or i + size > to:
+            break
+        yield btype, i + hdr, i + size
         i += size
 
-def parse_m4a_tags(data: bytes) -> dict | None:
+
+def parse_m4a_tags(r: ChunkedReader) -> dict | None:
     found_moov = False
-    ilst_payload = None
-    def walk(buf: bytes, inside_meta: bool = False):
-        nonlocal found_moov, ilst_payload
-        for btype, payload, ok in _mp4_boxes(buf):
-            if not ok:
-                continue
+    ilst = None
+
+    def walk(frm: int, to: int, inside_meta: bool = False):
+        nonlocal found_moov, ilst
+        for btype, ps, pe in _mp4_boxes(r, frm, to):
             if btype == b"moov":
                 found_moov = True
-                walk(payload)
+                walk(ps, pe)
             elif btype == b"udta":
-                walk(payload)
+                walk(ps, pe)
             elif btype == b"meta":  # meta 有 4B version/flags
-                walk(payload[4:], True)
+                if pe - ps > 4:
+                    walk(ps + 4, pe, True)
             elif inside_meta and btype == b"ilst":
-                ilst_payload = payload
-    walk(data)
+                ilst = (ps, pe)
+    walk(0, r.size)
     if not found_moov:
         return None
-    if ilst_payload is None:
+    if ilst is None:
         return {}
     KEY = {b"\xa9nam": "TITLE", b"\xa9ART": "ARTIST", b"\xa9alb": "ALBUM",
            b"aART": "ALBUMARTIST", b"\xa9day": "YEAR", b"cpil": "COMPILATION"}
     NUM = {b"trkn": "TRACKNUMBER", b"disk": "DISCNUMBER"}
     out: dict[str, str] = {}
-    for btype, payload, ok in _mp4_boxes(ilst_payload):
-        if not ok:
+    for btype, ps, pe in _mp4_boxes(r, *ilst):
+        key, nkey = KEY.get(btype), NUM.get(btype)
+        if key is None and nkey is None:
             continue
-        if btype in KEY:
-            for dtype, ddata, dok in _mp4_boxes(payload):
-                if dok and dtype == b"data" and len(ddata) >= 9:
-                    out[KEY[btype]] = _trim(ddata[8:].decode("utf-8", "replace"))
-        elif btype in NUM:
-            for dtype, ddata, dok in _mp4_boxes(payload):
-                if dok and dtype == b"data" and len(ddata) >= 6:
-                    n = struct.unpack(">H", ddata[4:6])[0]
-                    if n:
-                        out[NUM[btype]] = str(n)
+        for dtype, ds, de in _mp4_boxes(r, ps, pe):
+            if dtype != b"data":
+                continue
+            dd = r.bytes(ds, de - ds)
+            if key is not None and len(dd) >= 9:
+                v = _trim(dd[8:].decode("utf-8", "replace"))
+                if v and key not in out:
+                    out[key] = v
+            elif nkey is not None and len(dd) >= 6:
+                n = struct.unpack(">H", dd[4:6])[0]
+                if n and nkey not in out:
+                    out[nkey] = str(n)
     return out
 
 # ---------------------------------------------------------------- scanner
@@ -313,31 +387,30 @@ def tag_dict_to_fields(tags: dict[str, str]) -> dict:
     f["compilation"] = tags.get("COMPILATION") == "1"
     return f
 
-def parse_tags(fmt: str, data: bytes) -> tuple[dict | None, bool]:
+def parse_tags(fmt: str, r: ChunkedReader) -> tuple[dict | None, bool]:
     """→ (fields or None, tag_ok)。None+False = BAD_CONTAINER。{}+False = 壞 tag。"""
     if fmt == "flac":
-        if data[:4] != b"fLaC":
+        if r.bytes(0, 4) != b"fLaC":
             return None, False
-        tags = parse_flac_tags(data)
+        tags = parse_flac_tags(r)
     elif fmt == "mp3":
-        tags = parse_id3v2(data)
+        tags = parse_id3v2(r)
         if tags is None:  # 無 ID3 → 檢查 frame sync
-            if len(data) >= 2 and data[0] == 0xFF and (data[1] & 0xE0) == 0xE0:
+            b2 = r.bytes(0, 2)
+            if len(b2) >= 2 and b2[0] == 0xFF and (b2[1] & 0xE0) == 0xE0:
                 tags = {}
             else:
                 return None, False
     elif fmt == "m4a":
-        tags = parse_m4a_tags(data)
+        tags = parse_m4a_tags(r)
         if tags is None:
             return None, False
     elif fmt in ("ogg", "opus"):
-        tags = parse_ogg_tags(data)
+        tags = parse_ogg_tags(r)
         if tags is None:
             return None, False
-        if fmt == "ogg" and b"\x03vorbis" not in data[:65536] and b"OpusTags" not in data[:65536]:
-            pass  # 空註解 OK
     elif fmt == "wav":
-        if data[:4] != b"RIFF" or data[8:12] != b"WAVE":
+        if not _is_wav(r):
             return None, False
         tags = {}
     else:
@@ -345,6 +418,13 @@ def parse_tags(fmt: str, data: bytes) -> tuple[dict | None, bool]:
     if tags is None:
         tags = {}
     return tag_dict_to_fields(tags), len(tags) > 0
+
+
+def _is_wav(r: ChunkedReader) -> bool:
+    if r.size < 12:
+        return False
+    h = r.bytes(0, 12)
+    return h[:4] == b"RIFF" and h[8:12] == b"WAVE"
 
 def fmt_for(name: str) -> str | None:
     ext = name.rsplit(".", 1)[-1].lower() if "." in name else ""
@@ -356,14 +436,16 @@ def fmt_for(name: str) -> str | None:
 _MP3_BR_M1 = [32, 40, 48, 56, 64, 80, 96, 112, 128, 160, 192, 224, 256, 320]
 _MP3_BR_M2 = [8, 16, 24, 32, 40, 48, 56, 64, 80, 96, 112, 128, 144, 160]
 
-def parse_duration(fmt: str, data: bytes) -> int | None:
-    """model.md §1.7。整數除法；失敗/<=0 → None。"""
+def parse_duration(fmt: str, r: ChunkedReader) -> int | None:
+    """model.md §1.7 / §1.8。整數除法；失敗/<=0 → None。"""
+    size = r.size
     if fmt == "flac":
-        if data[:4] != b"fLaC" or len(data) < 8 + 34:
+        if size < 8 + 34:
             return None
-        if (data[4] & 0x7F) != 0:  # 第一個 block 非 STREAMINFO
+        d = r.bytes(0, 42)
+        if d[:4] != b"fLaC" or (d[4] & 0x7F) != 0:  # 第一個 block 非 STREAMINFO
             return None
-        b = data[8:8 + 34]
+        b = d[8:42]
         rate = (b[10] << 12) | (b[11] << 4) | (b[12] >> 4)
         total = ((b[13] & 0xF) << 32) | int.from_bytes(b[14:18], "big")
         if rate == 0 or total == 0:
@@ -371,77 +453,86 @@ def parse_duration(fmt: str, data: bytes) -> int | None:
         return total * 1000 // rate
     if fmt == "mp3":
         off = 0
-        if data[:3] == b"ID3":
-            if len(data) < 10:
+        if size >= 3 and r.bytes(0, 3) == b"ID3":
+            if size < 10:
                 return None
-            off = 10 + (((data[6] & 0x7F) << 21) | ((data[7] & 0x7F) << 14) |
-                        ((data[8] & 0x7F) << 7) | (data[9] & 0x7F))
-        for i in range(off, min(off + 65536, len(data) - 3)):
-            if data[i] != 0xFF or (data[i + 1] & 0xE0) != 0xE0:
+            off = 10 + _ss(r.bytes(6, 4))
+        n = min(off + 65536, size - 3) - off
+        if n <= 0:
+            return None
+        buf = r.bytes(off, n + 2)
+        for i in range(n):
+            if buf[i] != 0xFF or (buf[i + 1] & 0xE0) != 0xE0:
                 continue
-            ver = (data[i + 1] >> 3) & 3
-            layer = (data[i + 1] >> 1) & 3
-            br = (data[i + 2] >> 4) & 0xF
-            sr = (data[i + 2] >> 2) & 3
+            ver = (buf[i + 1] >> 3) & 3
+            layer = (buf[i + 1] >> 1) & 3
+            br = (buf[i + 2] >> 4) & 0xF
+            sr = (buf[i + 2] >> 2) & 3
             if ver == 1 or layer != 1 or br in (0, 15) or sr == 3:
                 continue
             kbps = (_MP3_BR_M1 if ver == 3 else _MP3_BR_M2)[br - 1]
-            return (len(data) - i) * 8 // kbps
+            return (size - (off + i)) * 8 // kbps
         return None
     if fmt == "m4a":
-        def find_mvhd(buf):
-            for btype, payload, ok in _mp4_boxes(buf):
-                if not ok:
-                    continue
+        def find_mvhd(frm, to):
+            for btype, ps, pe in _mp4_boxes(r, frm, to):
                 if btype == b"moov":
-                    r = find_mvhd(payload)
-                    if r is not None:
-                        return r
+                    res = find_mvhd(ps, pe)
+                    if res is not None:
+                        return res
                 elif btype == b"mvhd":
-                    ver = payload[0]
-                    if ver == 0:
-                        if len(payload) < 20:
-                            return None
-                        return (struct.unpack(">I", payload[12:16])[0],
-                                struct.unpack(">I", payload[16:20])[0])
-                    if len(payload) < 32:
+                    p = r.bytes(ps, min(pe - ps, 32))
+                    if not p:
                         return None
-                    return (struct.unpack(">I", payload[20:24])[0],
-                            struct.unpack(">Q", payload[24:32])[0])
+                    if p[0] == 0:
+                        if pe - ps < 20:
+                            return None
+                        return _u32be(p[12:16]), _u32be(p[16:20])
+                    if pe - ps < 32:
+                        return None
+                    return _u32be(p[20:24]), _u64be(p[24:32])
             return None
-        r = find_mvhd(data)
-        if r is None or r[0] == 0 or r[1] == 0:
+        res = find_mvhd(0, size)
+        if res is None or res[0] == 0 or res[1] == 0:
             return None
-        return r[1] * 1000 // r[0]
+        return res[1] * 1000 // res[0]
     if fmt in ("ogg", "opus"):
-        p = data.rfind(b"OggS")
-        if p < 0 or len(data) < p + 14:
+        tail_off = max(0, size - CHUNK)
+        tail = r.bytes(tail_off, size - tail_off)
+        p = tail.rfind(b"OggS")
+        if p < 0:
             return None
-        granule = int.from_bytes(data[p + 6:p + 14], "little")
+        p += tail_off
+        if size < p + 14:
+            return None
+        granule = int.from_bytes(r.bytes(p + 6, 8), "little")
+        head = r.bytes(0, min(CHUNK, size))
         if fmt == "opus":
-            h = data.find(b"OpusHead")
-            if h < 0 or len(data) < h + 12:
+            h = head.find(b"OpusHead")
+            if h < 0 or size < h + 12:
                 return None
-            preskip = int.from_bytes(data[h + 10:h + 12], "little")
+            preskip = int.from_bytes(r.bytes(h + 10, 2), "little")
             v = (granule - preskip) * 1000 // 48000
             return v if v > 0 else None
-        v = data.find(b"\x01vorbis")
-        if v < 0 or len(data) < v + 16:
+        v = head.find(b"\x01vorbis")
+        if v < 0 or size < v + 16:
             return None
-        rate = int.from_bytes(data[v + 12:v + 16], "little")
+        rate = _u32le(r.bytes(v + 12, 4))
         if rate == 0 or granule == 0:
             return None
         return granule * 1000 // rate
     if fmt == "wav":
-        if data[:4] != b"RIFF" or data[8:12] != b"WAVE":
+        if not _is_wav(r):
             return None
         byte_rate = data_size = None
         i = 12
-        while i + 8 <= len(data):
-            cid = data[i:i + 4]
-            csz = int.from_bytes(data[i + 4:i + 8], "little")
+        while i + 8 <= size:
+            ch = r.bytes(i, 8)
+            cid = ch[:4]
+            csz = _u32le(ch[4:8])
             if cid == b"fmt " and csz >= 12:
-                byte_rate = int.from_bytes(data[i + 16:i + 20], "little")
+                if i + 20 <= size:
+                    byte_rate = _u32le(r.bytes(i + 16, 4))
             elif cid == b"data":
                 data_size = csz
             i += 8 + csz + (csz & 1)
@@ -449,6 +540,7 @@ def parse_duration(fmt: str, data: bytes) -> int | None:
             return None
         return data_size * 1000 // byte_rate
     return None
+
 
 FILENAME_PAT = __import__("re").compile(r"^(\d{1,3})\s-\s(.+)$")
 
@@ -469,13 +561,13 @@ def scan_tree(root: Path) -> dict:
         fmt = fmt_for(rel)
         if fmt is None:
             continue
-        data = (root / rel).read_bytes()
-        fields, tag_ok = parse_tags(fmt, data)
+        r = ChunkedReader(FileSource(root / rel))
+        fields, tag_ok = parse_tags(fmt, r)
         if fields is None:
             errors.append({"code": "BAD_CONTAINER",
                            "message": f"not a valid {fmt} file", "path": rel})
             continue
-        t = make_track(rel, fmt, len(data), fields, tag_ok, parse_duration(fmt, data))
+        t = make_track(rel, fmt, r.size, fields, tag_ok, parse_duration(fmt, r))
         tracks.append(t)
     albums = group_albums(tracks)
     return {

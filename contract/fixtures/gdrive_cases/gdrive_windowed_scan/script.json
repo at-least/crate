@@ -1,0 +1,41 @@
+{
+  "steps": [
+    {
+      "ops": [
+        {
+          "op": "mkdir",
+          "id": "d-big",
+          "name": "Big",
+          "parent": "root0"
+        },
+        {
+          "op": "put",
+          "id": "f-m4a",
+          "name": "01 - Tail Moov.m4a",
+          "parent": "d-big",
+          "asset": "m4a_tail_big",
+          "mtime": 1700001100
+        },
+        {
+          "op": "put",
+          "id": "f-flac",
+          "name": "02 - Big Pic.flac",
+          "parent": "d-big",
+          "asset": "flac_bigpic",
+          "mtime": 1700001101
+        },
+        {
+          "op": "put",
+          "id": "f-mp3",
+          "name": "03 - Big Apic.mp3",
+          "parent": "d-big",
+          "asset": "mp3_bigapic",
+          "mtime": 1700001102
+        }
+      ]
+    },
+    {
+      "ops": []
+    }
+  ]
+}

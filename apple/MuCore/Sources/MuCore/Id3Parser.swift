@@ -40,44 +40,48 @@ enum Id3Parser {
         "TCMP": "COMPILATION", "TCP": "COMPILATION",
     ]
 
+    /// 陣列 API（測試相容）。
     static func parse(_ data: [UInt8]) -> [String: String]? {
-        guard data.count >= 10, data[0] == 0x49, data[1] == 0x44, data[2] == 0x33 else { return nil }
-        let verMajor = Int(data[3])
-        let flags = Int(data[5])
-        let size = (Int(data[6]) & 0x7F) << 21 | (Int(data[7]) & 0x7F) << 14 |
-            (Int(data[8]) & 0x7F) << 7 | (Int(data[9]) & 0x7F)
-        var body = Array(data[min(data.count, 10)...])
-        if body.count > size { body = Array(body.prefix(size)) }
+        try! parse(ChunkedReader(bytes: data))
+    }
+
+    /// 只讀 frame header；非關注 frame（APIC 等）以 size 跳過（model.md §1.8）。
+    static func parse(_ r: ChunkedReader) throws -> [String: String]? {
+        guard r.size >= 10 else { return nil }
+        let h = try r.bytes(0, 10)
+        guard h[0] == 0x49, h[1] == 0x44, h[2] == 0x33 else { return nil }
+        let verMajor = Int(h[3])
+        let flags = Int(h[5])
+        func ss(_ b: [UInt8], _ o: Int) -> Int {
+            (Int(b[o]) & 0x7F) << 21 | (Int(b[o + 1]) & 0x7F) << 14 |
+                (Int(b[o + 2]) & 0x7F) << 7 | (Int(b[o + 3]) & 0x7F)
+        }
+        var bodyStart = 10
+        let bodyEnd = min(r.size, 10 + ss(h, 6))
         guard (3...4).contains(verMajor) else { return nil }
         if flags & 0x40 != 0 { // extended header
-            guard body.count >= 4 else { return nil }
-            let ext = verMajor == 3 ? Bytes.u32be(body, 0) + 4 :
-                (Int(body[0]) & 0x7F) << 21 | (Int(body[1]) & 0x7F) << 14 |
-                (Int(body[2]) & 0x7F) << 7 | (Int(body[3]) & 0x7F)
-            body = ext < body.count ? Array(body[ext...]) : []
+            guard bodyEnd - bodyStart >= 4 else { return nil }
+            let e = try r.bytes(bodyStart, 4)
+            let ext = verMajor == 3 ? Bytes.u32be(e, 0) + 4 : ss(e, 0)
+            bodyStart = min(bodyEnd, bodyStart + ext)
         }
         var out: [String: String] = [:]
-        var order: [String] = []
-        var i = 0
-        while i + 10 <= body.count {
-            let fid = String(decoding: body[i..<i + 4], as: UTF8.self)
+        var i = bodyStart
+        while i + 10 <= bodyEnd {
+            let fh = try r.bytes(i, 10)
+            let fid = String(decoding: fh[0..<4], as: UTF8.self)
             if fid == "\u{0}\u{0}\u{0}\u{0}" { break }
-            let fsize = verMajor == 3 ? Bytes.u32be(body, i + 4) :
-                (Int(body[i + 4]) & 0x7F) << 21 | (Int(body[i + 5]) & 0x7F) << 14 |
-                (Int(body[i + 6]) & 0x7F) << 7 | (Int(body[i + 7]) & 0x7F)
-            guard fsize >= 0 else { break }
+            let fsize = verMajor == 3 ? Bytes.u32be(fh, 4) : ss(fh, 4)
             let fStart = i + 10
-            let fEnd = min(body.count, fStart + fsize)
+            let fEnd = min(bodyEnd, fStart + fsize)
             if let key = frameKeys[fid], fEnd > fStart {
-                let enc = Int(body[fStart])
-                var rawEnd = fEnd
-                for j in (fStart + 1)..<fEnd where body[j] == 0 { rawEnd = j; break }
-                let raw = Array(body[(fStart + 1)..<rawEnd])
+                let fdata = try r.bytes(fStart, fEnd - fStart)
+                let enc = Int(fdata[0])
+                var rawEnd = fdata.count
+                for j in 1..<fdata.count where fdata[j] == 0 { rawEnd = j; break }
+                let raw = Array(fdata[1..<rawEnd])
                 let value = trimContract(decodeText(enc, raw))
-                if !value.isEmpty, out[key] == nil {
-                    out[key] = value
-                    order.append(key)
-                }
+                if !value.isEmpty, out[key] == nil { out[key] = value }
             }
             i = fStart + fsize
         }

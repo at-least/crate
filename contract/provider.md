@@ -54,18 +54,17 @@ CloudProvider {
 本地資料夾後端不在此表 —— 語意獨立定義於 §6。
 
 ## 4. 驗證要求（Phase 1 進場條件）
-- [ ] 兩後端的 range request 實測（m4a 尾部 tag 依賴 Range 支援；不支援 → m4a 全檔下載，記入已知限制）——**掃描視窗化尚未進場**（§8.5），目前掃描為整檔下載，Range 只在播放/串流用
+- [x] 掃描視窗化：Range 讀取契約化（§5、model.md §1.8；`gdrive_cases/gdrive_windowed_scan` 以 moov 在尾的 m4a／大封面 FLAC／大 APIC MP3 驗證只抓需要的 chunk）；真帳號 Range 支援複驗待 OAuth 進場（Drive 官方支援 Range；不支援時 200 整檔本地裁切仍正確）
 - [x] delta cursor 失效情境：GDrive 以 fake server 契約覆蓋（`gdrive_cases/gdrive_cursor_reset`）；真帳號複驗待 OAuth 進場
 - [x] 配額：GDrive 請求數已釘進契約（每步 `provider.requests`，三實作 byte-identical）；真帳號 5,000 檔量測待 OAuth 進場
 
 ## 5. 掃描管線（provider × scanner）
-1. `delta`（無 cursor → `listDir` 遞迴建全量）
-2. 對新增/變更（rev 或 modifiedAt 變了）的音訊檔：`rangeRead` 頭 64KB；`.m4a` 另外讀尾 64KB
-3. 餵 scanner（model.md §1 邏輯），結果入 DB
-4. 雲端刪除 → `tracks.available=0`（已釘選檔保留，UI 提示）
-5. m3u8 變更 → 重新解析
+1. `delta`（無 cursor → 全量列舉）→ path→rev 快照；引擎比對出 added/modified/removed。
+2. 對 added/modified 的音訊檔與 m3u8：`open(path) -> ByteSource`（`size` + `read(offset, length)`；不存在 → null，引擎靜默丟棄）。
+3. 掃描器經 `ChunkedReader`（model.md §1.8：64 KiB 對齊 chunk、每 chunk 抓一次）只讀結構需要的位元組——雲端 = `files.get?alt=media` + `Range: bytes=a-b`（206；伺服器回 200 整檔則本地裁切），每個 chunk 一個請求；典型檔案（tag 在檔頭）= 1 個請求，moov 在檔尾的 m4a / 大封面 = 2 個。
+4. 結果入索引；雲端刪除 → `tracks.available=0`（已釘選檔保留，UI 提示）；m3u8 變更 → 重新解析。
 
-併發：rangeRead 上限 8；429 時全管線退避。
+併發：rangeRead 上限 8；429 時全管線退避（App 層節流，契約 fixtures 為單執行緒序列）。
 
 ## 6. LocalFolderProvider（本地資料夾；D10 起為正式 provider）
 
@@ -117,7 +116,7 @@ bytes 相同 = 同一份副本——跨庫共用、只抓一次。釘選記錄�
 | 首掃起點 | `GET /changes/startPageToken` → `startPageToken` |
 | 全量列舉 | `GET /files?q=trashed%3Dfalse&pageSize=1000&fields=nextPageToken,files(id,name,mimeType,parents,size,md5Checksum,modifiedTime)[&pageToken=…]`（整個 Drive 一次列完，**不是**逐資料夾遞迴——5,000 檔 = 5 個請求） |
 | 增量 | `GET /changes?pageToken=…&pageSize=1000&includeRemoved=true&fields=nextPageToken,newStartPageToken,changes(fileId,removed,file(id,name,mimeType,parents,trashed,size,md5Checksum,modifiedTime))` |
-| 讀檔（掃描/釘選/串流） | `GET /files/{id}?alt=media`（串流/釘選續傳可加 `Range: bytes=a-b`） |
+| 讀檔（掃描/釘選/串流） | `GET /files/{id}?alt=media` + `Range: bytes=a-b`（掃描 = 64 KiB chunk；串流/釘選續傳同一端點） |
 
 ### 8.2 節點表與 path 推導
 provider 持有 **全 Drive 的 id→node 表**（`{id,name,mimeType,parent,trashed,size,md5,modifiedAt}`；多 parent 取 `parents[0]`），
@@ -150,6 +149,5 @@ provider 持有 **全 Drive 的 id→node 表**（`{id,name,mimeType,parent,tras
 下輪 delta 自然再次列為 added/modified 接續掃描。
 
 已知限制（釘死，後續子步驟處理）：
-- **掃描 = 整檔下載**：model.md §1 的 scanner 是整檔語意（ogg 取檔內最後一頁 granule、mp3 時長用 sizeBytes、wav data chunk），
-  §5 的「頭 64KB + m4a 尾 64KB」視窗化要先改 model.md 定義視窗語意（含大封面圖把 tag 擠出 64KB 的情境）再進場。
+- ~~掃描 = 整檔下載~~ → 已視窗化（§5、model.md §1.8，2026-08-29）。
 - md5→sha256 對應表（§7）未建：下載層仍在抓取時算 SHA-256；跨庫「抓前預判」留待需要時再加。

@@ -20,6 +20,11 @@ fixture provider 的 `Entry.id == Entry.path`（見 model.md §1.4），所以
 `tracks[].id == tracks[].path`、`playlists[].id == path`。真實 provider
 （gdrive/dropbox）的 id 是各家檔案 id——掃描器不吃 id，只吃 path。
 
+## 讀取視窗化（model.md §1.8）
+掃描器不讀整檔：`ChunkedReader`（64 KiB 對齊 chunk、每 chunk 抓一次）+ parser 只讀 header、跳過大 payload。
+`sync_assets/` 的合成大檔（`flac_bigpic`／`mp3_bigapic`／`m4a_tail_big`，`sync_generate.py --synth` 產生，無 ffmpeg）
+供 `gdrive_cases/gdrive_windowed_scan` 驗證 Range 請求數三方一致。
+
 ## 已釘死的實作細節（fixtures 即規格）
 - Ogg/Opus 註解：在前 64KB **bytewise 掃** magic（`OpusTags` 或 `\x03vorbis`），從 magic 後解析 vorbis-comment 結構
 - M4A：box walk（size==1 → 64-bit；size==0 → 到檔尾）；`meta` box 有 4B version/flags；`trkn/disk` 的 data payload 取 offset 4 的 BE uint16；值 0 → 視為無

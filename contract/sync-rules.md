@@ -30,8 +30,8 @@
 1. `delta(cursor)` → changes（added/removed/modified；僅引擎關注的副檔名）。
 2. removed → 該軌 `available=0`（掃描資料與 rev 保留最後已知值）；removed 的 path 不在索引 → 靜默忽略（不出 error）。
 3. added/modified → 進 pending 佇列（掃描前不可見於索引）。
-4. 掃描 pending：`rangeRead` → scanner（model.md §1）→ 寫入索引、`available=1`；m3u8 → 重解析 raw refs。
-   - 掃描時 `NotFoundError`（delta 後檔案被拔）→ **靜默丟棄該 pending**：不出 error、不進索引；該輪 changes 照實報（added 已計入）。
+4. 掃描 pending：`open(path)` → ChunkedReader（model.md §1.8）→ scanner（model.md §1）→ 寫入索引、`available=1`；m3u8 → 重解析 raw refs。
+   - 掃描時 `NotFoundError`（delta 後檔案被拔；open 回 null 或讀取中 404）→ **靜默丟棄該 pending**：不出 error、不進索引；該輪 changes 照實報（added 已計入）。
 5. m3u8 內部只存 raw refs（position/ref/durationMs）；`ref → trackId` 解析在**每次輸出時**對索引內 `available=1` 的音訊 path 集合進行（正規化規則同 model.md §2.3）。音訊可用度變動因此自動反映到清單，無需重讀 m3u8 檔。
 6. albums 每輪由索引全量重導（含 unavailable 軌；歸組鍵同 model.md §1.5）；errors = 現存（available 檔案的）BAD_CONTAINER。
 7. rev 未變 → 不進 pending（斷點續掃的基礎；以 `scanned` 清單可觀測）。

@@ -82,31 +82,35 @@ class SyncEngine(private val provider: SyncProvider) {
         val scanned = ArrayList<String>()
         var unscannedNow: List<String> = emptyList()
         for ((i, c) in pending.withIndex()) {
-            val data = try {
-                provider.readBytes(c.path)
+            try {
+                val src = provider.open(c.path) ?: continue // §3.2-4 靜默丟棄
+                val r = ChunkedReader(src)
+                if (c.path.lowercase().endsWith(".m3u8")) {
+                    val pl = parseM3u8Raw(r.bytes(0L, r.size.toInt()).toString(Charsets.UTF_8), c.path)
+                    playlists[c.path] = pl
+                    scanned.add(c.path)
+                    continue
+                }
+                val fmt = formatFor(c.path)!!
+                val parsed = Scanner.parseTags(fmt, r)
+                if (parsed == null) {
+                    scanned.add(c.path)
+                    tracks.remove(c.path)
+                    errors[c.path] = Scanner.ScanError("BAD_CONTAINER", c.path)
+                    continue
+                }
+                val (fields, tagOk) = parsed
+                val track = Scanner.makeTrack(c.path, fmt, r.size, fields, tagOk,
+                    ContainerParsers.parseDuration(fmt, r))
+                scanned.add(c.path)
+                errors.remove(c.path)
+                tracks[c.path] = IndexedTrack(track, rev = c.rev, available = true)
+            } catch (e: ProviderException.NotFound) {
+                continue // 讀取中 404 → 同靜默丟棄
             } catch (e: ProviderException) {
                 unscannedNow = pending.subList(i, pending.size).map { it.path } // §3.2-8：本輪剩餘全部續掃
                 break
-            } ?: continue // §3.2-4 靜默丟棄
-            scanned.add(c.path)
-            if (c.path.lowercase().endsWith(".m3u8")) {
-                playlists[c.path] = parseM3u8Raw(data.toString(Charsets.UTF_8), c.path)
-                continue
             }
-            val fmt = formatFor(c.path)!!
-            val parsed = Scanner.parseTags(fmt, data)
-            if (parsed == null) {
-                tracks.remove(c.path)
-                errors[c.path] = Scanner.ScanError("BAD_CONTAINER", c.path)
-                continue
-            }
-            errors.remove(c.path)
-            val (fields, tagOk) = parsed
-            tracks[c.path] = IndexedTrack(
-                Scanner.makeTrack(c.path, fmt, data.size.toLong(), fields, tagOk,
-                    ContainerParsers.parseDuration(fmt, data)),
-                rev = c.rev, available = true,
-            )
         }
         val next = LinkedHashMap(snap)
         for (p in unscannedNow) { // cursor 保留上一輪值，下輪再列為 added/modified

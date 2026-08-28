@@ -8,8 +8,11 @@ interface SyncProvider {
     /** path -> rev；全部檔案（含非音訊；過濾是引擎的事）。失敗 → 整輪 sync 拋錯、狀態不動。 */
     fun snapshot(): Map<String, String>
 
-    /** 掃描用讀檔；null = NotFound（引擎靜默丟棄）；其他失敗拋 [ProviderException] → §3.2-8 續掃。 */
-    fun readBytes(path: String): ByteArray?
+    /**
+     * 掃描用開檔（model.md §1.8 ByteSource）；null = NotFound（引擎靜默丟棄）；其他失敗拋 [ProviderException] → §3.2-8 續掃。
+     * 開檔後讀取中 404 → [ProviderException.NotFound]（同靜默丟棄）。
+     */
+    fun open(path: String): ByteSource?
 }
 
 /** provider.md §2 錯誤語意（重試耗盡後由 provider 拋出）。 */

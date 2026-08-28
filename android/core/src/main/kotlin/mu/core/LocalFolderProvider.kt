@@ -24,8 +24,11 @@ class LocalFolderProvider(private val root: File) : SyncProvider {
         return out
     }
 
-    /** 掃描用讀檔；不存在 → null（引擎靜默丟棄，sync-rules §3.2-4）。 */
-    override fun readBytes(path: String): ByteArray? {
+    /** 掃描用開檔；不存在 → null（引擎靜默丟棄，sync-rules §3.2-4）。 */
+    override fun open(path: String): ByteSource? = FileSource.open(File(root, path))
+
+    /** 便利：整檔讀取（App 層小檔用）；不存在 → null。 */
+    fun readBytes(path: String): ByteArray? {
         val f = File(root, path)
         return if (f.isFile) f.readBytes() else null
     }

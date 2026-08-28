@@ -116,33 +116,36 @@ public final class SyncEngine {
         var scanned: [String] = []
         var unscannedNow: [String] = []
         for (i, c) in pending.enumerated() {
-            let data: [UInt8]?
             do {
-                data = try provider.readBytes(c.path)
+                guard let src = try provider.open(c.path) else { continue } // §3.2-4 靜默丟棄
+                let r = ChunkedReader(src)
+                if c.path.lowercased().hasSuffix(".m3u8") {
+                    let pl = parseM3u8Raw(
+                        text: String(decoding: try r.bytes(0, r.size), as: UTF8.self), rel: c.path)
+                    playlists[c.path] = pl
+                    scanned.append(c.path)
+                    continue
+                }
+                let fmt = formatFor(c.path)!
+                guard let (fields, tagOk) = try Scanner.parseTags(fmt: fmt, reader: r) else {
+                    scanned.append(c.path)
+                    tracks.removeValue(forKey: c.path)
+                    errors[c.path] = Scanner.ScanError(code: "BAD_CONTAINER", path: c.path)
+                    continue
+                }
+                let track = Scanner.makeTrack(
+                    rel: c.path, fmt: fmt, size: r.size,
+                    fields: fields, tagOkRaw: tagOk,
+                    durationMs: try ContainerParsers.parseDuration(fmt, r))
+                scanned.append(c.path)
+                errors.removeValue(forKey: c.path)
+                tracks[c.path] = IndexedTrack(track: track, rev: c.rev, available: true)
+            } catch ProviderError.notFound {
+                continue // 讀取中 404 → 同靜默丟棄
             } catch {
                 unscannedNow = pending[i...].map(\.path) // §3.2-8：本輪剩餘全部續掃
                 break
             }
-            guard let data else { continue } // §3.2-4 靜默丟棄
-            scanned.append(c.path)
-            if c.path.lowercased().hasSuffix(".m3u8") {
-                playlists[c.path] = parseM3u8Raw(
-                    text: String(decoding: data, as: UTF8.self), rel: c.path)
-                continue
-            }
-            let fmt = formatFor(c.path)!
-            guard let (fields, tagOk) = Scanner.parseTags(fmt: fmt, data: data) else {
-                tracks.removeValue(forKey: c.path)
-                errors[c.path] = Scanner.ScanError(code: "BAD_CONTAINER", path: c.path)
-                continue
-            }
-            errors.removeValue(forKey: c.path)
-            tracks[c.path] = IndexedTrack(
-                track: Scanner.makeTrack(
-                    rel: c.path, fmt: fmt, size: data.count,
-                    fields: fields, tagOkRaw: tagOk,
-                    durationMs: ContainerParsers.parseDuration(fmt, data)),
-                rev: c.rev, available: true)
         }
         var next = snap
         for p in unscannedNow { // cursor 保留上一輪值，下輪再列為 added/modified

@@ -183,12 +183,21 @@ class GDriveProvider(
         return paths()
     }
 
-    override fun readBytes(path: String): ByteArray? {
+    /** ByteSource：size 取自節點 metadata；read = Range 請求（206；200 整檔則本地裁切）。 */
+    override fun open(path: String): ByteSource? {
         val id = pathToId[path] ?: return null
-        return try {
-            get("$BASE/files/$id?alt=media")
-        } catch (e: ProviderException.NotFound) {
-            null
+        return DriveSource(id, nodes[id]?.size ?: 0L)
+    }
+
+    private inner class DriveSource(private val fileId: String, override val size: Long) : ByteSource {
+        override fun read(offset: Long, length: Int): ByteArray {
+            if (length <= 0) return ByteArray(0)
+            val (status, body) = getStatus("$BASE/files/$fileId?alt=media",
+                mapOf("Range" to "bytes=$offset-${offset + length - 1}"))
+            if (status == 206) return body
+            if (offset >= body.size) return ByteArray(0)
+            val a = offset.toInt()
+            return body.copyOfRange(a, minOf(body.size, a + length))
         }
     }
 
@@ -312,13 +321,15 @@ class GDriveProvider(
     private fun JsonObject.str(key: String): String? =
         (this[key] as? JsonPrimitive)?.takeIf { it !is JsonNull }?.contentOrNull
 
-    private fun get(url: String): ByteArray {
+    private fun get(url: String): ByteArray = getStatus(url, emptyMap()).second
+
+    private fun getStatus(url: String, extra: Map<String, String>): Pair<Int, ByteArray> {
         var transient = 0
         var reauthUsed = false
         var token = tokenSource.token()
         val sleepsNow = ArrayList(sleeps)
         while (true) {
-            val req = HttpRequest("GET", url, mapOf("Authorization" to "Bearer $token"))
+            val req = HttpRequest("GET", url, extra + ("Authorization" to "Bearer $token"))
             val resp = try {
                 transport.send(req)
             } catch (e: IOException) {
@@ -326,7 +337,7 @@ class GDriveProvider(
             }
             val status = resp.status
             val body = resp.body
-            if (status in 200..299) return body
+            if (status in 200..299) return status to body
             if (status == 401) {
                 if (reauthUsed) throw ProviderException.Auth()
                 reauthUsed = true

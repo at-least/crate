@@ -17,7 +17,8 @@ from pathlib import Path
 from urllib.parse import urlsplit, parse_qs
 
 from generate import canonical
-from sync_generate import ASSETS, SyncEngine, ProviderError
+from generate import ByteSource
+from sync_generate import ASSETS, SyncEngine, ProviderError, NotFoundError
 
 HERE = Path(__file__).parent
 CASES = HERE / "gdrive_cases"
@@ -59,10 +60,6 @@ class AuthError(ProviderError):
 
 class TransientError(ProviderError):
     pass
-
-
-class NotFoundError(Exception):
-    """404：不重試；讀檔 → None（引擎靜默丟棄）；changes.list → cursor 失效。不是 ProviderError。"""
 
 
 class HttpError(ProviderError):
@@ -268,6 +265,9 @@ class GDriveProvider:
 
     # ---- HTTP + §2.1 重試
     def _get(self, url: str, extra_headers: dict | None = None) -> bytes:
+        return self._get_status(url, extra_headers)[1]
+
+    def _get_status(self, url: str, extra_headers: dict | None = None) -> tuple[int, bytes]:
         transient = 0
         reauth_used = False
         token = self.token_source.token()
@@ -280,7 +280,7 @@ class GDriveProvider:
             except TransportError:
                 status, body = 0, b""
             if 200 <= status < 300:
-                return body
+                return status, body
             if status == 401:
                 if reauth_used:
                     raise AuthError()
@@ -391,14 +391,25 @@ class GDriveProvider:
             self.path_to_id[path] = fid
         return snap
 
-    def read_bytes(self, path: str) -> bytes | None:
+    def open(self, path: str) -> ByteSource | None:
+        """ByteSource：size 取自節點 metadata；read = Range 請求（206；200 整檔則本地裁切）。"""
         fid = self.path_to_id.get(path)
         if fid is None:
             return None
-        try:
-            return self._get(f"{BASE}/files/{fid}?alt=media")
-        except NotFoundError:
-            return None
+        return _DriveSource(self, fid, self.nodes[fid]["size"] or 0)
+
+
+class _DriveSource(ByteSource):
+    def __init__(self, provider: "GDriveProvider", fid: str, size: int):
+        self.provider, self.fid, self.size = provider, fid, size
+
+    def read(self, offset: int, length: int) -> bytes:
+        if length <= 0:
+            return b""
+        status, body = self.provider._get_status(
+            f"{BASE}/files/{self.fid}?alt=media",
+            {"Range": f"bytes={offset}-{offset + length - 1}"})
+        return body if status == 206 else body[offset:offset + length]
 
 
 def resolve_root(s: str) -> str | None:
@@ -638,6 +649,18 @@ def build_scripts() -> dict[str, dict]:
             ]},
             {"ops": []},
         ]},
+        "gdrive_windowed_scan": {"steps": [
+            {"ops": [  # 三個 >64KB 的檔：只抓結構需要的 chunk（model.md §1.8）
+                {"op": "mkdir", "id": "d-big", "name": "Big", "parent": ROOT},
+                {"op": "put", "id": "f-m4a", "name": "01 - Tail Moov.m4a", "parent": "d-big",
+                 "asset": "m4a_tail_big", "mtime": 1700001100},
+                {"op": "put", "id": "f-flac", "name": "02 - Big Pic.flac", "parent": "d-big",
+                 "asset": "flac_bigpic", "mtime": 1700001101},
+                {"op": "put", "id": "f-mp3", "name": "03 - Big Apic.mp3", "parent": "d-big",
+                 "asset": "mp3_bigapic", "mtime": 1700001102},
+            ]},
+            {"ops": []},
+        ]},
         "gdrive_collision": {"steps": [
             {"ops": [
                 {"op": "mkdir", "id": "d-a", "name": "Aurora", "parent": ROOT},
@@ -760,6 +783,16 @@ def main():
     s = step("gdrive_collision", 1)
     assert [c["kind"] for c in s["report"]["changes"]] == ["modified"]
     assert s["report"]["index"]["tracks"][0]["title"] == "Drift"
+
+    s = step("gdrive_windowed_scan", 0)
+    assert s["provider"]["requests"] == 1 + 1 + 2 + 2 + 2, s["provider"]  # 每檔 2 chunk（頭 + tag 所在）
+    tr = {t["path"]: t for t in s["report"]["index"]["tracks"]}
+    m4a = tr["Big/01 - Tail Moov.m4a"]
+    assert (m4a["title"], m4a["artist"], m4a["trackNo"], m4a["durationMs"]) == ("Tail Moov", "Becko", 2, 10000), m4a
+    fl = tr["Big/02 - Big Pic.flac"]
+    assert fl["title"] == "Rise" and fl["tagOk"] is True and fl["sizeBytes"] > 150000, fl
+    mp = tr["Big/03 - Big Apic.mp3"]
+    assert (mp["title"], mp["trackNo"], mp["durationMs"]) == ("Big Cover", 3, 250), mp
 
     assert resolve_root("https://drive.google.com/drive/u/0/folders/abc123?usp=sharing") == "abc123"
     assert resolve_root("https://drive.google.com/open?id=xyz") == "xyz"

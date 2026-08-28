@@ -145,12 +145,25 @@ public final class GDriveProvider: SyncProvider {
         return paths()
     }
 
-    public func readBytes(_ path: String) throws -> [UInt8]? {
+    /// ByteSource：size 取自節點 metadata；read = Range 請求（206；200 整檔則本地裁切）。
+    public func open(_ path: String) throws -> (any ByteSource)? {
         guard let id = pathToId[path] else { return nil }
-        do {
-            return try get("\(Self.base)/files/\(id)?alt=media")
-        } catch ProviderError.notFound {
-            return nil
+        return DriveSource(provider: self, fileId: id, size: nodes[id]?.size ?? 0)
+    }
+
+    struct DriveSource: ByteSource {
+        let provider: GDriveProvider
+        let fileId: String
+        let size: Int
+
+        func read(offset: Int, length: Int) throws -> [UInt8] {
+            guard length > 0 else { return [] }
+            let (status, body) = try provider.getStatus(
+                "\(GDriveProvider.base)/files/\(fileId)?alt=media",
+                extra: ["Range": "bytes=\(offset)-\(offset + length - 1)"])
+            if status == 206 { return body }
+            guard offset < body.count else { return [] }
+            return Array(body[offset..<min(body.count, offset + length)])
         }
     }
 
@@ -267,11 +280,17 @@ public final class GDriveProvider: SyncProvider {
     }
 
     private func get(_ url: String) throws -> [UInt8] {
+        try getStatus(url, extra: [:]).1
+    }
+
+    private func getStatus(_ url: String, extra: [String: String]) throws -> (Int, [UInt8]) {
         var transient = 0
         var reauthUsed = false
         var token = try tokenSource.token()
         while true {
-            let req = HttpRequest(method: "GET", url: url, headers: ["Authorization": "Bearer \(token)"])
+            var headers = extra
+            headers["Authorization"] = "Bearer \(token)"
+            let req = HttpRequest(method: "GET", url: url, headers: headers)
             let status: Int
             let body: [UInt8]
             do {
@@ -280,7 +299,7 @@ public final class GDriveProvider: SyncProvider {
             } catch {
                 status = 0; body = []
             }
-            if (200..<300).contains(status) { return body }
+            if (200..<300).contains(status) { return (status, body) }
             if status == 401 {
                 if reauthUsed { throw ProviderError.auth }
                 reauthUsed = true

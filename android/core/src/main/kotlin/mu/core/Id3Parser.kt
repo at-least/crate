@@ -9,50 +9,48 @@ internal object Id3Parser {
         "TCP" to "COMPILATION",
     )
 
-    fun parse(data: ByteArray): Map<String, String>? {
-        if (data.size < 10) return null
-        if (data[0] != 'I'.code.toByte() || data[1] != 'D'.code.toByte() ||
-            data[2] != '3'.code.toByte()
-        ) return null
-        val verMajor = data[3].toInt() and 0xFF
-        val flags = data[5].toInt() and 0xFF
-        val size = ((data[6].toLong() and 0x7F) shl 21) or ((data[7].toLong() and 0x7F) shl 14) or
-            ((data[8].toLong() and 0x7F) shl 7) or (data[9].toLong() and 0x7F)
-        var body = data.copyOfRange(10, minOf(data.size, (10 + size).toInt()))
+    /** 陣列 API（測試相容）。 */
+    fun parse(data: ByteArray): Map<String, String>? = parse(ChunkedReader(data))
+
+    private fun ss(b: ByteArray, o: Int): Long =
+        ((b[o].toLong() and 0x7F) shl 21) or ((b[o + 1].toLong() and 0x7F) shl 14) or
+            ((b[o + 2].toLong() and 0x7F) shl 7) or (b[o + 3].toLong() and 0x7F)
+
+    /** 只讀 frame header；非關注 frame（APIC 等）以 size 跳過（model.md §1.8）。 */
+    fun parse(r: ChunkedReader): Map<String, String>? {
+        if (r.size < 10) return null
+        val h = r.bytes(0, 10)
+        if (h[0] != 'I'.code.toByte() || h[1] != 'D'.code.toByte() || h[2] != '3'.code.toByte()) return null
+        val verMajor = h[3].toInt() and 0xFF
+        val flags = h[5].toInt() and 0xFF
+        var bodyStart = 10L
+        val bodyEnd = minOf(r.size, 10 + ss(h, 6))
         if (verMajor !in 3..4) return null
         if (flags and 0x40 != 0) { // extended header
-            if (body.size < 4) return null
-            val ext = if (verMajor == 3) {
-                Bytes.u32be(body, 0).toInt() + 4
-            } else {
-                ((body[0].toLong() and 0x7F) shl 21) or ((body[1].toLong() and 0x7F) shl 14) or
-                    ((body[2].toLong() and 0x7F) shl 7) or (body[3].toLong() and 0x7F)
-            }.toInt()
-            body = if (ext < body.size) body.copyOfRange(ext, body.size) else ByteArray(0)
+            if (bodyEnd - bodyStart < 4) return null
+            val e = r.bytes(bodyStart, 4)
+            val ext = if (verMajor == 3) Bytes.u32be(e, 0) + 4 else ss(e, 0)
+            bodyStart = minOf(bodyEnd, bodyStart + ext)
         }
         val out = LinkedHashMap<String, String>()
-        var i = 0
-        while (i + 10 <= body.size) {
-            val fid = String(body, i, 4, Charsets.ISO_8859_1)
+        var i = bodyStart
+        while (i + 10 <= bodyEnd) {
+            val fh = r.bytes(i, 10)
+            val fid = String(fh, 0, 4, Charsets.ISO_8859_1)
             if (fid == "\u0000\u0000\u0000\u0000") break
-            val fsize = if (verMajor == 3) {
-                Bytes.u32be(body, i + 4).toInt()
-            } else {
-                ((body[i + 4].toLong() and 0x7F) shl 21) or ((body[i + 5].toLong() and 0x7F) shl 14) or
-                    ((body[i + 6].toLong() and 0x7F) shl 7) or (body[i + 7].toLong() and 0x7F)
-            }.toInt()
-            if (fsize < 0) break
-            val fdataStart = i + 10
-            val fdataEnd = minOf(body.size, fdataStart + fsize)
+            val fsize = if (verMajor == 3) Bytes.u32be(fh, 4) else ss(fh, 4)
+            val fStart = i + 10
+            val fEnd = minOf(bodyEnd, fStart + fsize)
             val key = FRAME_KEY[fid]
-            if (key != null && fdataEnd > fdataStart) {
-                val enc = body[fdataStart].toInt() and 0xFF
-                val rawEnd = indexOfNul(body, fdataStart + 1, fdataEnd)
-                val raw = body.copyOfRange(fdataStart + 1, rawEnd)
+            if (key != null && fEnd > fStart) {
+                val fdata = r.bytes(fStart, (fEnd - fStart).toInt())
+                val enc = fdata[0].toInt() and 0xFF
+                val rawEnd = indexOfNul(fdata, 1, fdata.size)
+                val raw = fdata.copyOfRange(1, rawEnd)
                 val value = decodeText(enc, raw).trimContract()
                 if (value.isNotEmpty() && !out.containsKey(key)) out[key] = value
             }
-            i = fdataStart + fsize
+            i = fStart + fsize
         }
         return out
     }

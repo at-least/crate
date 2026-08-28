@@ -5,8 +5,9 @@ import Foundation
 public protocol SyncProvider {
     /// path -> rev；全部檔案（含非音訊；過濾是引擎的事）。失敗 → 整輪 sync 拋錯、狀態不動。
     func snapshot() throws -> [String: String]
-    /// 掃描用讀檔；nil = NotFound（引擎靜默丟棄）；其他失敗拋錯 → §3.2-8 續掃。
-    func readBytes(_ path: String) throws -> [UInt8]?
+    /// 掃描用開檔（model.md §1.8 ByteSource）；nil = NotFound（引擎靜默丟棄）；其他失敗拋錯 → §3.2-8 續掃。
+    /// 開檔後讀取中 404 → `ProviderError.notFound`（同靜默丟棄）。
+    func open(_ path: String) throws -> (any ByteSource)?
 }
 
 /// provider.md §2 錯誤語意（重試耗盡後由 provider 拋出）。

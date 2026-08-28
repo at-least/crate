@@ -60,14 +60,14 @@ object Scanner {
                 continue
             }
             val fmt = formatFor(rel) ?: continue
-            val data = File(root, rel).readBytes()
-            val parsed = parseTags(fmt, data)
+            val r = ChunkedReader(FileSource.open(File(root, rel)) ?: continue)
+            val parsed = parseTags(fmt, r)
             if (parsed == null) {
                 errors.add(ScanError("BAD_CONTAINER", rel))
             } else {
                 val (fields, tagOk) = parsed
-                tracks.add(makeTrack(rel, fmt, data.size.toLong(), fields, tagOk,
-                    ContainerParsers.parseDuration(fmt, data)))
+                tracks.add(makeTrack(rel, fmt, r.size, fields, tagOk,
+                    ContainerParsers.parseDuration(fmt, r)))
             }
         }
         return ScanResult(
@@ -80,17 +80,22 @@ object Scanner {
         )
     }
 
+    /** 陣列 API（測試相容）。 */
+    internal fun parseTags(fmt: String, data: ByteArray): Pair<TagFields, Boolean>? =
+        parseTags(fmt, ChunkedReader(data))
+
     /** null = BAD_CONTAINER。回傳 (欄位, 是否有任何可用 tag)。 */
-    internal fun parseTags(fmt: String, data: ByteArray): Pair<TagFields, Boolean>? {
+    internal fun parseTags(fmt: String, r: ChunkedReader): Pair<TagFields, Boolean>? {
         val tags: Map<String, String>? = when (fmt) {
-            "flac" -> ContainerParsers.flacTags(data)
-            "mp3" -> Id3Parser.parse(data)
-                ?: if (data.size >= 2 && data[0].toInt() and 0xFF == 0xFF &&
-                    data[1].toInt() and 0xE0 == 0xE0
-                ) linkedMapOf() else null
-            "m4a" -> ContainerParsers.m4aTags(data)
-            "ogg", "opus" -> ContainerParsers.oggTags(data)
-            "wav" -> if (ContainerParsers.isWav(data)) linkedMapOf() else null
+            "flac" -> ContainerParsers.flacTags(r)
+            "mp3" -> Id3Parser.parse(r) ?: run {
+                val b = r.bytes(0, 2)
+                if (b.size >= 2 && b[0].toInt() and 0xFF == 0xFF && b[1].toInt() and 0xE0 == 0xE0)
+                    linkedMapOf() else null
+            }
+            "m4a" -> ContainerParsers.m4aTags(r)
+            "ogg", "opus" -> ContainerParsers.oggTags(r)
+            "wav" -> if (ContainerParsers.isWav(r)) linkedMapOf() else null
             else -> null
         }
         if (tags == null) return null

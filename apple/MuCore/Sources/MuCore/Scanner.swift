@@ -72,16 +72,15 @@ public struct Scanner {
                 files.append(String(p.dropFirst(rootPrefix.count)))
             }
         }
-        return try scan(files: files, read: { rel, maxBytes in
-            try FileHandle(forReadingFrom: resolvedRoot.appendingPathComponent(rel))
-                .read(upToCount: maxBytes)?.bytes ?? []
+        return try scan(files: files, open: { rel in
+            FileSource(url: resolvedRoot.appendingPathComponent(rel))
         })
     }
 
-    /// 測試用注入面：files = 相對路徑；read 只讀需要的部分。
+    /// 測試用注入面：files = 相對路徑；open 給 ByteSource（nil = 不存在，略過）。
     static func scan(
         files: [String],
-        read: (_ rel: String, _ maxBytes: Int) throws -> [UInt8]
+        open: (_ rel: String) throws -> (any ByteSource)?
     ) throws -> ScanResult {
         var tracks: [Track] = []
         var errors: [ScanError] = []
@@ -92,19 +91,21 @@ public struct Scanner {
         }
         for rel in files {
             if rel.lowercased().hasSuffix(".m3u8") {
-                let text = String(decoding: try read(rel, 8 << 20), as: UTF8.self)
+                guard let src = try open(rel) else { continue }
+                let r = ChunkedReader(src)
+                let text = String(decoding: try r.bytes(0, r.size), as: UTF8.self)
                 playlists.append(parseM3u8(text: text, rel: rel, audioPaths: audioPaths))
                 continue
             }
-            guard let fmt = formatFor(rel) else { continue }
-            let data = try read(rel, 128 << 20)
-            guard let (fields, tagOk) = parseTags(fmt: fmt, data: data) else {
+            guard let fmt = formatFor(rel), let src = try open(rel) else { continue }
+            let r = ChunkedReader(src)
+            guard let (fields, tagOk) = try parseTags(fmt: fmt, reader: r) else {
                 errors.append(ScanError(code: "BAD_CONTAINER", path: rel))
                 continue
             }
-            tracks.append(makeTrack(rel: rel, fmt: fmt, size: data.count,
+            tracks.append(makeTrack(rel: rel, fmt: fmt, size: r.size,
                                     fields: fields, tagOkRaw: tagOk,
-                                    durationMs: ContainerParsers.parseDuration(fmt, data)))
+                                    durationMs: try ContainerParsers.parseDuration(fmt, r)))
         }
         return ScanResult(
             albums: groupAlbums(tracks).sorted {
@@ -118,21 +119,25 @@ public struct Scanner {
         )
     }
 
+    /// 陣列 API（測試相容）。
     static func parseTags(fmt: String, data: [UInt8]) -> (TagFields, Bool)? {
+        try! parseTags(fmt: fmt, reader: ChunkedReader(bytes: data))
+    }
+
+    static func parseTags(fmt: String, reader r: ChunkedReader) throws -> (TagFields, Bool)? {
         let tags: [String: String]?
         switch fmt {
-        case "flac": tags = ContainerParsers.flacTags(data)
+        case "flac": tags = try ContainerParsers.flacTags(r)
         case "mp3":
-            if let t = Id3Parser.parse(data) {
+            if let t = try Id3Parser.parse(r) {
                 tags = t
-            } else if data.count >= 2, data[0] == 0xFF, data[1] & 0xE0 == 0xE0 {
-                tags = [:]
             } else {
-                tags = nil
+                let b = try r.bytes(0, 2)
+                tags = b.count >= 2 && b[0] == 0xFF && b[1] & 0xE0 == 0xE0 ? [:] : nil
             }
-        case "m4a": tags = ContainerParsers.m4aTags(data)
-        case "ogg", "opus": tags = ContainerParsers.oggTags(data)
-        case "wav": tags = ContainerParsers.isWav(data) ? [:] : nil
+        case "m4a": tags = try ContainerParsers.m4aTags(r)
+        case "ogg", "opus": tags = try ContainerParsers.oggTags(r)
+        case "wav": tags = try ContainerParsers.isWav(r) ? [:] : nil
         default: tags = nil
         }
         guard let tags else { return nil }

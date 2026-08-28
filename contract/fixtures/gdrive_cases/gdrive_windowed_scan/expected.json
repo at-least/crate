@@ -1,0 +1,210 @@
+[
+  {
+    "provider": {
+      "error": null,
+      "reauths": 0,
+      "requests": 8,
+      "reset": false,
+      "sleeps": [],
+      "unscanned": []
+    },
+    "report": {
+      "changes": [
+        {
+          "kind": "added",
+          "path": "Big/01 - Tail Moov.m4a",
+          "rev": "6df7aa045066d612e4b3a6c7c1d9cd3d"
+        },
+        {
+          "kind": "added",
+          "path": "Big/02 - Big Pic.flac",
+          "rev": "b31657bf88ecaf6ddc65e3af9c43c9a4"
+        },
+        {
+          "kind": "added",
+          "path": "Big/03 - Big Apic.mp3",
+          "rev": "291a3bbf763b62efafaad315a5dc71bf"
+        }
+      ],
+      "index": {
+        "albums": [
+          {
+            "albumArtist": "Aurora",
+            "artTrackId": "Big/02 - Big Pic.flac",
+            "compilation": false,
+            "id": "alb|Aurora|Northern Lights",
+            "name": "Northern Lights",
+            "trackCount": 2,
+            "year": 2021
+          },
+          {
+            "albumArtist": "Becko",
+            "artTrackId": "Big/01 - Tail Moov.m4a",
+            "compilation": false,
+            "id": "alb|Becko|Vector",
+            "name": "Vector",
+            "trackCount": 1,
+            "year": null
+          }
+        ],
+        "errors": [],
+        "playlists": [],
+        "tracks": [
+          {
+            "album": "Vector",
+            "albumArtist": "Becko",
+            "albumId": "alb|Becko|Vector",
+            "artist": "Becko",
+            "available": true,
+            "disc": 1,
+            "durationMs": 10000,
+            "format": "m4a",
+            "id": "Big/01 - Tail Moov.m4a",
+            "path": "Big/01 - Tail Moov.m4a",
+            "rev": "6df7aa045066d612e4b3a6c7c1d9cd3d",
+            "sizeBytes": 200298,
+            "tagOk": true,
+            "title": "Tail Moov",
+            "trackNo": 2,
+            "year": null
+          },
+          {
+            "album": "Northern Lights",
+            "albumArtist": "Aurora",
+            "albumId": "alb|Aurora|Northern Lights",
+            "artist": "Aurora",
+            "available": true,
+            "disc": 1,
+            "durationMs": 300,
+            "format": "flac",
+            "id": "Big/02 - Big Pic.flac",
+            "path": "Big/02 - Big Pic.flac",
+            "rev": "b31657bf88ecaf6ddc65e3af9c43c9a4",
+            "sizeBytes": 158544,
+            "tagOk": true,
+            "title": "Rise",
+            "trackNo": 2,
+            "year": 2021
+          },
+          {
+            "album": "Northern Lights",
+            "albumArtist": "Aurora",
+            "albumId": "alb|Aurora|Northern Lights",
+            "artist": "Aurora",
+            "available": true,
+            "disc": 1,
+            "durationMs": 250,
+            "format": "mp3",
+            "id": "Big/03 - Big Apic.mp3",
+            "path": "Big/03 - Big Apic.mp3",
+            "rev": "291a3bbf763b62efafaad315a5dc71bf",
+            "sizeBytes": 154121,
+            "tagOk": true,
+            "title": "Big Cover",
+            "trackNo": 3,
+            "year": null
+          }
+        ]
+      },
+      "scanned": [
+        "Big/01 - Tail Moov.m4a",
+        "Big/02 - Big Pic.flac",
+        "Big/03 - Big Apic.mp3"
+      ]
+    }
+  },
+  {
+    "provider": {
+      "error": null,
+      "reauths": 0,
+      "requests": 1,
+      "reset": false,
+      "sleeps": [],
+      "unscanned": []
+    },
+    "report": {
+      "changes": [],
+      "index": {
+        "albums": [
+          {
+            "albumArtist": "Aurora",
+            "artTrackId": "Big/02 - Big Pic.flac",
+            "compilation": false,
+            "id": "alb|Aurora|Northern Lights",
+            "name": "Northern Lights",
+            "trackCount": 2,
+            "year": 2021
+          },
+          {
+            "albumArtist": "Becko",
+            "artTrackId": "Big/01 - Tail Moov.m4a",
+            "compilation": false,
+            "id": "alb|Becko|Vector",
+            "name": "Vector",
+            "trackCount": 1,
+            "year": null
+          }
+        ],
+        "errors": [],
+        "playlists": [],
+        "tracks": [
+          {
+            "album": "Vector",
+            "albumArtist": "Becko",
+            "albumId": "alb|Becko|Vector",
+            "artist": "Becko",
+            "available": true,
+            "disc": 1,
+            "durationMs": 10000,
+            "format": "m4a",
+            "id": "Big/01 - Tail Moov.m4a",
+            "path": "Big/01 - Tail Moov.m4a",
+            "rev": "6df7aa045066d612e4b3a6c7c1d9cd3d",
+            "sizeBytes": 200298,
+            "tagOk": true,
+            "title": "Tail Moov",
+            "trackNo": 2,
+            "year": null
+          },
+          {
+            "album": "Northern Lights",
+            "albumArtist": "Aurora",
+            "albumId": "alb|Aurora|Northern Lights",
+            "artist": "Aurora",
+            "available": true,
+            "disc": 1,
+            "durationMs": 300,
+            "format": "flac",
+            "id": "Big/02 - Big Pic.flac",
+            "path": "Big/02 - Big Pic.flac",
+            "rev": "b31657bf88ecaf6ddc65e3af9c43c9a4",
+            "sizeBytes": 158544,
+            "tagOk": true,
+            "title": "Rise",
+            "trackNo": 2,
+            "year": 2021
+          },
+          {
+            "album": "Northern Lights",
+            "albumArtist": "Aurora",
+            "albumId": "alb|Aurora|Northern Lights",
+            "artist": "Aurora",
+            "available": true,
+            "disc": 1,
+            "durationMs": 250,
+            "format": "mp3",
+            "id": "Big/03 - Big Apic.mp3",
+            "path": "Big/03 - Big Apic.mp3",
+            "rev": "291a3bbf763b62efafaad315a5dc71bf",
+            "sizeBytes": 154121,
+            "tagOk": true,
+            "title": "Big Cover",
+            "trackNo": 3,
+            "year": null
+          }
+        ]
+      },
+      "scanned": []
+    }
+  }
+]

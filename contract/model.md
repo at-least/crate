@@ -80,12 +80,29 @@ container 合法即解析，與 tag 內容無關。一律整數除法（floor）
   `durationMs = (sizeBytes − frameOffset) * 8 // bitrateKbps`；找不到 frame → null。
 - **m4a**：`moov/mvhd`。version 0：timescale = u32@+12、duration = u32@+16；version 1：timescale = u32@+20、duration = u64@+24（均相對 mvhd body 起算，body 為 version/flags 之後）。
   `durationMs = duration*1000 // timescale`；無 mvhd 或 timescale == 0 → null。
-- **ogg**：id header `\x01vorbis` → sampleRate = u32le@+12；檔內**最後一個** `OggS` magic → granule = u64le@+6。
+- **ogg**：id header `\x01vorbis`（**前 64KB 視窗**內搜尋）→ sampleRate = u32le@+12；**檔尾 64KB 視窗**內最後一個 `OggS` magic → granule = u64le@+6（Ogg 頁最大 65307B，最後一頁的 header 必在視窗內）。
   `durationMs = granule*1000 // sampleRate`。
-- **opus**：`OpusHead` → preskip = u16le@+10；最後一個 `OggS` → granule = u64le@+6（48kHz 時脈）。
+- **opus**：`OpusHead`（前 64KB 視窗）→ preskip = u16le@+10；檔尾 64KB 視窗內最後一個 `OggS` → granule = u64le@+6（48kHz 時脈）。
   `durationMs = (granule − preskip)*1000 // 48000`；≤ 0 → null。
 - **wav**：RIFF chunk 巡訪（id 4B + size u32le，pad 偶數）：`fmt ` 的 byteRate = u32le@fmtbody+8、`data` 的 size。
   `durationMs = dataSize*1000 // byteRate`；byteRate == 0 → null。
+
+### 1.8 讀取視窗化（v1.1；雲端 provider 進場）
+掃描器**不讀整檔**：輸入是 `ByteSource { size, read(offset, length) }`，經 `ChunkedReader` 存取——
+**64 KiB 對齊 chunk、每 chunk 最多抓一次（快取）、`bytes(offset, length)` 依序抓取涵蓋範圍的 chunk 並裁切到 size**。
+三實作用同一套 chunk 算法與同一套 parser 存取序列，因此每個檔案**觸碰的 chunk 集合一致**——雲端 provider 的 Range 請求數即成為契約可觀測值（`gdrive_cases/` 每步 `provider.requests`）。
+
+parser 只讀結構需要的位元組、跳過大 payload（存取序列即規格）：
+- **ID3v2**：讀 10B header；extended header 讀 4B；每 frame 讀 10B header，只有 §1.2 關注的 frame 才讀 payload（APIC 等直接以 size 跳過）。
+- **FLAC**：讀 4B magic；每 metadata block 讀 4B header，只有 VORBIS_COMMENT（type 4）讀 payload（PICTURE 跳過）；時長讀前 42B。
+- **MP4**：box 巡訪只讀 8B header（size==1 再讀 8B 64-bit size），`moov/udta/meta/ilst` 進入，其餘（含 mdat）跳過；ilst 內只讀 `data` box payload（meta 的 4B version/flags 跳過）。size < header 或超出範圍 → 停止巡訪。
+- **MP3 時長**：ID3 之後的 frame sync 搜尋視窗 = `[off, min(off+65536, size−3))`（多讀 2B 供 header 判讀）。
+- **Ogg**：tag 與 `OpusHead`/`\x01vorbis` 在前 64KB 視窗；最後 `OggS` 在檔尾 64KB 視窗（§1.7）。
+- **WAV**：RIFF chunk 巡訪只讀 8B chunk header；`fmt ` 需 `i+20 ≤ size` 才讀 byteRate；`data` 以 size 跳過。
+- **m3u8**：整檔（小檔）。
+- 同鍵重複（ilst 同 atom 多次、vorbis 同 key 多次、ID3 同 frame 多次）：**第一個非空值勝**；vorbis comment 無 `=` 或 key 為空 → 忽略。
+
+本地資料夾以檔案為 ByteSource（讀法相同，只是 IO 便宜）；`sizeBytes` 一律取自 ByteSource.size（雲端 = metadata `size`）。
 
 ## 2. ScanResult JSON（契約核心）
 
