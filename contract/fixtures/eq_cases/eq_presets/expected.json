@@ -1,0 +1,567 @@
+[
+  {
+    "activeBands": [
+      [
+        31,
+        700
+      ],
+      [
+        62,
+        600
+      ],
+      [
+        125,
+        400
+      ],
+      [
+        250,
+        200
+      ]
+    ],
+    "kind": "preset",
+    "name": "bass",
+    "serialized": "{\"bands\":[700,600,400,200,0,0,0,0,0,0],\"enabled\":true,\"preamp\":0,\"preset\":\"bass\"}",
+    "settings": {
+      "bands": [
+        700,
+        600,
+        400,
+        200,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "enabled": true,
+      "preamp": 0,
+      "preset": "bass"
+    }
+  },
+  {
+    "activeBands": [
+      [
+        31,
+        400
+      ],
+      [
+        62,
+        300
+      ],
+      [
+        125,
+        200
+      ],
+      [
+        250,
+        100
+      ],
+      [
+        500,
+        -100
+      ],
+      [
+        1000,
+        -100
+      ],
+      [
+        4000,
+        200
+      ],
+      [
+        8000,
+        300
+      ],
+      [
+        16000,
+        400
+      ]
+    ],
+    "kind": "preset",
+    "name": "classical",
+    "serialized": "{\"bands\":[400,300,200,100,-100,-100,0,200,300,400],\"enabled\":true,\"preamp\":0,\"preset\":\"classical\"}",
+    "settings": {
+      "bands": [
+        400,
+        300,
+        200,
+        100,
+        -100,
+        -100,
+        0,
+        200,
+        300,
+        400
+      ],
+      "enabled": true,
+      "preamp": 0,
+      "preset": "classical"
+    }
+  },
+  {
+    "activeBands": [],
+    "kind": "preset",
+    "name": "flat",
+    "serialized": "{\"bands\":[0,0,0,0,0,0,0,0,0,0],\"enabled\":true,\"preamp\":0,\"preset\":\"flat\"}",
+    "settings": {
+      "bands": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "enabled": true,
+      "preamp": 0,
+      "preset": "flat"
+    }
+  },
+  {
+    "activeBands": [
+      [
+        31,
+        300
+      ],
+      [
+        62,
+        200
+      ],
+      [
+        125,
+        100
+      ],
+      [
+        250,
+        200
+      ],
+      [
+        500,
+        -100
+      ],
+      [
+        1000,
+        -100
+      ],
+      [
+        4000,
+        100
+      ],
+      [
+        8000,
+        200
+      ],
+      [
+        16000,
+        300
+      ]
+    ],
+    "kind": "preset",
+    "name": "jazz",
+    "serialized": "{\"bands\":[300,200,100,200,-100,-100,0,100,200,300],\"enabled\":true,\"preamp\":0,\"preset\":\"jazz\"}",
+    "settings": {
+      "bands": [
+        300,
+        200,
+        100,
+        200,
+        -100,
+        -100,
+        0,
+        100,
+        200,
+        300
+      ],
+      "enabled": true,
+      "preamp": 0,
+      "preset": "jazz"
+    }
+  },
+  {
+    "activeBands": [
+      [
+        31,
+        600
+      ],
+      [
+        62,
+        500
+      ],
+      [
+        125,
+        200
+      ],
+      [
+        500,
+        -200
+      ],
+      [
+        1000,
+        -200
+      ],
+      [
+        4000,
+        200
+      ],
+      [
+        8000,
+        500
+      ],
+      [
+        16000,
+        600
+      ]
+    ],
+    "kind": "preset",
+    "name": "loudness",
+    "serialized": "{\"bands\":[600,500,200,0,-200,-200,0,200,500,600],\"enabled\":true,\"preamp\":0,\"preset\":\"loudness\"}",
+    "settings": {
+      "bands": [
+        600,
+        500,
+        200,
+        0,
+        -200,
+        -200,
+        0,
+        200,
+        500,
+        600
+      ],
+      "enabled": true,
+      "preamp": 0,
+      "preset": "loudness"
+    }
+  },
+  {
+    "activeBands": [
+      [
+        31,
+        -100
+      ],
+      [
+        62,
+        100
+      ],
+      [
+        125,
+        300
+      ],
+      [
+        250,
+        400
+      ],
+      [
+        500,
+        300
+      ],
+      [
+        1000,
+        100
+      ],
+      [
+        4000,
+        -100
+      ],
+      [
+        8000,
+        -100
+      ],
+      [
+        16000,
+        -100
+      ]
+    ],
+    "kind": "preset",
+    "name": "pop",
+    "serialized": "{\"bands\":[-100,100,300,400,300,100,0,-100,-100,-100],\"enabled\":true,\"preamp\":0,\"preset\":\"pop\"}",
+    "settings": {
+      "bands": [
+        -100,
+        100,
+        300,
+        400,
+        300,
+        100,
+        0,
+        -100,
+        -100,
+        -100
+      ],
+      "enabled": true,
+      "preamp": 0,
+      "preset": "pop"
+    }
+  },
+  {
+    "activeBands": [
+      [
+        31,
+        500
+      ],
+      [
+        62,
+        400
+      ],
+      [
+        125,
+        200
+      ],
+      [
+        500,
+        -100
+      ],
+      [
+        1000,
+        -100
+      ],
+      [
+        2000,
+        200
+      ],
+      [
+        4000,
+        400
+      ],
+      [
+        8000,
+        500
+      ],
+      [
+        16000,
+        500
+      ]
+    ],
+    "kind": "preset",
+    "name": "rock",
+    "serialized": "{\"bands\":[500,400,200,0,-100,-100,200,400,500,500],\"enabled\":true,\"preamp\":0,\"preset\":\"rock\"}",
+    "settings": {
+      "bands": [
+        500,
+        400,
+        200,
+        0,
+        -100,
+        -100,
+        200,
+        400,
+        500,
+        500
+      ],
+      "enabled": true,
+      "preamp": 0,
+      "preset": "rock"
+    }
+  },
+  {
+    "activeBands": [
+      [
+        1000,
+        100
+      ],
+      [
+        2000,
+        300
+      ],
+      [
+        4000,
+        500
+      ],
+      [
+        8000,
+        600
+      ],
+      [
+        16000,
+        700
+      ]
+    ],
+    "kind": "preset",
+    "name": "treble",
+    "serialized": "{\"bands\":[0,0,0,0,0,100,300,500,600,700],\"enabled\":true,\"preamp\":0,\"preset\":\"treble\"}",
+    "settings": {
+      "bands": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        100,
+        300,
+        500,
+        600,
+        700
+      ],
+      "enabled": true,
+      "preamp": 0,
+      "preset": "treble"
+    }
+  },
+  {
+    "activeBands": [
+      [
+        31,
+        -200
+      ],
+      [
+        62,
+        -100
+      ],
+      [
+        250,
+        200
+      ],
+      [
+        500,
+        400
+      ],
+      [
+        1000,
+        400
+      ],
+      [
+        2000,
+        300
+      ],
+      [
+        4000,
+        100
+      ],
+      [
+        16000,
+        -100
+      ]
+    ],
+    "kind": "preset",
+    "name": "vocal",
+    "serialized": "{\"bands\":[-200,-100,0,200,400,400,300,100,0,-100],\"enabled\":true,\"preamp\":0,\"preset\":\"vocal\"}",
+    "settings": {
+      "bands": [
+        -200,
+        -100,
+        0,
+        200,
+        400,
+        400,
+        300,
+        100,
+        0,
+        -100
+      ],
+      "enabled": true,
+      "preamp": 0,
+      "preset": "vocal"
+    }
+  },
+  {
+    "activeBands": [],
+    "kind": "preset",
+    "name": "unknown_name",
+    "serialized": "{\"bands\":[0,0,0,0,0,0,0,0,0,0],\"enabled\":true,\"preamp\":0,\"preset\":\"flat\"}",
+    "settings": {
+      "bands": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "enabled": true,
+      "preamp": 0,
+      "preset": "flat"
+    }
+  },
+  {
+    "activeBands": [],
+    "kind": "preset",
+    "name": "bass",
+    "serialized": "{\"bands\":[700,600,400,200,0,0,0,0,0,0],\"enabled\":false,\"preamp\":0,\"preset\":\"bass\"}",
+    "settings": {
+      "bands": [
+        700,
+        600,
+        400,
+        200,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "enabled": false,
+      "preamp": 0,
+      "preset": "bass"
+    }
+  },
+  {
+    "activeBands": [
+      [
+        31,
+        500
+      ],
+      [
+        62,
+        400
+      ],
+      [
+        125,
+        200
+      ],
+      [
+        500,
+        -100
+      ],
+      [
+        1000,
+        -100
+      ],
+      [
+        2000,
+        200
+      ],
+      [
+        4000,
+        400
+      ],
+      [
+        8000,
+        500
+      ],
+      [
+        16000,
+        500
+      ]
+    ],
+    "kind": "preset",
+    "name": "rock",
+    "serialized": "{\"bands\":[500,400,200,0,-100,-100,200,400,500,500],\"enabled\":true,\"preamp\":-300,\"preset\":\"rock\"}",
+    "settings": {
+      "bands": [
+        500,
+        400,
+        200,
+        0,
+        -100,
+        -100,
+        200,
+        400,
+        500,
+        500
+      ],
+      "enabled": true,
+      "preamp": -300,
+      "preset": "rock"
+    }
+  }
+]

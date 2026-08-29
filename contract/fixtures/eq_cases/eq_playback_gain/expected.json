@@ -1,0 +1,68 @@
+[
+  {
+    "gainMb": 0,
+    "identity": true,
+    "kind": "gain",
+    "name": "off_no_eq"
+  },
+  {
+    "gainMb": -654,
+    "identity": false,
+    "kind": "gain",
+    "name": "track"
+  },
+  {
+    "gainMb": 210,
+    "identity": false,
+    "kind": "gain",
+    "name": "album"
+  },
+  {
+    "gainMb": -654,
+    "identity": false,
+    "kind": "gain",
+    "name": "album_falls_back"
+  },
+  {
+    "gainMb": 0,
+    "identity": true,
+    "kind": "gain",
+    "name": "no_tags"
+  },
+  {
+    "gainMb": 0,
+    "identity": true,
+    "kind": "gain",
+    "name": "preamp_disabled_eq"
+  },
+  {
+    "gainMb": 600,
+    "identity": false,
+    "kind": "gain",
+    "name": "preamp_enabled_eq"
+  },
+  {
+    "gainMb": 1200,
+    "identity": false,
+    "kind": "gain",
+    "name": "positive_total_clamped"
+  },
+  {
+    "gainMb": -6000,
+    "identity": false,
+    "kind": "gain",
+    "name": "negative_total_clamped"
+  },
+  {
+    "gainMb": 0,
+    "identity": true,
+    "kind": "gain",
+    "name": "identity_when_flat_and_zero"
+  },
+  {
+    "gainMb": 0,
+    "identity": false,
+    "kind": "gain",
+    "name": "not_identity_with_band"
+  }
+]

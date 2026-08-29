@@ -647,15 +647,62 @@ private func fmtTotal(_ tracks: [Track]) -> String {
     return "\(max(1, secs / 60)) 分鐘"
 }
 
-/// ReplayGain 模式（off/track/album）；MacPlayer 持久化於 UserDefaults 並即時套音量。
+/// ReplayGain 模式與 EQ（model.md §1.9/§1.10）；MacPlayer 持久化於 UserDefaults 並即時套用。
 private struct MacReplayGainPicker: View {
     @ObservedObject var player: MacPlayer
+
+    private static let preampChoices = [-600, -300, 0, 300, 600]
 
     var body: some View {
         Picker("ReplayGain", selection: $player.replayGainMode) {
             ForEach(ReplayGain.Mode.allCases, id: \.self) { m in
                 Text(m.label).tag(m)
             }
+        }
+        Picker("等化器", selection: presetBinding) {
+            Text("關閉").tag("")
+            ForEach(EqSettings.presets, id: \.name) { p in
+                Text(Self.presetLabel(p.name)).tag(p.name)
+            }
+        }
+        Picker("前置增益", selection: preampBinding) {
+            ForEach(Self.preampChoices, id: \.self) { mb in
+                Text(mb == 0 ? "0 dB" : String(format: "%+.0f dB", Double(mb) / 100)).tag(mb)
+            }
+        }
+        .disabled(!player.eq.enabled)
+    }
+
+    private var presetBinding: Binding<String> {
+        Binding(get: { player.eq.enabled ? player.eq.preset : "" },
+                set: { name in
+                    let eq = player.eq
+                    player.eq = name.isEmpty
+                        ? EqSettings(bands: eq.bands, enabled: false, preamp: eq.preamp, preset: eq.preset)
+                        : EqSettings.preset(name, enabled: true, preamp: eq.preamp)
+                })
+    }
+
+    private var preampBinding: Binding<Int> {
+        Binding(get: { player.eq.preamp },
+                set: { mb in
+                    let eq = player.eq
+                    player.eq = EqSettings(bands: eq.bands, enabled: eq.enabled, preamp: mb, preset: eq.preset)
+                })
+    }
+
+    private static func presetLabel(_ name: String) -> String {
+        switch name {
+        case "flat": return "平坦"
+        case "rock": return "搖滾"
+        case "pop": return "流行"
+        case "jazz": return "爵士"
+        case "classical": return "古典"
+        case "bass": return "重低音"
+        case "treble": return "高音"
+        case "vocal": return "人聲"
+        case "loudness": return "響度"
+        default: return name
         }
     }
 }

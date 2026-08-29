@@ -77,8 +77,12 @@ struct NowPlayingView: View {
                             Text(m.label).tag(m)
                         }
                     }
+                    Divider()
+                    EqMenuContent(eq: $player.eq)
                 } label: {
-                    Label("ReplayGain：\(player.replayGainMode.label)",
+                    Label(player.eq.enabled
+                          ? "音效：\(EqLabels.presetLabel(player.eq.preset))"
+                          : "ReplayGain：\(player.replayGainMode.label)",
                           systemImage: "waveform.badge.minus")
                         .font(.footnote)
                         .foregroundStyle(.secondary)
@@ -128,5 +132,62 @@ struct NowPlayingView: View {
         }
         .buttonStyle(.plain)
         .accessibilityIdentifier(id)
+    }
+}
+
+/// EQ 選單（preset / 前置增益 / 關閉）——iOS 與 MuMac 共用文案（EqLabels）。
+struct EqMenuContent: View {
+    @Binding var eq: EqSettings
+
+    var body: some View {
+        Picker("等化器", selection: presetBinding) {
+            Text("關閉").tag("")
+            ForEach(EqSettings.presets, id: \.name) { p in
+                Text(EqLabels.presetLabel(p.name)).tag(p.name)
+            }
+        }
+        Picker("前置增益", selection: preampBinding) {
+            ForEach(EqLabels.preampChoices, id: \.self) { mb in
+                Text(EqLabels.preampLabel(mb)).tag(mb)
+            }
+        }
+        .disabled(!eq.enabled)
+    }
+
+    private var presetBinding: Binding<String> {
+        Binding(get: { eq.enabled ? eq.preset : "" },
+                set: { name in
+                    eq = name.isEmpty
+                        ? EqSettings(bands: eq.bands, enabled: false, preamp: eq.preamp, preset: eq.preset)
+                        : EqSettings.preset(name, enabled: true, preamp: eq.preamp)
+                })
+    }
+
+    private var preampBinding: Binding<Int> {
+        Binding(get: { eq.preamp },
+                set: { eq = EqSettings(bands: eq.bands, enabled: eq.enabled, preamp: $0, preset: eq.preset) })
+    }
+}
+
+enum EqLabels {
+    static let preampChoices = [-600, -300, 0, 300, 600]
+
+    static func preampLabel(_ mb: Int) -> String {
+        mb == 0 ? "0 dB" : String(format: "%+.0f dB", Double(mb) / 100)
+    }
+
+    static func presetLabel(_ name: String) -> String {
+        switch name {
+        case "flat": return "平坦"
+        case "rock": return "搖滾"
+        case "pop": return "流行"
+        case "jazz": return "爵士"
+        case "classical": return "古典"
+        case "bass": return "重低音"
+        case "treble": return "高音"
+        case "vocal": return "人聲"
+        case "loudness": return "響度"
+        default: return name
+        }
     }
 }

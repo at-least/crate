@@ -49,3 +49,12 @@ fixture provider 的 `Entry.id == Entry.path`（見 model.md §1.4），所以
 | nested_album_dirs | 同藝人兩專輯歸組 |
 | m3u8_*（8 案例） | 空、EXTINF+相對路徑、CRLF+BOM、絕對路徑 missing、unicode、畸形 EXTINF、反斜線 |
 | replaygain_tags | model.md §1.9：Vorbis `REPLAYGAIN_*`、ID3 `TXXX`（Latin-1/UTF-16）、MP4 `----`；`n/a`→null、截斷第三位小數、同鍵第一個勝 |
+
+## 其他契約案例集（非 scanner cases/）
+| 目錄 | 產生器 | 驗什麼 |
+|---|---|---|
+| `sync_cases/` | `sync_generate.py` | 同步引擎（sync-rules §3） |
+| `err_cases/` | `err_generate.py` | 重試政策（provider.md §2.1） |
+| `gdrive_cases/` | `gdrive_generate.py` | GDrive provider（provider.md §8）＋視窗化請求數 |
+| `dropbox_cases/` | `dropbox_generate.py` | Dropbox provider（provider.md §9） |
+| `eq_cases/` | `eq_generate.py` | EQ 設定與播放總增益（model.md §1.10；純整數。浮點 DSP 由各平台性質測試驗） |

@@ -1,0 +1,304 @@
+[
+  {
+    "activeBands": [],
+    "kind": "parse",
+    "name": "empty",
+    "serialized": "{\"bands\":[0,0,0,0,0,0,0,0,0,0],\"enabled\":false,\"preamp\":0,\"preset\":\"flat\"}",
+    "settings": {
+      "bands": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "enabled": false,
+      "preamp": 0,
+      "preset": "flat"
+    }
+  },
+  {
+    "activeBands": [],
+    "kind": "parse",
+    "name": "null",
+    "serialized": "{\"bands\":[0,0,0,0,0,0,0,0,0,0],\"enabled\":false,\"preamp\":0,\"preset\":\"flat\"}",
+    "settings": {
+      "bands": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "enabled": false,
+      "preamp": 0,
+      "preset": "flat"
+    }
+  },
+  {
+    "activeBands": [],
+    "kind": "parse",
+    "name": "garbage",
+    "serialized": "{\"bands\":[0,0,0,0,0,0,0,0,0,0],\"enabled\":false,\"preamp\":0,\"preset\":\"flat\"}",
+    "settings": {
+      "bands": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "enabled": false,
+      "preamp": 0,
+      "preset": "flat"
+    }
+  },
+  {
+    "activeBands": [],
+    "kind": "parse",
+    "name": "not_object",
+    "serialized": "{\"bands\":[0,0,0,0,0,0,0,0,0,0],\"enabled\":false,\"preamp\":0,\"preset\":\"flat\"}",
+    "settings": {
+      "bands": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "enabled": false,
+      "preamp": 0,
+      "preset": "flat"
+    }
+  },
+  {
+    "activeBands": [
+      [
+        31,
+        100
+      ],
+      [
+        62,
+        -200
+      ],
+      [
+        16000,
+        300
+      ]
+    ],
+    "kind": "parse",
+    "name": "full",
+    "serialized": "{\"bands\":[100,-200,0,0,0,0,0,0,0,300],\"enabled\":true,\"preamp\":-150,\"preset\":\"rock\"}",
+    "settings": {
+      "bands": [
+        100,
+        -200,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        300
+      ],
+      "enabled": true,
+      "preamp": -150,
+      "preset": "rock"
+    }
+  },
+  {
+    "activeBands": [
+      [
+        31,
+        1200
+      ],
+      [
+        62,
+        -1200
+      ]
+    ],
+    "kind": "parse",
+    "name": "clamped",
+    "serialized": "{\"bands\":[1200,-1200,0,0,0,0,0,0,0,0],\"enabled\":true,\"preamp\":1200,\"preset\":\"flat\"}",
+    "settings": {
+      "bands": [
+        1200,
+        -1200,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "enabled": true,
+      "preamp": 1200,
+      "preset": "flat"
+    }
+  },
+  {
+    "activeBands": [
+      [
+        31,
+        100
+      ],
+      [
+        62,
+        200
+      ]
+    ],
+    "kind": "parse",
+    "name": "short_bands",
+    "serialized": "{\"bands\":[100,200,0,0,0,0,0,0,0,0],\"enabled\":true,\"preamp\":0,\"preset\":\"flat\"}",
+    "settings": {
+      "bands": [
+        100,
+        200,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "enabled": true,
+      "preamp": 0,
+      "preset": "flat"
+    }
+  },
+  {
+    "activeBands": [
+      [
+        31,
+        100
+      ],
+      [
+        62,
+        100
+      ],
+      [
+        125,
+        100
+      ],
+      [
+        250,
+        100
+      ],
+      [
+        500,
+        100
+      ],
+      [
+        1000,
+        100
+      ],
+      [
+        2000,
+        100
+      ],
+      [
+        4000,
+        100
+      ],
+      [
+        8000,
+        100
+      ],
+      [
+        16000,
+        100
+      ]
+    ],
+    "kind": "parse",
+    "name": "long_bands",
+    "serialized": "{\"bands\":[100,100,100,100,100,100,100,100,100,100],\"enabled\":true,\"preamp\":0,\"preset\":\"flat\"}",
+    "settings": {
+      "bands": [
+        100,
+        100,
+        100,
+        100,
+        100,
+        100,
+        100,
+        100,
+        100,
+        100
+      ],
+      "enabled": true,
+      "preamp": 0,
+      "preset": "flat"
+    }
+  },
+  {
+    "activeBands": [],
+    "kind": "parse",
+    "name": "bad_types",
+    "serialized": "{\"bands\":[100,0,0,0,0,0,0,0,0,0],\"enabled\":false,\"preamp\":0,\"preset\":\"flat\"}",
+    "settings": {
+      "bands": [
+        100,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "enabled": false,
+      "preamp": 0,
+      "preset": "flat"
+    }
+  },
+  {
+    "activeBands": [],
+    "kind": "parse",
+    "name": "unknown_keys",
+    "serialized": "{\"bands\":[0,0,0,0,0,0,0,0,0,0],\"enabled\":true,\"preamp\":0,\"preset\":\"jazz\"}",
+    "settings": {
+      "bands": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "enabled": true,
+      "preamp": 0,
+      "preset": "jazz"
+    }
+  }
+]

@@ -32,7 +32,7 @@ jobs:
           distribution: temurin
           java-version: '17'
       - uses: gradle/actions/setup-gradle@v4
-      - run: ./gradlew :app:assembleDebug
+      - run: ./gradlew :app:assembleDebug :app:testDebugUnitTest
 
   swift:
     runs-on: macos-latest
@@ -73,3 +73,4 @@ jobs:
       - run: python3 contract/fixtures/err_generate.py --check
       - run: python3 contract/fixtures/gdrive_generate.py --check
       - run: python3 contract/fixtures/dropbox_generate.py --check
+      - run: python3 contract/fixtures/eq_generate.py --check

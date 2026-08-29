@@ -1,0 +1,54 @@
+{
+  "entries": [
+    {
+      "type": "parse",
+      "name": "empty",
+      "text": ""
+    },
+    {
+      "type": "parse",
+      "name": "null",
+      "text": null
+    },
+    {
+      "type": "parse",
+      "name": "garbage",
+      "text": "{not json"
+    },
+    {
+      "type": "parse",
+      "name": "not_object",
+      "text": "[1,2,3]"
+    },
+    {
+      "type": "parse",
+      "name": "full",
+      "text": "{\"bands\": [100, -200, 0, 0, 0, 0, 0, 0, 0, 300], \"enabled\": true, \"preamp\": -150, \"preset\": \"rock\"}"
+    },
+    {
+      "type": "parse",
+      "name": "clamped",
+      "text": "{\"bands\": [9999, -9999, 0, 0, 0, 0, 0, 0, 0, 0], \"enabled\": true, \"preamp\": 5000, \"preset\": \"flat\"}"
+    },
+    {
+      "type": "parse",
+      "name": "short_bands",
+      "text": "{\"bands\": [100, 200], \"enabled\": true}"
+    },
+    {
+      "type": "parse",
+      "name": "long_bands",
+      "text": "{\"bands\": [100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100], \"enabled\": true}"
+    },
+    {
+      "type": "parse",
+      "name": "bad_types",
+      "text": "{\"bands\": [100, \"x\", null, 1.5, true, 0, 0, 0, 0, 0], \"enabled\": \"yes\", \"preamp\": \"3\", \"preset\": \"nope\"}"
+    },
+    {
+      "type": "parse",
+      "name": "unknown_keys",
+      "text": "{\"bands\": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0], \"enabled\": true, \"preamp\": 0, \"preset\": \"jazz\", \"extra\": 1}"
+    }
+  ]
+}

@@ -298,20 +298,36 @@ private fun TrackList(
 
 data class PlayerBarState(val title: String)
 
-/** ReplayGain 模式（off/track/album）；存 SharedPreferences，PlaybackService 監聽即時套用。 */
+/** 音效選單：ReplayGain 模式 + EQ preset/前置增益（存 SharedPreferences，PlaybackService 監聽即時套用）。 */
 @Composable
 private fun ReplayGainMenu() {
     val context = LocalContext.current
-    val prefs = remember { context.getSharedPreferences(PlaybackService.PREFS, android.content.Context.MODE_PRIVATE) }
-    var mode by remember { mutableStateOf(mu.core.ReplayGain.Mode.from(prefs.getString(mu.core.ReplayGain.PREF_KEY, null))) }
+    val prefs = remember {
+        context.getSharedPreferences(PlaybackService.PREFS, android.content.Context.MODE_PRIVATE)
+    }
+    var mode by remember {
+        mutableStateOf(mu.core.ReplayGain.Mode.from(prefs.getString(mu.core.ReplayGain.PREF_KEY, null)))
+    }
+    var eq by remember {
+        mutableStateOf(mu.core.EqSettings.parse(prefs.getString(mu.core.EqSettings.PREF_KEY, null)))
+    }
     var open by remember { mutableStateOf(false) }
+
+    fun saveEq(next: mu.core.EqSettings) {
+        eq = next
+        prefs.edit().putString(mu.core.EqSettings.PREF_KEY, next.serialize()).apply()
+    }
+
     IconButton(onClick = { open = true }, modifier = Modifier.testTag("replayGain")) {
-        androidx.compose.material3.Icon(Icons.Default.Settings, contentDescription = "ReplayGain：${mode.label}")
+        androidx.compose.material3.Icon(
+            Icons.Default.Settings,
+            contentDescription = "音效：ReplayGain ${mode.label}／EQ ${if (eq.enabled) eqLabel(eq.preset) else "關閉"}",
+        )
     }
     androidx.compose.material3.DropdownMenu(expanded = open, onDismissRequest = { open = false }) {
         mu.core.ReplayGain.Mode.entries.forEach { m ->
             androidx.compose.material3.DropdownMenuItem(
-                text = { Text((if (m == mode) "✓ " else "    ") + "ReplayGain：${m.label}") },
+                text = { Text(check(m == mode) + "ReplayGain：${m.label}") },
                 onClick = {
                     mode = m
                     prefs.edit().putString(mu.core.ReplayGain.PREF_KEY, m.key).apply()
@@ -319,5 +335,50 @@ private fun ReplayGainMenu() {
                 },
             )
         }
+        androidx.compose.material3.HorizontalDivider()
+        androidx.compose.material3.DropdownMenuItem(
+            text = { Text(check(!eq.enabled) + "等化器：關閉") },
+            onClick = {
+                saveEq(mu.core.EqSettings.create(eq.bands, enabled = false, preamp = eq.preamp, preset = eq.preset))
+                open = false
+            },
+        )
+        mu.core.EqSettings.PRESETS.forEach { (name, _) ->
+            androidx.compose.material3.DropdownMenuItem(
+                text = { Text(check(eq.enabled && eq.preset == name) + "等化器：${eqLabel(name)}") },
+                onClick = {
+                    saveEq(mu.core.EqSettings.preset(name, enabled = true, preamp = eq.preamp))
+                    open = false
+                },
+            )
+        }
+        androidx.compose.material3.HorizontalDivider()
+        listOf(-600, -300, 0, 300, 600).forEach { mb ->
+            androidx.compose.material3.DropdownMenuItem(
+                enabled = eq.enabled,
+                text = { Text(check(eq.preamp == mb) + "前置增益：" + preampLabel(mb)) },
+                onClick = {
+                    saveEq(mu.core.EqSettings.create(eq.bands, eq.enabled, mb, eq.preset))
+                    open = false
+                },
+            )
+        }
     }
+}
+
+private fun check(on: Boolean) = if (on) "✓ " else "    "
+
+private fun preampLabel(mb: Int) = if (mb == 0) "0 dB" else "%+.0f dB".format(mb / 100.0)
+
+private fun eqLabel(name: String) = when (name) {
+    "flat" -> "平坦"
+    "rock" -> "搖滾"
+    "pop" -> "流行"
+    "jazz" -> "爵士"
+    "classical" -> "古典"
+    "bass" -> "重低音"
+    "treble" -> "高音"
+    "vocal" -> "人聲"
+    "loudness" -> "響度"
+    else -> name
 }

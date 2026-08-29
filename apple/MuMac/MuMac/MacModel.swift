@@ -17,13 +17,23 @@ final class MacPlayer: NSObject, ObservableObject {
     @Published private(set) var elapsed: Double = 0
     @Published private(set) var duration: Double = 0
 
-    /// ReplayGain 模式（UserDefaults 持久化）；換曲時套音量（MuCore.ReplayGain）。
+    /// ReplayGain 模式（UserDefaults 持久化）；換曲/改設定時重算 DSP 增益。
     @Published var replayGainMode: ReplayGain.Mode = ReplayGain.mode() {
         didSet {
             UserDefaults.standard.set(replayGainMode.rawValue, forKey: ReplayGain.defaultsKey)
-            applyReplayGain()
+            applyDsp()
         }
     }
+
+    /// EQ 設定（model.md §1.10；UserDefaults 持久化）。
+    @Published var eq: EqSettings = EqSettings.load() {
+        didSet {
+            eq.save()
+            applyDsp()
+        }
+    }
+
+    private let tap = AudioTapAttacher()
 
     private let player = AVQueuePlayer()
     private var timeObs: Any?
@@ -92,7 +102,9 @@ final class MacPlayer: NSObject, ObservableObject {
         player.removeAllItems()
         for t in tracks[i...] {
             let url = resolveFile?(t) ?? URL(fileURLWithPath: t.path)
-            player.insert(AVPlayerItem(url: url), after: player.items().last)
+            let item = AVPlayerItem(url: url)
+            tap.attach(to: item) // EQ/增益（DSP）
+            player.insert(item, after: player.items().last)
         }
         hasQueue = !tracks.isEmpty
         currentItemChanged()
@@ -110,11 +122,13 @@ final class MacPlayer: NSObject, ObservableObject {
         nowArtist = t?.artist
         elapsed = 0
         duration = Double(t?.durationMs ?? 0) / 1000
-        applyReplayGain()
+        applyDsp()
     }
 
-    private func applyReplayGain() {
-        player.volume = ReplayGain.volume(mode: replayGainMode, track: nowTrack)
+    /// 總增益（ReplayGain + preamp）與 EQ 一併交給 DSP；播放器音量固定 1。
+    private func applyDsp() {
+        tap.dsp.setSettings(eq, gainMb: eq.playbackGainMb(mode: replayGainMode, track: nowTrack))
+        player.volume = 1
     }
 }
 

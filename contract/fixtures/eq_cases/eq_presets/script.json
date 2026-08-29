@@ -1,0 +1,54 @@
+{
+  "entries": [
+    {
+      "type": "preset",
+      "name": "bass"
+    },
+    {
+      "type": "preset",
+      "name": "classical"
+    },
+    {
+      "type": "preset",
+      "name": "flat"
+    },
+    {
+      "type": "preset",
+      "name": "jazz"
+    },
+    {
+      "type": "preset",
+      "name": "loudness"
+    },
+    {
+      "type": "preset",
+      "name": "pop"
+    },
+    {
+      "type": "preset",
+      "name": "rock"
+    },
+    {
+      "type": "preset",
+      "name": "treble"
+    },
+    {
+      "type": "preset",
+      "name": "vocal"
+    },
+    {
+      "type": "preset",
+      "name": "unknown_name"
+    },
+    {
+      "type": "preset",
+      "name": "bass",
+      "enabled": false
+    },
+    {
+      "type": "preset",
+      "name": "rock",
+      "preamp": -300
+    }
+  ]
+}

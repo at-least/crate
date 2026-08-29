@@ -1,0 +1,77 @@
+{
+  "entries": [
+    {
+      "type": "gain",
+      "name": "off_no_eq",
+      "mode": "off",
+      "trackMb": -654,
+      "albumMb": 210
+    },
+    {
+      "type": "gain",
+      "name": "track",
+      "mode": "track",
+      "trackMb": -654,
+      "albumMb": 210
+    },
+    {
+      "type": "gain",
+      "name": "album",
+      "mode": "album",
+      "trackMb": -654,
+      "albumMb": 210
+    },
+    {
+      "type": "gain",
+      "name": "album_falls_back",
+      "mode": "album",
+      "trackMb": -654,
+      "albumMb": null
+    },
+    {
+      "type": "gain",
+      "name": "no_tags",
+      "mode": "album",
+      "trackMb": null,
+      "albumMb": null
+    },
+    {
+      "type": "gain",
+      "name": "preamp_disabled_eq",
+      "mode": "off",
+      "eq": "{\"bands\": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0], \"enabled\": false, \"preamp\": 600}"
+    },
+    {
+      "type": "gain",
+      "name": "preamp_enabled_eq",
+      "mode": "off",
+      "eq": "{\"bands\": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0], \"enabled\": true, \"preamp\": 600}"
+    },
+    {
+      "type": "gain",
+      "name": "positive_total_clamped",
+      "mode": "track",
+      "trackMb": 1000,
+      "eq": "{\"bands\": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0], \"enabled\": true, \"preamp\": 1200}"
+    },
+    {
+      "type": "gain",
+      "name": "negative_total_clamped",
+      "mode": "track",
+      "trackMb": -9000,
+      "eq": "{\"bands\": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0], \"enabled\": true, \"preamp\": -1200}"
+    },
+    {
+      "type": "gain",
+      "name": "identity_when_flat_and_zero",
+      "mode": "off",
+      "eq": "{\"bands\": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0], \"enabled\": true, \"preamp\": 0}"
+    },
+    {
+      "type": "gain",
+      "name": "not_identity_with_band",
+      "mode": "off",
+      "eq": "{\"bands\": [0, 0, 0, 0, 0, 0, 0, 0, 0, 200], \"enabled\": true}"
+    }
+  ]
+}

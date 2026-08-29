@@ -105,6 +105,6 @@ CREATE TABLE favorites (
 
 -- ============ 同步游標與雜項 KV ============
 CREATE TABLE sync_state (
-  key   TEXT PRIMARY KEY,              -- 如 'root'（目前庫根）；雲端時代再加 'cursor:gdrive:<rootId>'
+  key   TEXT PRIMARY KEY,              -- 如 'root'（目前庫根）；雲端時代再加 'cursor:gdrive:<rootId>'。播放設定（RG 模式/EQ）走平台 prefs，不入此表（model.md §1.10）
   value TEXT NOT NULL
 );

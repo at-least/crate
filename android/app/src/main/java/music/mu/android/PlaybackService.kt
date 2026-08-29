@@ -6,8 +6,12 @@ import androidx.media3.common.C
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
 import androidx.media3.common.Player
+import mu.core.EqSettings
 import mu.core.ReplayGain
+import androidx.media3.exoplayer.DefaultRenderersFactory
 import androidx.media3.exoplayer.ExoPlayer
+import androidx.media3.exoplayer.audio.AudioSink
+import androidx.media3.exoplayer.audio.DefaultAudioSink
 import androidx.media3.session.MediaSession
 import androidx.media3.session.MediaSessionService
 import mu.core.Scanner
@@ -23,7 +27,18 @@ class PlaybackService : MediaSessionService() {
 
     override fun onCreate() {
         super.onCreate()
-        val player = ExoPlayer.Builder(this)
+        val renderersFactory = object : DefaultRenderersFactory(this) {
+            override fun buildAudioSink(
+                context: android.content.Context,
+                enableFloatOutput: Boolean,
+                enableAudioTrackPlaybackParams: Boolean,
+            ): AudioSink = DefaultAudioSink.Builder(context)
+                .setAudioProcessorChain(DefaultAudioSink.DefaultAudioProcessorChain(processor))
+                .setEnableFloatOutput(enableFloatOutput)
+                .setEnableAudioTrackPlaybackParams(enableAudioTrackPlaybackParams)
+                .build()
+        }
+        val player = ExoPlayer.Builder(this, renderersFactory)
             .setAudioAttributes(
                 AudioAttributes.Builder()
                     .setUsage(C.USAGE_MEDIA)
@@ -34,27 +49,34 @@ class PlaybackService : MediaSessionService() {
             .setHandleAudioBecomingNoisy(true) // 拔耳機自動暫停
             .build()
         mediaSession = MediaSession.Builder(this, player).build()
-        // ReplayGain：換曲時依模式套音量（mode 存 SharedPreferences；UI 改動即時生效）
+        // ReplayGain + EQ：換曲/改設定時重算 DSP（設定存 SharedPreferences；UI 改動即時生效）
         player.addListener(object : Player.Listener {
             override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
-                applyReplayGain(player, mediaItem)
+                applyDsp(player, mediaItem)
             }
         })
         prefs = getSharedPreferences(PREFS, MODE_PRIVATE)
         prefListener = android.content.SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
-            if (key == ReplayGain.PREF_KEY) applyReplayGain(player, player.currentMediaItem)
+            if (key == ReplayGain.PREF_KEY || key == EqSettings.PREF_KEY) {
+                applyDsp(player, player.currentMediaItem)
+            }
         }
         prefs?.registerOnSharedPreferenceChangeListener(prefListener)
+        applyDsp(player, null)
     }
 
+    private val processor = MuAudioProcessor()
     private var prefs: android.content.SharedPreferences? = null
     private var prefListener: android.content.SharedPreferences.OnSharedPreferenceChangeListener? = null
 
-    private fun applyReplayGain(player: Player, item: MediaItem?) {
+    /** 總增益（ReplayGain + preamp）與 EQ 一併交給 DSP；播放器音量固定 1（正增益放大在 DSP 內）。 */
+    private fun applyDsp(player: Player, item: MediaItem?) {
         val mode = ReplayGain.Mode.from(prefs?.getString(ReplayGain.PREF_KEY, null))
+        val eq = EqSettings.parse(prefs?.getString(EqSettings.PREF_KEY, null))
         val extras = item?.mediaMetadata?.extras
         fun mb(key: String): Int? = extras?.takeIf { it.containsKey(key) }?.getInt(key)
-        player.volume = ReplayGain.volume(mode, mb(EXTRA_RG_TRACK), mb(EXTRA_RG_ALBUM))
+        processor.dsp.setSettings(eq, eq.playbackGainMb(mode, mb(EXTRA_RG_TRACK), mb(EXTRA_RG_ALBUM)))
+        player.volume = 1f
     }
 
     override fun onGetSession(controllerInfo: MediaSession.ControllerInfo): MediaSession? =
