@@ -10,6 +10,38 @@ struct TagFields {
     let disc: Int?
     let year: Int?
     let compilation: Bool
+    let rgTrackMb: Int?
+    let rgAlbumMb: Int?
+
+    static let rgKeys: Set<String> = ["REPLAYGAIN_TRACK_GAIN", "REPLAYGAIN_ALBUM_GAIN"]
+
+    /// model.md §1.9：'-6.54 dB' → -654；無浮點；無整數位數字 → nil。
+    static func parseGainMb(_ s: String?) -> Int? {
+        guard let s else { return nil }
+        let t = Array(s.trimmingCharacters(in: .whitespacesAndNewlines).utf8)
+        var i = 0
+        var sign = 1
+        if i < t.count, t[i] == UInt8(ascii: "+") || t[i] == UInt8(ascii: "-") {
+            sign = t[i] == UInt8(ascii: "-") ? -1 : 1
+            i += 1
+        }
+        var j = i
+        while j < t.count, t[j] >= 0x30, t[j] <= 0x39 { j += 1 }
+        guard j > i else { return nil }
+        var whole = 0
+        for c in t[i..<j] { whole = whole * 10 + Int(c - 0x30) }
+        var frac = 0
+        if j < t.count, t[j] == UInt8(ascii: ".") {
+            var k = j + 1
+            var digits: [Int] = []
+            while k < t.count, t[k] >= 0x30, t[k] <= 0x39, digits.count < 2 {
+                digits.append(Int(t[k] - 0x30)); k += 1
+            }
+            while digits.count < 2 { digits.append(0) }
+            frac = digits[0] * 10 + digits[1]
+        }
+        return sign * (whole * 100 + frac)
+    }
 
     static func from(_ tags: [String: String]) -> TagFields {
         func f(_ k: String) -> String? { tags[k].flatMap { $0.isEmpty ? nil : $0 } }
@@ -27,7 +59,9 @@ struct TagFields {
         return TagFields(
             title: f("TITLE"), artist: f("ARTIST"), albumArtist: f("ALBUMARTIST"),
             album: f("ALBUM"), trackNo: num(tags["TRACKNUMBER"]), disc: num(tags["DISCNUMBER"]),
-            year: year, compilation: tags["COMPILATION"] == "1"
+            year: year, compilation: tags["COMPILATION"] == "1",
+            rgTrackMb: parseGainMb(tags["REPLAYGAIN_TRACK_GAIN"]),
+            rgAlbumMb: parseGainMb(tags["REPLAYGAIN_ALBUM_GAIN"])
         )
     }
 }
@@ -82,10 +116,34 @@ enum Id3Parser {
                 let raw = Array(fdata[1..<rawEnd])
                 let value = trimContract(decodeText(enc, raw))
                 if !value.isEmpty, out[key] == nil { out[key] = value }
+            } else if fid == "TXXX", fEnd > fStart { // §1.9：description 決定鍵
+                let fdata = try r.bytes(fStart, fEnd - fStart)
+                let enc = Int(fdata[0])
+                let (descB, rest) = splitNul(Array(fdata[1...]), enc)
+                let key = trimContract(decodeText(enc, descB)).uppercased()
+                if TagFields.rgKeys.contains(key) {
+                    let (valB, _) = splitNul(rest, enc)
+                    let value = trimContract(decodeText(enc, valB))
+                    if !value.isEmpty, out[key] == nil { out[key] = value }
+                }
             }
             i = fStart + fsize
         }
         return out
+    }
+
+    /// 依編碼切第一個終止符：Latin-1/UTF-8 = 1 NUL；UTF-16 = 對齊的 00 00。
+    static func splitNul(_ raw: [UInt8], _ enc: Int) -> ([UInt8], [UInt8]) {
+        if enc == 1 || enc == 2 {
+            var i = 0
+            while i + 1 < raw.count {
+                if raw[i] == 0 && raw[i + 1] == 0 { return (Array(raw[..<i]), Array(raw[(i + 2)...])) }
+                i += 2
+            }
+            return (raw, [])
+        }
+        guard let i = raw.firstIndex(of: 0) else { return (raw, []) }
+        return (Array(raw[..<i]), Array(raw[(i + 1)...]))
     }
 
     static func decodeText(_ enc: Int, _ raw: [UInt8]) -> String {

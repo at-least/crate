@@ -18,6 +18,14 @@ final class PlayerManager: NSObject, ObservableObject {
     @Published private(set) var elapsed: Double = 0
     @Published private(set) var duration: Double = 0
 
+    /// ReplayGain 模式（UserDefaults 持久化）；換曲時套音量（MuCore.ReplayGain）。
+    @Published var replayGainMode: ReplayGain.Mode = ReplayGain.mode() {
+        didSet {
+            UserDefaults.standard.set(replayGainMode.rawValue, forKey: ReplayGain.defaultsKey)
+            applyReplayGain()
+        }
+    }
+
     private let player = AVQueuePlayer()
     private var tracks: [Track] = []
     private var queueStart = 0
@@ -112,7 +120,12 @@ final class PlayerManager: NSObject, ObservableObject {
         nowArtist = t?.artist
         elapsed = 0
         duration = Double(t?.durationMs ?? 0) / 1000
+        applyReplayGain()
         updateNowPlaying()
+    }
+
+    private func applyReplayGain() {
+        player.volume = ReplayGain.volume(mode: replayGainMode, track: nowTrack)
     }
 
     private func updateNowPlaying() {

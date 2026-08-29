@@ -49,10 +49,35 @@ internal object Id3Parser {
                 val raw = fdata.copyOfRange(1, rawEnd)
                 val value = decodeText(enc, raw).trimContract()
                 if (value.isNotEmpty() && !out.containsKey(key)) out[key] = value
+            } else if (fid == "TXXX" && fEnd > fStart) { // §1.9：description 決定鍵
+                val fdata = r.bytes(fStart, (fEnd - fStart).toInt())
+                val enc = fdata[0].toInt() and 0xFF
+                val (descB, rest) = splitNul(fdata.copyOfRange(1, fdata.size), enc)
+                val k = decodeText(enc, descB).trimContract().uppercase()
+                if (k in TagNormalize.RG_KEYS) {
+                    val (valB, _) = splitNul(rest, enc)
+                    val value = decodeText(enc, valB).trimContract()
+                    if (value.isNotEmpty() && !out.containsKey(k)) out[k] = value
+                }
             }
             i = fStart + fsize
         }
         return out
+    }
+
+    /** 依編碼切第一個終止符：Latin-1/UTF-8 = 1 NUL；UTF-16 = 對齊的 00 00。回 (前段, 後段)。 */
+    fun splitNul(raw: ByteArray, enc: Int): Pair<ByteArray, ByteArray> {
+        if (enc == 1 || enc == 2) {
+            var i = 0
+            while (i + 1 < raw.size) {
+                if (raw[i].toInt() == 0 && raw[i + 1].toInt() == 0)
+                    return raw.copyOfRange(0, i) to raw.copyOfRange(i + 2, raw.size)
+                i += 2
+            }
+            return raw to ByteArray(0)
+        }
+        val i = raw.indexOfFirst { it.toInt() == 0 }
+        return if (i < 0) raw to ByteArray(0) else raw.copyOfRange(0, i) to raw.copyOfRange(i + 1, raw.size)
     }
 
     /** 只取第一個 NUL 結尾字串（沒有 NUL → 到結尾）。 */

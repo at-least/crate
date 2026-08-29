@@ -37,6 +37,8 @@ data class TrackEntity(
     val year: Int?,
     val compilation: Boolean,
     val durationMs: Long?,
+    val rgTrackMb: Int?,                 // ReplayGain（millibel；model.md §1.9）
+    val rgAlbumMb: Int?,
     val format: String,
     val sizeBytes: Long,
     val bitrateKbps: Int?,               // v0 恆 null（schema 保留欄位）
@@ -51,6 +53,7 @@ data class TrackEntity(
         albumId = it.track.albumId, disc = it.track.disc,
         trackNo = it.track.trackNo, year = it.track.year,
         compilation = it.track.compilation, durationMs = it.track.durationMs,
+        rgTrackMb = it.track.replayGainTrackMb, rgAlbumMb = it.track.replayGainAlbumMb,
         format = it.track.format, sizeBytes = it.track.sizeBytes,
         bitrateKbps = null, rev = it.rev, tagOk = it.track.tagOk,
         available = it.available,
@@ -64,6 +67,7 @@ data class TrackEntity(
             sizeBytes = sizeBytes, tagOk = tagOk, title = title,
             trackNo = trackNo, year = year, compilation = compilation,
             durationMs = durationMs,
+            replayGainTrackMb = rgTrackMb, replayGainAlbumMb = rgAlbumMb,
         ),
         rev = rev, available = available,
     )
@@ -233,7 +237,7 @@ interface LibraryDao {
         ScanErrorEntity::class, CursorEntity::class, SyncStateEntity::class,
         PinEntity::class,
     ],
-    version = 3, // v3 = pins root-scoped + content_hash/rev（D13；開發期 fallback 破壞性重建）
+    version = 4, // v4 = tracks.rg_track_mb/rg_album_mb（ReplayGain；schema v0.4）；v3 = pins root-scoped（D13）。開發期 fallback 破壞性重建
     exportSchema = false,
 )
 abstract class MuDatabase : RoomDatabase() {

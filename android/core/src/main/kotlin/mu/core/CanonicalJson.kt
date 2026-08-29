@@ -147,6 +147,8 @@ object CanonicalJson {
         "format" to format,
         "id" to id,
         "path" to path,
+        "replayGainAlbumMb" to replayGainAlbumMb, // model.md §1.9
+        "replayGainTrackMb" to replayGainTrackMb,
         "sizeBytes" to sizeBytes,
         "tagOk" to tagOk,
         "title" to title,

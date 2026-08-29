@@ -146,6 +146,8 @@ public enum CanonicalJson {
             ("format", .string(t.format)),
             ("id", .string(t.id)),
             ("path", .string(t.path)),
+            ("replayGainAlbumMb", t.replayGainAlbumMb.map { .int($0) } ?? .null), // model.md §1.9
+            ("replayGainTrackMb", t.replayGainTrackMb.map { .int($0) } ?? .null),
             ("sizeBytes", .int(t.sizeBytes)),
             ("tagOk", .bool(t.tagOk)),
             ("title", .string(t.title)),

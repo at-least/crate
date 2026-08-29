@@ -136,6 +136,24 @@ internal object ContainerParsers {
         val out = LinkedHashMap<String, String>()
         for (box in boxes(r, il.start, il.end)) {
             val t = String(box.type, Charsets.ISO_8859_1)
+            if (t == "----") { // §1.9 自由格式：name 決定鍵
+                var name: String? = null
+                var dd: ByteArray? = null
+                for (c in boxes(r, box.start, box.end)) {
+                    val ct = String(c.type, Charsets.ISO_8859_1)
+                    if (ct == "name" && c.end - c.start > 4) {
+                        name = String(r.bytes(c.start + 4, (c.end - c.start - 4).toInt()), Charsets.UTF_8)
+                            .trim(*" \t\r\n\u0000".toCharArray()).uppercase()
+                    } else if (ct == "data" && c.end - c.start >= 9 && dd == null) {
+                        dd = r.bytes(c.start, (c.end - c.start).toInt())
+                    }
+                }
+                if (name != null && name in TagNormalize.RG_KEYS && dd != null) {
+                    val v = String(dd, 8, dd.size - 8, Charsets.UTF_8).trim(*" \t\r\n\u0000".toCharArray())
+                    if (v.isNotEmpty() && !out.containsKey(name)) out[name] = v
+                }
+                continue
+            }
             val key = textKey[t]
             val nkey = numKey[t]
             if (key == null && nkey == null) continue

@@ -62,6 +62,7 @@ struct MacContentView: View {
                             } label: {
                                 Label("更換資料夾…", systemImage: "folder")
                             }
+                            MacReplayGainPicker(player: model.player)
                             if let root = model.ui.rootPath {
                                 Divider()
                                 Text(URL(fileURLWithPath: root).lastPathComponent)
@@ -644,4 +645,17 @@ private func fmtTotal(_ tracks: [Track]) -> String {
     let secs = tracks.compactMap(\.durationMs).reduce(0, +) / 1000
     if secs >= 3600 { return "\(secs / 3600) 小時 \(secs / 60 % 60) 分鐘" }
     return "\(max(1, secs / 60)) 分鐘"
+}
+
+/// ReplayGain 模式（off/track/album）；MacPlayer 持久化於 UserDefaults 並即時套音量。
+private struct MacReplayGainPicker: View {
+    @ObservedObject var player: MacPlayer
+
+    var body: some View {
+        Picker("ReplayGain", selection: $player.replayGainMode) {
+            ForEach(ReplayGain.Mode.allCases, id: \.self) { m in
+                Text(m.label).tag(m)
+            }
+        }
+    }
 }

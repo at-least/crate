@@ -6,7 +6,7 @@ cases/<name>/
   lib/            虛擬音樂庫（本地目錄樹；path = 相對 lib/ 的 '/' 路徑）
   expected.json   掃描器的 byte-canonical 期望輸出（model.md §2）
 ```
-26 案例（2026-08 由 generate.py 產出；**產物已 commit，重跑需 ffmpeg**）。
+27 案例（2026-08 由 generate.py 產出；**產物已 commit，重跑需 ffmpeg**；`replaygain_tags` 為合成檔，`generate.py --case replaygain_tags` 不需 ffmpeg）。
 
 ## 測試接線（Kotlin / Swift 相同）
 1. 列舉 `cases/` 下每個目錄
@@ -48,3 +48,4 @@ fixture provider 的 `Entry.id == Entry.path`（見 model.md §1.4），所以
 | unknown_ext_ignored | 非音訊副檔名靜默略過 |
 | nested_album_dirs | 同藝人兩專輯歸組 |
 | m3u8_*（8 案例） | 空、EXTINF+相對路徑、CRLF+BOM、絕對路徑 missing、unicode、畸形 EXTINF、反斜線 |
+| replaygain_tags | model.md §1.9：Vorbis `REPLAYGAIN_*`、ID3 `TXXX`（Latin-1/UTF-16）、MP4 `----`；`n/a`→null、截斷第三位小數、同鍵第一個勝 |

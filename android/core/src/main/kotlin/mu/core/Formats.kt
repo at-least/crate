@@ -10,9 +10,34 @@ internal data class TagFields(
     val disc: Int?,
     val year: Int?,
     val compilation: Boolean,
+    val rgTrackMb: Int? = null,
+    val rgAlbumMb: Int? = null,
 )
 
 internal object TagNormalize {
+    val RG_KEYS = setOf("REPLAYGAIN_TRACK_GAIN", "REPLAYGAIN_ALBUM_GAIN")
+
+    /** model.md §1.9：'-6.54 dB' → -654；無浮點；無整數位數字 → null。 */
+    fun parseGainMb(s: String?): Int? {
+        if (s == null) return null
+        val t = s.trim()
+        var i = 0
+        var sign = 1
+        if (i < t.length && (t[i] == '+' || t[i] == '-')) { sign = if (t[i] == '-') -1 else 1; i++ }
+        var j = i
+        while (j < t.length && t[j] in '0'..'9') j++
+        if (j == i) return null
+        val whole = t.substring(i, j).toInt()
+        var frac = 0
+        if (j < t.length && t[j] == '.') {
+            var k = j + 1
+            val digits = StringBuilder()
+            while (k < t.length && t[k] in '0'..'9' && digits.length < 2) { digits.append(t[k]); k++ }
+            frac = (digits.toString() + "00").substring(0, 2).toInt()
+        }
+        return sign * (whole * 100 + frac)
+    }
+
     private fun num(s: String?): Int? {
         if (s.isNullOrEmpty()) return null
         val head = s.takeWhile { it.isDigit() }
@@ -32,6 +57,8 @@ internal object TagNormalize {
             year = y?.takeIf { it.length >= 4 && it.take(4).all { c -> c.isDigit() } }
                 ?.substring(0, 4)?.toInt(),
             compilation = tags["COMPILATION"] == "1",
+            rgTrackMb = parseGainMb(tags["REPLAYGAIN_TRACK_GAIN"]),
+            rgAlbumMb = parseGainMb(tags["REPLAYGAIN_ALBUM_GAIN"]),
         )
     }
 }

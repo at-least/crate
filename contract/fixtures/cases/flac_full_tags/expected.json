@@ -23,6 +23,8 @@
       "format": "flac",
       "id": "Aurora/Northern Lights/01 - Rise.flac",
       "path": "Aurora/Northern Lights/01 - Rise.flac",
+      "replayGainAlbumMb": null,
+      "replayGainTrackMb": null,
       "sizeBytes": 8540,
       "tagOk": true,
       "title": "Rise",

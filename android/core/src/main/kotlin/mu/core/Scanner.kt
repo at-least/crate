@@ -11,6 +11,8 @@ object Scanner {
         val path: String, val sizeBytes: Long, val tagOk: Boolean,
         val title: String, val trackNo: Int?, val year: Int?,
         val compilation: Boolean, val durationMs: Long?,
+        /** ReplayGain（millibel；model.md §1.9）。 */
+        val replayGainTrackMb: Int? = null, val replayGainAlbumMb: Int? = null,
     )
 
     data class Album(
@@ -135,6 +137,7 @@ object Scanner {
             artist = artist, disc = f.disc ?: 1, format = fmt, id = rel, path = rel,
             sizeBytes = size, tagOk = ok, title = title, trackNo = trackNo,
             year = f.year, compilation = compilation, durationMs = durationMs,
+            replayGainTrackMb = f.rgTrackMb, replayGainAlbumMb = f.rgAlbumMb,
         )
     }
 

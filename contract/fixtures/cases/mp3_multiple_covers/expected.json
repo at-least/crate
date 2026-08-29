@@ -23,6 +23,8 @@
       "format": "mp3",
       "id": "The Band/Sleeves/01 - Covered.mp3",
       "path": "The Band/Sleeves/01 - Covered.mp3",
+      "replayGainAlbumMb": null,
+      "replayGainTrackMb": null,
       "sizeBytes": 3232,
       "tagOk": true,
       "title": "Covered",

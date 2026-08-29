@@ -25,8 +25,8 @@ public final class MuDatabase {
         }
     }
 
-    /// schema.sql 的 PRAGMA user_version（v0.3 = 2）。
-    private static let schemaVersion = 2
+    /// schema.sql 的 PRAGMA user_version（v0.4 = 3）。
+    private static let schemaVersion = 3
 
     private var db: OpaquePointer?
     private let queue = DispatchQueue(label: "mu.db")
@@ -112,12 +112,14 @@ public     func replaceLibrary(root: String, bookmark: Data?, state: EngineState
             exec("DELETE FROM scan_errors")
             exec("DELETE FROM cursor")
             for it in state.tracks.values {
-                run("INSERT OR REPLACE INTO tracks VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)", [
+                run("INSERT OR REPLACE INTO tracks VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)", [
                     .text(it.track.id), .text(it.track.path), .text(it.track.title),
                     .text(it.track.artist), .text(it.track.album), .text(it.track.albumArtist),
                     .text(it.track.albumId), .int(Int64(it.track.disc)), .intOpt(it.track.trackNo),
                     .intOpt(it.track.year), .bool(it.track.compilation),
-                    .intOpt(it.track.durationMs), .text(it.track.format),
+                    .intOpt(it.track.durationMs),
+                    .intOpt(it.track.replayGainTrackMb), .intOpt(it.track.replayGainAlbumMb),
+                    .text(it.track.format),
                     .int(Int64(it.track.sizeBytes)), .null, .text(it.rev),
                     .bool(it.track.tagOk), .bool(it.available),
                 ])
@@ -219,11 +221,12 @@ public     func clearAllPins() {
         // 欄位序 = INSERT 的 tracks VALUES 序
         let t = Track(
             album: text(s, 4), albumArtist: text(s, 5), albumId: text(s, 6),
-            artist: text(s, 3), disc: Int(int(s, 7) ?? 1), format: text(s, 12),
-            id: text(s, 0), path: text(s, 1), sizeBytes: Int(int(s, 13) ?? 0),
-            tagOk: bool(s, 16), title: text(s, 2), trackNo: int(s, 8),
-            year: int(s, 9), compilation: bool(s, 10), durationMs: int(s, 11))
-        return SyncEngine.IndexedTrack(track: t, rev: text(s, 15), available: bool(s, 17))
+            artist: text(s, 3), disc: Int(int(s, 7) ?? 1), format: text(s, 14),
+            id: text(s, 0), path: text(s, 1), sizeBytes: Int(int(s, 15) ?? 0),
+            tagOk: bool(s, 18), title: text(s, 2), trackNo: int(s, 8),
+            year: int(s, 9), compilation: bool(s, 10), durationMs: int(s, 11),
+            replayGainTrackMb: int(s, 12), replayGainAlbumMb: int(s, 13))
+        return SyncEngine.IndexedTrack(track: t, rev: text(s, 17), available: bool(s, 19))
     }
 
     private enum Val {
@@ -298,9 +301,9 @@ public     func clearAllPins() {
     /// SQLITE_TRANSIENT（bind 立即複製）。
     private static let transient = unsafeBitCast(-1, to: sqlite3_destructor_type.self)
 
-    /// contract/schema.sql v0.3 的鏡像（FK 移除理由見類型註解；albums/play_state/favorites 保留未用）。
+    /// contract/schema.sql v0.4 的鏡像（FK 移除理由見類型註解；albums/play_state/favorites 保留未用）。
     private static let schema = """
-        PRAGMA user_version = 2;
+        PRAGMA user_version = 3;
         CREATE TABLE IF NOT EXISTS tracks (
           id           TEXT PRIMARY KEY,
           path         TEXT NOT NULL UNIQUE,
@@ -314,6 +317,8 @@ public     func clearAllPins() {
           year         INTEGER,
           compilation  INTEGER NOT NULL DEFAULT 0,
           duration_ms  INTEGER,
+          rg_track_mb  INTEGER,
+          rg_album_mb  INTEGER,
           format       TEXT NOT NULL,
           size_bytes   INTEGER NOT NULL,
           bitrate_kbps INTEGER,

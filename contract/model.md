@@ -104,6 +104,19 @@ parser 只讀結構需要的位元組、跳過大 payload（存取序列即規�
 
 本地資料夾以檔案為 ByteSource（讀法相同，只是 IO 便宜）；`sizeBytes` 一律取自 ByteSource.size（雲端 = metadata `size`）。
 
+### 1.9 ReplayGain（v1.2；Phase 4）
+輸出欄位 `replayGainTrackMb` / `replayGainAlbumMb`：**millibel 整數**（`-6.54 dB` → `-654`），無值 → null。不影響 `tagOk`。
+
+| 欄位 | ID3v2.3/2.4 | Vorbis/FLAC/Opus comment | MP4 ilst |
+|---|---|---|---|
+| track | `TXXX` 且 description（不分大小寫）= `replaygain_track_gain` | `REPLAYGAIN_TRACK_GAIN` | `----` 自由格式 atom，`name`（不分大小寫）= `replaygain_track_gain`（`mean` 不檢查） |
+| album | 同上 `replaygain_album_gain` | `REPLAYGAIN_ALBUM_GAIN` | 同上 `replaygain_album_gain` |
+
+- `TXXX` 結構：encoding byte + description + 終止符 + value（+ 可選終止符）。終止符依編碼：Latin-1/UTF-8 = 1 個 NUL；UTF-16（enc 1/2）= 對齊的 `00 00`。description 與 value 各依 §1.3 解碼。同 description 多個 frame → 第一個非空值勝（與其他 frame 規則相同）。
+- `----` 結構：子 atom `mean`（4B version/flags + 文字）、`name`（4B + 文字）、`data`（8B + UTF-8 文字）；缺 `name` 或 `data` → 忽略。
+- 值解析（`parseGainMb`，無浮點）：trim；可選 `+`/`-`；整數位數字（≥1 位）；可選 `.` + 小數位；其後（如 ` dB`）忽略。`mb = sign × (int×100 + 前兩位小數右補 0)`；第三位以後**截斷**（`-6.545` → `-654`）。無整數位數字 → null（如 `n/a`、`.5`）。
+- Opus 的 `R128_*_GAIN`（Q7.8、-23 LUFS 基準）v1 **不支援**（→ null）；Opus 檔若帶 `REPLAYGAIN_*` 照上表解析。
+
 ## 2. ScanResult JSON（契約核心）
 
 ### 2.1 結構
@@ -128,6 +141,8 @@ Track 物件（欄位**全到**，值可 null；鍵值如 ↓）：
   "format": "flac",
   "id": "Artist/Album Name/01 - Song.flac",
   "path": "Artist/Album Name/01 - Song.flac",
+  "replayGainAlbumMb": null,
+  "replayGainTrackMb": -654,
   "sizeBytes": 1234,
   "tagOk": true,
   "title": "Song",
@@ -135,7 +150,7 @@ Track 物件（欄位**全到**，值可 null；鍵值如 ↓）：
   "year": 1999
 }
 ```
-- `disc` 無值 → 1（不是 null）。`trackNo`/`year`/`durationMs` 無值 → null。
+- `disc` 無值 → 1（不是 null）。`trackNo`/`year`/`durationMs`/`replayGain*Mb` 無值 → null。
 - `id` = path（v0，fixture provider 慣例）。
 
 Album 物件：`{ "albumArtist", "artTrackId", "compilation" (bool), "id", "name", "trackCount" (int), "year" }`

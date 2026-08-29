@@ -1,6 +1,6 @@
 # Mu — 個人雲端音樂庫播放器 · 專案計畫書
 
-> 版本 1.5 · 2026-08-29（D13；GDrive/Dropbox provider 核心 + 掃描視窗化進場）
+> 版本 1.6 · 2026-08-29（D13；GDrive/Dropbox provider 核心 + 掃描視窗化；Phase 4 ReplayGain）
 > 一人 + AI agent 開發。本文件是唯一事實來源（single source of truth）。
 
 ---
@@ -206,6 +206,8 @@ Dropbox provider（讀同一庫）、macOS app（選單列常駐）。
 ### Phase 4 — 打磨
 CarPlay（Media3 原生支援 + CarPlay framework）、桌面 Widget、Last.fm scrobble（選配）、ReplayGain、等化器。
 此時才考慮 TestFlight / Play 內部測試軌道。
+> 2026-08-29 進度：**ReplayGain 上線（三平台對等）**——契約 model.md §1.9：`replayGainTrackMb/AlbumMb`（millibel 整數，無浮點；`parseGainMb` 截斷第三位小數）；來源 Vorbis `REPLAYGAIN_*`、ID3 `TXXX`（description 不分大小寫；終止符依編碼——UTF-16 為對齊 `00 00`）、MP4 `----` 自由格式 atom（`name` 決定鍵）；Opus `R128_*` v1 不支援。新 scanner 案例 `replaygain_tags`（合成 FLAC/MP3/M4A，`generate.py --case` 不需 ffmpeg；含 `n/a`→null、`3.567`→356、`-.5`→null、UTF-16 TXXX、無關 `----` 忽略），全部 fixtures 換版（27+6+8+8）三方 byte-identical。schema.sql v0.4（`tracks.rg_track_mb/rg_album_mb`，user_version 3；Room v4）。播放：核心 `ReplayGain.volume(mode, track)`——線性 `10^(mb/2000)`、**上限 1.0**（只衰減不放大；正增益放大需 audio processor，EQ 相位再議）、無前置增益；模式 off/track/album（album 缺退 track），Apple 存 UserDefaults、Android 存 SharedPreferences（PlaybackService 監聽即時套用）；UI：iOS NowPlaying 選單、MuMac 更多選單、Android TopAppBar 下拉。MuiOS UI 測試（schema 換版後 DB 還原）全綠。
+> 尚未做：CarPlay（需你向 Apple 申請 CarPlay audio entitlement）、桌面 Widget、EQ（AVAudioEngine / Media3 AudioProcessor——也是正增益放大的落點）。
 
 ## 8. 驗證策略（誰驗什麼）
 

@@ -9,17 +9,21 @@ public struct Scanner {
         public let sizeBytes: Int, tagOk: Bool, title: String
         public let trackNo: Int?, year: Int?
         public let compilation: Bool, durationMs: Int?
+        /// ReplayGain（millibel；model.md §1.9）。
+        public let replayGainTrackMb: Int?, replayGainAlbumMb: Int?
 
         public init(album: String, albumArtist: String, albumId: String, artist: String,
                     disc: Int, format: String, id: String, path: String,
                     sizeBytes: Int, tagOk: Bool, title: String,
                     trackNo: Int?, year: Int?,
-                    compilation: Bool, durationMs: Int?) {
+                    compilation: Bool, durationMs: Int?,
+                    replayGainTrackMb: Int? = nil, replayGainAlbumMb: Int? = nil) {
             self.album = album; self.albumArtist = albumArtist; self.albumId = albumId
             self.artist = artist; self.disc = disc; self.format = format
             self.id = id; self.path = path; self.sizeBytes = sizeBytes
             self.tagOk = tagOk; self.title = title; self.trackNo = trackNo
             self.year = year; self.compilation = compilation; self.durationMs = durationMs
+            self.replayGainTrackMb = replayGainTrackMb; self.replayGainAlbumMb = replayGainAlbumMb
         }
     }
 
@@ -179,7 +183,8 @@ public struct Scanner {
             album: album, albumArtist: albumArtist, albumId: "alb|\(albumArtist)|\(album)",
             artist: artist, disc: f.disc ?? 1, format: fmt, id: rel, path: rel,
             sizeBytes: size, tagOk: ok, title: title, trackNo: trackNo, year: f.year,
-            compilation: compilation, durationMs: durationMs
+            compilation: compilation, durationMs: durationMs,
+            replayGainTrackMb: f.rgTrackMb, replayGainAlbumMb: f.rgAlbumMb
         )
     }
 

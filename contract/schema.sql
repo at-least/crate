@@ -1,10 +1,10 @@
 -- Mu · contract/schema.sql
 -- 唯一事實來源。Android (Room) 與 Apple (GRDB/raw sqlite3) 都從這份檔案出發。
--- 版本：v0.3（D13：pins 記錄層 root-scoped、下載層內容定址——content_hash/rev 入表）。
+-- 版本：v0.4（ReplayGain：tracks.rg_track_mb/rg_album_mb，model.md §1.9）。v0.3 = D13 pins root-scoped/content_hash。
 -- schema migration 一律加新檔 schema/NNN_*.sql，不改這份歷史。
 -- 所有時間戳 = Unix epoch 毫秒（INTEGER）。所有 TEXT = UTF-8。
 
-PRAGMA user_version = 2;
+PRAGMA user_version = 3;
 
 -- ============ 音軌 ============
 -- id: provider 的檔案唯一鍵（fixture provider 以 path 為 id；見 fixtures/README.md）
@@ -21,6 +21,8 @@ CREATE TABLE tracks (
   year         INTEGER,                -- 可 null
   compilation  INTEGER NOT NULL DEFAULT 0,
   duration_ms  INTEGER,                -- null = 解析失敗/不適用（model.md §1.7）
+  rg_track_mb  INTEGER,                -- ReplayGain track gain，millibel（model.md §1.9）；null = 無 tag
+  rg_album_mb  INTEGER,                -- ReplayGain album gain，millibel
   format       TEXT NOT NULL,          -- flac|mp3/m4a|ogg|opus|wav（小寫）
   size_bytes   INTEGER NOT NULL,
   bitrate_kbps INTEGER,                -- v0 = null

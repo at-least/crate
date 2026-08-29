@@ -34,12 +34,15 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.material.icons.filled.Settings
+import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import mu.core.Scanner
@@ -122,6 +125,7 @@ fun MuApp(vm: LibraryViewModel = viewModel()) {
                     }
                 },
                 actions = {
+                    ReplayGainMenu()
                     if (state.rootPath != null) {
                         IconButton(onClick = { vm.rescan() }) {
                             androidx.compose.material3.Icon(
@@ -293,3 +297,27 @@ private fun TrackList(
 }
 
 data class PlayerBarState(val title: String)
+
+/** ReplayGain 模式（off/track/album）；存 SharedPreferences，PlaybackService 監聽即時套用。 */
+@Composable
+private fun ReplayGainMenu() {
+    val context = LocalContext.current
+    val prefs = remember { context.getSharedPreferences(PlaybackService.PREFS, android.content.Context.MODE_PRIVATE) }
+    var mode by remember { mutableStateOf(mu.core.ReplayGain.Mode.from(prefs.getString(mu.core.ReplayGain.PREF_KEY, null))) }
+    var open by remember { mutableStateOf(false) }
+    IconButton(onClick = { open = true }, modifier = Modifier.testTag("replayGain")) {
+        androidx.compose.material3.Icon(Icons.Default.Settings, contentDescription = "ReplayGain：${mode.label}")
+    }
+    androidx.compose.material3.DropdownMenu(expanded = open, onDismissRequest = { open = false }) {
+        mu.core.ReplayGain.Mode.entries.forEach { m ->
+            androidx.compose.material3.DropdownMenuItem(
+                text = { Text((if (m == mode) "✓ " else "    ") + "ReplayGain：${m.label}") },
+                onClick = {
+                    mode = m
+                    prefs.edit().putString(mu.core.ReplayGain.PREF_KEY, m.key).apply()
+                    open = false
+                },
+            )
+        }
+    }
+}

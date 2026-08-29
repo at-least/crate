@@ -39,3 +39,9 @@
 ## 通用品質門檻（每 Phase 結束跑）
 - core 模組測試覆蓋率 ≥ 90%（機器：jacoco / swift-coverage）— ✅ 2026-08-28 Phase 2：MuCore 98.51% 行覆蓋（llvm-cov export；CoverageGapTest 補齊契約 fixtures 未走到的分支）
 - 無未解釋的契約 diff（機器：CI）
+
+## Phase 4（打磨）
+- [E1] ReplayGain：契約 model.md §1.9（`replaygain_tags` 案例三方 byte-identical）+ 兩平台播放器依模式套音量（off/track/album）— ✅ 2026-08-29 機器（契約 + 建置 + iOS UI 測試）；真機聽感（衰減是否正確、切模式即時生效）屬人
+- [E2] CarPlay（人；需 entitlement）
+- [E3] 桌面 Widget（人）
+- [E4] EQ / 正增益放大（人耳）

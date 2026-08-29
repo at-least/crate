@@ -70,10 +70,25 @@ struct NowPlayingView: View {
             .padding(.horizontal, 36)
             .padding(.top, 16)
 
-            RoutePicker()
-                .frame(width: 44, height: 44)
-                .padding(.top, 20)
-                .padding(.bottom, 8)
+            HStack(spacing: 24) {
+                Menu {
+                    Picker("ReplayGain", selection: $player.replayGainMode) {
+                        ForEach(ReplayGain.Mode.allCases, id: \.self) { m in
+                            Text(m.label).tag(m)
+                        }
+                    }
+                } label: {
+                    Label("ReplayGain：\(player.replayGainMode.label)",
+                          systemImage: "waveform.badge.minus")
+                        .font(.footnote)
+                        .foregroundStyle(.secondary)
+                }
+                .accessibilityIdentifier("nowPlaying.replayGain")
+                RoutePicker()
+                    .frame(width: 44, height: 44)
+            }
+            .padding(.top, 20)
+            .padding(.bottom, 8)
         }
         .padding(.horizontal, 28)
         .padding(.bottom, 20)

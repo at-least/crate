@@ -23,6 +23,8 @@
       "format": "flac",
       "id": "A/B/01 - Real.flac",
       "path": "A/B/01 - Real.flac",
+      "replayGainAlbumMb": null,
+      "replayGainTrackMb": null,
       "sizeBytes": 8431,
       "tagOk": false,
       "title": "Real",

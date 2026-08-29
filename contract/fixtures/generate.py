@@ -187,6 +187,49 @@ def _ss(b: bytes) -> int:
     return ((b[0] & 0x7F) << 21) | ((b[1] & 0x7F) << 14) | ((b[2] & 0x7F) << 7) | (b[3] & 0x7F)
 
 
+RG_KEYS = {"REPLAYGAIN_TRACK_GAIN", "REPLAYGAIN_ALBUM_GAIN"}
+
+
+def parse_gain_mb(s: str | None) -> int | None:
+    """model.md §1.9：'-6.54 dB' → -654；無浮點；無整數位數字 → None。"""
+    if s is None:
+        return None
+    t = s.strip()
+    i = 0
+    sign = 1
+    if i < len(t) and t[i] in "+-":
+        sign = -1 if t[i] == "-" else 1
+        i += 1
+    j = i
+    while j < len(t) and t[j].isdigit() and t[j].isascii():
+        j += 1
+    if j == i:
+        return None
+    whole = int(t[i:j])
+    frac = 0
+    if j < len(t) and t[j] == ".":
+        k = j + 1
+        digits = ""
+        while k < len(t) and t[k].isdigit() and t[k].isascii() and len(digits) < 2:
+            digits += t[k]
+            k += 1
+        frac = int((digits + "00")[:2])
+    return sign * (whole * 100 + frac)
+
+
+def _id3_split_nul(raw: bytes, enc: int) -> tuple[bytes, bytes]:
+    """依編碼切第一個終止符：Latin-1/UTF-8 = 1 NUL；UTF-16 = 對齊的 00 00。回 (前段, 後段)。"""
+    if enc in (1, 2):
+        i = 0
+        while i + 1 < len(raw):
+            if raw[i] == 0 and raw[i + 1] == 0:
+                return raw[:i], raw[i + 2:]
+            i += 2
+        return raw, b""
+    i = raw.find(b"\x00")
+    return (raw, b"") if i < 0 else (raw[:i], raw[i + 1:])
+
+
 FRAME_KEY = {b"TIT2": "TITLE", b"TPE1": "ARTIST", b"TALB": "ALBUM",
              b"TPE2": "ALBUMARTIST", b"TRCK": "TRACKNUMBER",
              b"TPOS": "DISCNUMBER", b"TYER": "YEAR", b"TDRC": "DATE",
@@ -230,6 +273,16 @@ def parse_id3v2(r: ChunkedReader) -> dict | None:
             key = FRAME_KEY[fid]
             if val and key not in out:
                 out[key] = val
+        elif fid == b"TXXX" and fend > fstart:  # §1.9：description 決定鍵
+            fdata = r.bytes(fstart, fend - fstart)
+            enc = fdata[0]
+            desc_b, rest = _id3_split_nul(fdata[1:], enc)
+            key = _trim(_decode_id3_text(enc, desc_b)).upper()
+            if key in RG_KEYS:
+                val_b, _ = _id3_split_nul(rest, enc)
+                val = _trim(_decode_id3_text(enc, val_b))
+                if val and key not in out:
+                    out[key] = val
         i = fstart + fsize
     return out
 
@@ -345,6 +398,19 @@ def parse_m4a_tags(r: ChunkedReader) -> dict | None:
     NUM = {b"trkn": "TRACKNUMBER", b"disk": "DISCNUMBER"}
     out: dict[str, str] = {}
     for btype, ps, pe in _mp4_boxes(r, *ilst):
+        if btype == b"----":  # §1.9 自由格式：name 決定鍵
+            name = None
+            dd = None
+            for ctype, cs, ce in _mp4_boxes(r, ps, pe):
+                if ctype == b"name" and ce - cs > 4:
+                    name = _trim(r.bytes(cs + 4, ce - cs - 4).decode("utf-8", "replace")).upper()
+                elif ctype == b"data" and ce - cs >= 9 and dd is None:
+                    dd = r.bytes(cs, ce - cs)
+            if name in RG_KEYS and dd is not None:
+                v = _trim(dd[8:].decode("utf-8", "replace"))
+                if v and name not in out:
+                    out[name] = v
+            continue
         key, nkey = KEY.get(btype), NUM.get(btype)
         if key is None and nkey is None:
             continue
@@ -385,6 +451,8 @@ def tag_dict_to_fields(tags: dict[str, str]) -> dict:
     y = tags.get("YEAR") or tags.get("DATE")
     f["year"] = int(y[:4]) if y and len(y) >= 4 and y[:4].isdigit() else None
     f["compilation"] = tags.get("COMPILATION") == "1"
+    f["rg_track_mb"] = parse_gain_mb(tags.get("REPLAYGAIN_TRACK_GAIN"))
+    f["rg_album_mb"] = parse_gain_mb(tags.get("REPLAYGAIN_ALBUM_GAIN"))
     return f
 
 def parse_tags(fmt: str, r: ChunkedReader) -> tuple[dict | None, bool]:
@@ -606,7 +674,10 @@ def make_track(rel: str, fmt: str, size: int, fields: dict | None, tag_ok: bool,
         "album": album, "albumArtist": album_artist,
         "albumId": f"alb|{album_artist}|{album}",
         "artist": artist, "disc": disc, "durationMs": duration_ms, "format": fmt,
-        "id": rel, "path": rel, "sizeBytes": size, "tagOk": bool(ok),
+        "id": rel, "path": rel,
+        "replayGainAlbumMb": fields.get("rg_album_mb"),
+        "replayGainTrackMb": fields.get("rg_track_mb"),
+        "sizeBytes": size, "tagOk": bool(ok),
         "title": title, "trackNo": track_no, "year": year,
         "_compilation": compilation,
     }
@@ -723,11 +794,90 @@ def build_cases() -> list[str]:
         "nested_album_dirs", "m3u8_empty", "m3u8_extinf_relative",
         "m3u8_crlf_bom", "m3u8_absolute_paths", "m3u8_missing_refs",
         "m3u8_unicode_names", "m3u8_malformed_extinf", "m3u8_windows_backslash",
+        "replaygain_tags",
     ]
+
+def _mp4_box(t: bytes, payload: bytes) -> bytes:
+    return struct.pack(">I", 8 + len(payload)) + t + payload
+
+
+def flac_with_comments(src: bytes, extra: list[tuple[str, str]]) -> bytes:
+    """把 extra 追加到 FLAC 的 VORBIS_COMMENT block（重寫 block 長度；其餘 bytes 原樣）。"""
+    i = 4
+    while True:
+        hdr = src[i]
+        blen = int.from_bytes(src[i + 1:i + 4], "big")
+        if hdr & 0x7F == 4:
+            block = src[i + 4:i + 4 + blen]
+            vl = struct.unpack("<I", block[:4])[0]
+            vendor = block[4:4 + vl]
+            j = 4 + vl
+            count = struct.unpack("<I", block[j:j + 4])[0]
+            j += 4
+            items = []
+            for _ in range(count):
+                n = struct.unpack("<I", block[j:j + 4])[0]
+                items.append(block[j + 4:j + 4 + n])
+                j += 4 + n
+            items += [f"{k}={v}".encode() for k, v in extra]
+            nb = struct.pack("<I", len(vendor)) + vendor + struct.pack("<I", len(items)) + \
+                b"".join(struct.pack("<I", len(it)) + it for it in items)
+            return src[:i] + bytes([hdr]) + len(nb).to_bytes(3, "big") + nb + src[i + 4 + blen:]
+        if hdr & 0x80:
+            raise ValueError("no VORBIS_COMMENT block")
+        i += 4 + blen
+
+
+def _txxx(enc: int, desc: str, value: str) -> bytes:
+    if enc == 1:
+        d = b"\xff\xfe" + desc.encode("utf-16-le") + b"\x00\x00"
+        v = b"\xff\xfe" + value.encode("utf-16-le") + b"\x00\x00"
+    else:
+        d = desc.encode("latin-1") + b"\x00"
+        v = value.encode("latin-1") + b"\x00"
+    return _id3v23_frame("TXXX", bytes([enc]) + d + v)
+
+
+def _m4a_freeform(name: str, value: str) -> bytes:
+    return _mp4_box(b"----",
+                    _mp4_box(b"mean", bytes(4) + b"com.apple.iTunes") +
+                    _mp4_box(b"name", bytes(4) + name.encode()) +
+                    _mp4_box(b"data", struct.pack(">II", 1, 0) + value.encode()))
+
+
+def populate_replaygain(lib: Path):
+    """§1.9 合成檔（不需 ffmpeg）：FLAC 追加 comment、MP3 TXXX（Latin-1 + UTF-16）、M4A ---- atom。"""
+    flac_a = (HERE / "sync_assets" / "flac_a").read_bytes()
+    write(lib, "RG/Album/01 - Flac.flac", flac_with_comments(flac_a, [
+        ("REPLAYGAIN_TRACK_GAIN", "-6.54 dB"), ("REPLAYGAIN_ALBUM_GAIN", "+2.1 dB"),
+        ("REPLAYGAIN_TRACK_PEAK", "0.98")]))
+    write(lib, "RG/Album/02 - Flac Odd.flac", flac_with_comments(flac_a, [
+        ("replaygain_track_gain", "n/a"), ("REPLAYGAIN_ALBUM_GAIN", "3.567"),
+        ("REPLAYGAIN_TRACK_GAIN", "-12 dB")]))  # 同鍵第一個勝（n/a → null）；截斷第三位
+    body = b"\xff\xfb\x90\x00" + bytes(4000)
+    write(lib, "RG/Album/03 - Mp3.mp3", id3v23_wrap(body, [
+        _text_frame("TIT2", 3, "Gainy".encode()), _text_frame("TPE1", 3, "Aurora".encode()),
+        _text_frame("TALB", 3, "Album".encode()),
+        _txxx(0, "replaygain_track_gain", "-7.25 dB"),
+        _txxx(1, "REPLAYGAIN_ALBUM_GAIN", "+0.5 dB"),
+        _txxx(0, "some_other", "ignored"),
+    ]))
+    ilst = (_mp4_box(b"\xa9nam", _mp4_box(b"data", struct.pack(">II", 1, 0) + b"Boxed")) +
+            _m4a_freeform("replaygain_track_gain", "-3.00 dB") +
+            _m4a_freeform("REPLAYGAIN_ALBUM_GAIN", "-.5 dB") +
+            _m4a_freeform("iTunNORM", " 0000 ..."))
+    mvhd = bytes(12) + struct.pack(">II", 44100, 44100) + bytes(80)
+    moov = _mp4_box(b"moov", _mp4_box(b"mvhd", mvhd) +
+                    _mp4_box(b"udta", _mp4_box(b"meta", bytes(4) + _mp4_box(b"ilst", ilst))))
+    write(lib, "RG/Album/04 - M4a.m4a",
+          _mp4_box(b"ftyp", b"M4A " + bytes(4) + b"M4A mp42isom") + moov + _mp4_box(b"mdat", bytes(64)))
+
 
 def populate(name: str, lib: Path):
     F = lambda n, meta=None, fmt="flac": write(lib, n, audio_bytes(fmt, meta))
-    if name == "flac_full_tags":
+    if name == "replaygain_tags":
+        populate_replaygain(lib)
+    elif name == "flac_full_tags":
         F("Aurora/Northern Lights/01 - Rise.flac",
           {"title": "Rise", "artist": "Aurora", "album": "Northern Lights",
            "album_artist": "Aurora", "track_number": "1", "date": "2021"})
@@ -928,6 +1078,32 @@ def main():
     print(f"OK: {len(names)} cases generated, all sanity asserts passed")
 
 if __name__ == "__main__":
+    if len(sys.argv) == 3 and sys.argv[1] == "--case":
+        name = sys.argv[2]
+        assert name in build_cases(), name
+        case = CASES / name
+        if case.exists():
+            shutil.rmtree(case)
+        lib = case / "lib"
+        lib.mkdir(parents=True)
+        populate(name, lib)
+        result = scan_tree(lib)
+        for t in result["tracks"]:
+            t.pop("_compilation")
+        for e in result["errors"]:
+            e["message"] = ""
+        (case / "expected.json").write_text(canonical(result), encoding="utf-8")
+        if name == "replaygain_tags":
+            tr = {t["path"]: t for t in result["tracks"]}
+            assert (tr["RG/Album/01 - Flac.flac"]["replayGainTrackMb"], tr["RG/Album/01 - Flac.flac"]["replayGainAlbumMb"]) == (-654, 210)
+            assert (tr["RG/Album/02 - Flac Odd.flac"]["replayGainTrackMb"], tr["RG/Album/02 - Flac Odd.flac"]["replayGainAlbumMb"]) == (None, 356)
+            assert (tr["RG/Album/03 - Mp3.mp3"]["replayGainTrackMb"], tr["RG/Album/03 - Mp3.mp3"]["replayGainAlbumMb"]) == (-725, 50)
+            assert tr["RG/Album/03 - Mp3.mp3"]["title"] == "Gainy"
+            assert (tr["RG/Album/04 - M4a.m4a"]["replayGainTrackMb"], tr["RG/Album/04 - M4a.m4a"]["replayGainAlbumMb"]) == (-300, None)
+            assert tr["RG/Album/04 - M4a.m4a"]["title"] == "Boxed" and tr["RG/Album/04 - M4a.m4a"]["durationMs"] == 1000
+            assert parse_gain_mb("-6.545") == -654 and parse_gain_mb("  +3  ") == 300 and parse_gain_mb(".5") is None
+        print(f"OK: case {name} regenerated")
+        sys.exit(0)
     if sys.argv[1:] == ["--rescan-check"]:
         sys.exit(rescan_check())
     if sys.argv[1:] == ["--update-expected"]:

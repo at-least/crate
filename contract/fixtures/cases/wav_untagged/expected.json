@@ -23,6 +23,8 @@
       "format": "wav",
       "id": "Sfx/Pack/01 - Kick.wav",
       "path": "Sfx/Pack/01 - Kick.wav",
+      "replayGainAlbumMb": null,
+      "replayGainTrackMb": null,
       "sizeBytes": 26538,
       "tagOk": false,
       "title": "Kick",

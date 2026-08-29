@@ -142,6 +142,24 @@ enum ContainerParsers {
         ]
         var out: [String: String] = [:]
         for box in try boxes(r, ilst.start, ilst.end) {
+            if box.type == Array("----".utf8) { // §1.9 自由格式：name 決定鍵
+                var name: String? = nil
+                var dd: [UInt8]? = nil
+                for c in try boxes(r, box.start, box.end) {
+                    let t = String(decoding: c.type, as: UTF8.self)
+                    if t == "name", c.end - c.start > 4 {
+                        name = trimContract(String(decoding: try r.bytes(c.start + 4, c.end - c.start - 4),
+                                                   as: UTF8.self)).uppercased()
+                    } else if t == "data", c.end - c.start >= 9, dd == nil {
+                        dd = try r.bytes(c.start, c.end - c.start)
+                    }
+                }
+                if let name, TagFields.rgKeys.contains(name), let dd {
+                    let v = trimContract(String(decoding: dd[8...], as: UTF8.self))
+                    if !v.isEmpty, out[name] == nil { out[name] = v }
+                }
+                continue
+            }
             let key = textKey[box.type]
             let nkey = numKey[box.type]
             if key == nil && nkey == nil { continue }

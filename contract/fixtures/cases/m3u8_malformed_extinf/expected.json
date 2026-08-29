@@ -45,6 +45,8 @@
       "format": "flac",
       "id": "A/B/01 - X.flac",
       "path": "A/B/01 - X.flac",
+      "replayGainAlbumMb": null,
+      "replayGainTrackMb": null,
       "sizeBytes": 8465,
       "tagOk": true,
       "title": "X",
