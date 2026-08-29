@@ -6,9 +6,10 @@ public struct HttpRequest: Equatable {
     public let method: String
     public let url: String
     public let headers: [String: String]
+    public let body: [UInt8]
 
-    public init(method: String, url: String, headers: [String: String]) {
-        self.method = method; self.url = url; self.headers = headers
+    public init(method: String, url: String, headers: [String: String], body: [UInt8] = []) {
+        self.method = method; self.url = url; self.headers = headers; self.body = body
     }
 }
 
@@ -374,6 +375,7 @@ public final class URLSessionTransport: HttpTransport {
         guard let url = URL(string: req.url) else { throw TransportError("bad url") }
         var r = URLRequest(url: url)
         r.httpMethod = req.method
+        if !req.body.isEmpty { r.httpBody = Data(req.body) }
         for (k, v) in req.headers { r.setValue(v, forHTTPHeaderField: k) }
         let sem = DispatchSemaphore(value: 0)
         var out: Result<HttpResponse, Error> = .failure(TransportError("no response"))

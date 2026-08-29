@@ -1,0 +1,34 @@
+{
+  "root": "",
+  "steps": [
+    {
+      "ops": [
+        {
+          "op": "mkdir",
+          "path": "/Big"
+        },
+        {
+          "op": "put",
+          "path": "/Big/01 - Tail Moov.m4a",
+          "asset": "m4a_tail_big",
+          "mtime": 1700001100
+        },
+        {
+          "op": "put",
+          "path": "/Big/02 - Big Pic.flac",
+          "asset": "flac_bigpic",
+          "mtime": 1700001101
+        },
+        {
+          "op": "put",
+          "path": "/Big/03 - Big Apic.mp3",
+          "asset": "mp3_bigapic",
+          "mtime": 1700001102
+        }
+      ]
+    },
+    {
+      "ops": []
+    }
+  ]
+}

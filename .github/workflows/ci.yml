@@ -72,3 +72,4 @@ jobs:
       - run: python3 contract/fixtures/sync_generate.py --check
       - run: python3 contract/fixtures/err_generate.py --check
       - run: python3 contract/fixtures/gdrive_generate.py --check
+      - run: python3 contract/fixtures/dropbox_generate.py --check

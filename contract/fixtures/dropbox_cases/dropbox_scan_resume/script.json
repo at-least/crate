@@ -1,0 +1,68 @@
+{
+  "steps": [
+    {
+      "ops": [
+        {
+          "op": "mkdir",
+          "path": "/Music"
+        },
+        {
+          "op": "mkdir",
+          "path": "/Music/Aurora"
+        },
+        {
+          "op": "mkdir",
+          "path": "/Music/Aurora/Northern Lights"
+        }
+      ]
+    },
+    {
+      "ops": [
+        {
+          "op": "put",
+          "path": "/Music/Aurora/Northern Lights/01 - Rise.flac",
+          "asset": "flac_a",
+          "mtime": 1700000900
+        },
+        {
+          "op": "put",
+          "path": "/Music/Aurora/Northern Lights/02 - Drift.flac",
+          "asset": "flac_b",
+          "mtime": 1700000901
+        },
+        {
+          "op": "put",
+          "path": "/Music/Aurora/Northern Lights/03 - Unknown.flac",
+          "asset": "flac_notags",
+          "mtime": 1700000902
+        },
+        {
+          "op": "fail",
+          "kind": "transient",
+          "count": 6,
+          "skip": 2
+        }
+      ]
+    },
+    {
+      "ops": []
+    },
+    {
+      "ops": [
+        {
+          "op": "put",
+          "path": "/Music/Aurora/Northern Lights/04 - Ghost.flac",
+          "asset": "flac_b",
+          "mtime": 1700000903
+        },
+        {
+          "op": "delete_after_delta",
+          "path": "/Music/Aurora/Northern Lights/04 - Ghost.flac"
+        }
+      ]
+    },
+    {
+      "ops": []
+    }
+  ]
+}

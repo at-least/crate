@@ -1,6 +1,6 @@
 # Provider 介面語意（provider.md）
 
-> 契約 v0.2（§8 GDrive 進場）。實作於 MuCore(swift) / mu-core(kotlin)。v0 只釘**語意**；類別簽名各語言自便。
+> 契約 v0.3（§8 GDrive、§9 Dropbox 進場）。實作於 MuCore(swift) / mu-core(kotlin)。v0 只釘**語意**；類別簽名各語言自便。
 
 ## 1. 介面
 
@@ -151,3 +151,40 @@ provider 持有 **全 Drive 的 id→node 表**（`{id,name,mimeType,parent,tras
 已知限制（釘死，後續子步驟處理）：
 - ~~掃描 = 整檔下載~~ → 已視窗化（§5、model.md §1.8，2026-08-29）。
 - md5→sha256 對應表（§7）未建：下載層仍在抓取時算 SHA-256；跨庫「抓前預判」留待需要時再加。
+
+## 9. DropboxProvider（Dropbox；fixtures `dropbox_cases/`，三實作 byte-identical）
+
+對象：使用者 Dropbox 裡的一個資料夾（root：路徑如 `/Music`、`id:…`、或 `""` = 整個 Dropbox）。與 §8 同構：
+`TokenSource` + `HttpTransport` 注入；§2.1 重試逐請求套用；`open()` 給 ByteSource（model.md §1.8 視窗化）。
+
+### 9.1 使用的 API（全部 POST、`Authorization: Bearer <token>`）
+| 用途 | 請求 |
+|---|---|
+| root 解析 | `api.dropboxapi.com/2/files/get_metadata` `{"path": root}` → `path_lower`/`path_display`（root=`""` 時免呼叫，prefix = `""`） |
+| 首掃起點 | `/2/files/list_folder/get_latest_cursor` `{"path": root, "recursive": true, "include_deleted": false, "limit": 2000}` → `cursor` |
+| 全量列舉 | `/2/files/list_folder`（同參數）→ `entries/cursor/has_more`；`has_more` → `/2/files/list_folder/continue` `{"cursor"}` |
+| 增量 | `/2/files/list_folder/continue` `{"cursor"}`（迴圈至 `has_more=false`） |
+| 讀檔 | `content.dropboxapi.com/2/files/download`，header `Dropbox-API-Arg: {"path": "<id>"}` + `Range: bytes=a-b`（206；200 整檔則本地裁切） |
+
+### 9.2 節點表與 path
+- 節點表 = root 底下的**檔案**（key = `path_lower`；Dropbox 路徑不分大小寫，無同 path 碰撞問題），值含 `path_display`、`id`、`size`、`content_hash`、`server_modified`。資料夾 entry 不入表。
+- 引擎 path = `path_display` 去掉 root 的 `path_display` 前綴（root=`""` 時去掉開頭 `/`）。
+- 增量套用：`file` → 覆寫；`deleted` → 刪該 `path_lower` **及其所有 `path_lower + "/"` 前綴的子項**（Dropbox 刪資料夾只回資料夾一筆 deleted）；`folder` → 忽略。
+
+### 9.3 rev
+- `rev = content_hash`（Dropbox 內容指紋：4MB 分塊 SHA-256 再 SHA-256，hex）；缺 → `rev` 欄位。語意同 §8.3：改名/搬移 = removed+added 且 rev 不變、`server_modified` 變內容不變 = 無變更。
+
+### 9.4 cursor / reset
+- 首輪先 `get_latest_cursor` 再全量列舉（列舉期間的變更由下輪 continue 補上）。
+- `continue` 回 **409 且 error tag `reset`** → cursor 失效 → `reset=true`：節點表清空、重走首輪。
+
+### 9.5 錯誤對應（→ §2.1）
+| HTTP | 分類 |
+|---|---|
+| 401 | `AuthError` |
+| 429、5xx、傳輸層失敗 | `TransientError` |
+| 409 body 含 `not_found` | `NotFoundError`（讀檔 → 靜默丟棄；get_metadata → root 不存在，傳播） |
+| 409 body 含 `reset`（continue） | cursor 失效（§9.4） |
+| 其他 4xx / 409 | 直接傳播 |
+
+fixtures 與 §8 同形（`{provider: {requests, reauths, sleeps, reset, unscanned, error}, report}`）；FakeDropbox 為 HTTP 語意層 in-memory（含 content_hash 計算與 Range）。

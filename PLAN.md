@@ -1,6 +1,6 @@
 # Mu — 個人雲端音樂庫播放器 · 專案計畫書
 
-> 版本 1.4 · 2026-08-29（D13 下載層內容定址；GDrive provider 核心 + 掃描視窗化進場）
+> 版本 1.5 · 2026-08-29（D13；GDrive/Dropbox provider 核心 + 掃描視窗化進場）
 > 一人 + AI agent 開發。本文件是唯一事實來源（single source of truth）。
 
 ---
@@ -199,6 +199,7 @@ interface CloudProvider {
 ### Phase 3 — 擴充（選配）
 Dropbox provider（讀同一庫）、macOS app（選單列常駐）。
 > 2026-08-28 進度：**D2 MuMac 上線**——共享層提升：`MuCore` package 新增 `MuKit` library target（`MuDatabase`/`PinManager` 自 MuiOS 遷入、`SyncRunner` 自 AppModel 抽出並 public 化——兩 app 共用引擎管線；審查時即預見此步）。`apple/MuMac`：選單列常駐（`LSUIElement` + `NSStatusItem`/`NSPopover`，macOS 13+，非 sandbox——`NSOpenPanel` 選庫根、root 直接落 DB 無需書籤）；單欄清單式 UI（清單列 + 專輯 → 音軌 + 釘選列 + 離線標記 + 底部播放列）；`MacPlayer`（AVQueuePlayer，無 remote command/audio session）。冒煙已驗：`MU_ROOT` 啟動 → 掃描落庫（mumac.db）→ root 持久化。D1 Dropbox 依 D11 同步延後（OAuth 申請等 production prep）。MuiOS 移轉 MuKit 後 UI 測試全綠（掃描/點播/釘選/重啟還原）。
+> 2026-08-29 進度：**D1 Dropbox provider 核心上線（三平台對等，mock 驗證）**——契約 provider.md §9：`get_metadata` 解析 root（`/Music`、`id:…`、`""` 整個 Dropbox；path_display 取回真實大小寫）、`get_latest_cursor` → `list_folder`（recursive、每頁 2000）→ `continue` 增量；節點表 key = `path_lower`（Dropbox 不分大小寫，無同 path 碰撞）；`deleted` 一筆連帶刪前綴子樹（Dropbox 刪資料夾只回一筆）；`rev = content_hash`（4MB 分塊 SHA-256 再 SHA-256）；409 `reset` → 重走首輪；409 `not_found` → NotFound；`download` + `Dropbox-API-Arg` + `Range`（視窗化掃描同 GDrive）。`HttpRequest` 加 body（POST JSON）。fixtures `dropbox_cases/` 8 案例（首掃含 root 外前綴相似路徑、root 大小寫、分頁、變更矩陣含資料夾改名/刪除子樹、cursor reset、重試、續掃、root="" 視窗化）三方 byte-identical；Swift/Kotlin 各帶 FakeDropbox（HTTP 語意層）。與 GDrive 同：App 層帳號頁/串流接線待 OAuth（D11）。
 > 原「同步閉環」相位（m3u8 雙向編輯、mu-state.json 跨裝置同步）隨 D12 取消——app 對雲端唯讀，清單編輯在雲端原生工具進行。
 **驗收**：見 acceptance.md Phase 3。
 

@@ -26,7 +26,8 @@ import java.time.format.DateTimeParseException
 
 // ---------------------------------------------------------------- 注入面（HTTP / token）
 
-data class HttpRequest(val method: String, val url: String, val headers: Map<String, String>)
+data class HttpRequest(val method: String, val url: String, val headers: Map<String, String>,
+                       val body: ByteArray = ByteArray(0))
 data class HttpResponse(val status: Int, val body: ByteArray)
 
 /** 傳輸層失敗（連不上、逾時）→ provider 視為 transient。 */
@@ -375,11 +376,13 @@ class HttpUrlConnectionTransport(
                 connectTimeout = connectTimeoutMs
                 readTimeout = readTimeoutMs
                 for ((k, v) in req.headers) setRequestProperty(k, v)
+                if (req.body.isNotEmpty()) doOutput = true
             }
         } catch (e: IOException) {
             throw TransportException(e.message ?: "connect")
         }
         try {
+            if (req.body.isNotEmpty()) conn.outputStream.use { it.write(req.body) }
             val status = conn.responseCode
             val stream = if (status >= 400) conn.errorStream else conn.inputStream
             val body = stream?.use { it.readBytes() } ?: ByteArray(0)

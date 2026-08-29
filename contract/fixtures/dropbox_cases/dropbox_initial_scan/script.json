@@ -1,0 +1,71 @@
+{
+  "steps": [
+    {
+      "ops": [
+        {
+          "op": "mkdir",
+          "path": "/Music"
+        },
+        {
+          "op": "mkdir",
+          "path": "/Music/Aurora"
+        },
+        {
+          "op": "mkdir",
+          "path": "/Music/Aurora/Northern Lights"
+        },
+        {
+          "op": "put",
+          "path": "/Music/Aurora/Northern Lights/01 - Rise.flac",
+          "asset": "flac_a",
+          "mtime": 1700000100
+        },
+        {
+          "op": "put",
+          "path": "/Music/Aurora/Northern Lights/02 - Drift.flac",
+          "asset": "flac_b",
+          "mtime": 1700000101
+        },
+        {
+          "op": "put",
+          "path": "/Music/Aurora/Northern Lights/cover.jpg",
+          "text": "not-a-real-jpg",
+          "mtime": 1700000102
+        },
+        {
+          "op": "mkdir",
+          "path": "/Music/Various Artists"
+        },
+        {
+          "op": "mkdir",
+          "path": "/Music/Various Artists/Dream Mixtape"
+        },
+        {
+          "op": "put",
+          "path": "/Music/Various Artists/Dream Mixtape/07 - Unknown.flac",
+          "asset": "flac_notags",
+          "mtime": 1700000103
+        },
+        {
+          "op": "mkdir",
+          "path": "/Other"
+        },
+        {
+          "op": "put",
+          "path": "/Other/03 - Elsewhere.flac",
+          "asset": "flac_a",
+          "mtime": 1700000105
+        },
+        {
+          "op": "put",
+          "path": "/Musician.flac",
+          "asset": "flac_a",
+          "mtime": 1700000106
+        }
+      ]
+    },
+    {
+      "ops": []
+    }
+  ]
+}

@@ -1,0 +1,142 @@
+{
+  "steps": [
+    {
+      "ops": [
+        {
+          "op": "mkdir",
+          "path": "/Music"
+        },
+        {
+          "op": "mkdir",
+          "path": "/Music/Aurora"
+        },
+        {
+          "op": "mkdir",
+          "path": "/Music/Aurora/Northern Lights"
+        },
+        {
+          "op": "put",
+          "path": "/Music/Aurora/Northern Lights/01 - Rise.flac",
+          "asset": "flac_a",
+          "mtime": 1700000100
+        },
+        {
+          "op": "put",
+          "path": "/Music/Aurora/Northern Lights/02 - Drift.flac",
+          "asset": "flac_b",
+          "mtime": 1700000101
+        },
+        {
+          "op": "put",
+          "path": "/Music/Aurora/Northern Lights/cover.jpg",
+          "text": "not-a-real-jpg",
+          "mtime": 1700000102
+        },
+        {
+          "op": "mkdir",
+          "path": "/Music/Various Artists"
+        },
+        {
+          "op": "mkdir",
+          "path": "/Music/Various Artists/Dream Mixtape"
+        },
+        {
+          "op": "put",
+          "path": "/Music/Various Artists/Dream Mixtape/07 - Unknown.flac",
+          "asset": "flac_notags",
+          "mtime": 1700000103
+        }
+      ]
+    },
+    {
+      "ops": [
+        {
+          "op": "put",
+          "path": "/Music/Aurora/Northern Lights/01 - Rise.flac",
+          "asset": "flac_b",
+          "mtime": 1700000300
+        }
+      ]
+    },
+    {
+      "ops": [
+        {
+          "op": "rename",
+          "from": "/Music/Aurora/Northern Lights/02 - Drift.flac",
+          "to": "/Music/Aurora/Northern Lights/02 - Drifted.flac"
+        }
+      ]
+    },
+    {
+      "ops": [
+        {
+          "op": "touch",
+          "path": "/Music/Various Artists/Dream Mixtape/07 - Unknown.flac",
+          "mtime": 1700000400
+        }
+      ]
+    },
+    {
+      "ops": [
+        {
+          "op": "mkdir",
+          "path": "/Kyary"
+        },
+        {
+          "op": "mkdir",
+          "path": "/Kyary/Jelly"
+        },
+        {
+          "op": "put",
+          "path": "/Kyary/Jelly/02 - Ninjya.mp3",
+          "asset": "mp3_tags",
+          "mtime": 1700000500
+        },
+        {
+          "op": "rename",
+          "from": "/Kyary",
+          "to": "/Music/Kyary"
+        }
+      ]
+    },
+    {
+      "ops": [
+        {
+          "op": "rename",
+          "from": "/Music/Kyary",
+          "to": "/Music/Kyary Pamyu"
+        }
+      ]
+    },
+    {
+      "ops": [
+        {
+          "op": "delete",
+          "path": "/Music/Kyary Pamyu"
+        }
+      ]
+    },
+    {
+      "ops": [
+        {
+          "op": "delete",
+          "path": "/Music/Various Artists/Dream Mixtape/07 - Unknown.flac"
+        },
+        {
+          "op": "put",
+          "path": "/Music/best.m3u8",
+          "mtime": 1700000600,
+          "text": "#EXTM3U\n#EXTINF:213.5,Rise\nAurora/Northern Lights/01 - Rise.flac\nAurora/Northern Lights/02 - Drifted.flac\n"
+        }
+      ]
+    },
+    {
+      "ops": [
+        {
+          "op": "delete",
+          "path": "/Music/best.m3u8"
+        }
+      ]
+    }
+  ]
+}
