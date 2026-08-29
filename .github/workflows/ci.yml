@@ -74,3 +74,4 @@ jobs:
       - run: python3 contract/fixtures/gdrive_generate.py --check
       - run: python3 contract/fixtures/dropbox_generate.py --check
       - run: python3 contract/fixtures/eq_generate.py --check
+      - run: python3 contract/fixtures/nowplaying_generate.py --check

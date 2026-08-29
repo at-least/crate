@@ -43,5 +43,6 @@
 ## Phase 4（打磨）
 - [E1] ReplayGain：契約 model.md §1.9（`replaygain_tags` 案例三方 byte-identical）+ 兩平台播放器依模式套音量（off/track/album）— ✅ 2026-08-29 機器（契約 + 建置 + iOS UI 測試）；真機聽感（衰減是否正確、切模式即時生效）屬人
 - [E2] CarPlay（人；需 entitlement）
-- [E3] 桌面 Widget（人）
+- [E3a] Widget 契約（model.md §1.11 `nowplaying_cases/` 三方 byte-identical）+ Android Glance widget（顯示字串 JVM 測試） — ✅ 2026-08-29 機器；主畫面實際加入與顯示屬人
+- [E3b] iOS/macOS WidgetKit widget — 待 App Group 能力確認（付費開發者帳號）
 - [E4] EQ / 正增益放大：契約 model.md §1.10（`eq_cases/` 三方 byte-identical）+ 兩平台 DSP 接線（Apple MTAudioProcessingTap／Android Media3 AudioProcessor）與性質測試 — ✅ 2026-08-29 機器（契約 + DSP 性質 + Android buffer 層 + iOS 播放 UI 測試）；聽感（各 preset 是否合理、正增益是否過度削峰）屬人

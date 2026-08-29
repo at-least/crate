@@ -48,6 +48,8 @@ dependencies {
     implementation("androidx.core:core-ktx:1.13.1")
     implementation("androidx.documentfile:documentfile:1.0.1")
 
+    implementation("androidx.glance:glance-appwidget:1.1.0") // 主畫面 Widget（model.md §1.11）
+
     val media3 = "1.4.1"
     implementation("androidx.media3:media3-exoplayer:$media3")
     implementation("androidx.media3:media3-session:$media3")

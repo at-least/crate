@@ -65,6 +65,9 @@ public enum CanonicalJson {
         sb += String(repeating: " ", count: n * 2)
     }
 
+    /// 帶引號的轉義字串——其他 canonical 序列化（如 NowPlayingSnapshot）共用。
+    static func escapeInto(_ s: String, _ sb: inout String) { escape(s, &sb) }
+
     private static func escape(_ s: String, _ sb: inout String) {
         sb += "\""
         for scalar in s.unicodeScalars {

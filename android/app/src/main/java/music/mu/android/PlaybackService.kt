@@ -6,7 +6,14 @@ import androidx.media3.common.C
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
 import androidx.media3.common.Player
+import androidx.glance.appwidget.updateAll
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.launch
 import mu.core.EqSettings
+import mu.core.NowPlayingSnapshot
 import mu.core.ReplayGain
 import androidx.media3.exoplayer.DefaultRenderersFactory
 import androidx.media3.exoplayer.ExoPlayer
@@ -53,7 +60,16 @@ class PlaybackService : MediaSessionService() {
         player.addListener(object : Player.Listener {
             override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
                 applyDsp(player, mediaItem)
+                publishNowPlaying(player)
             }
+
+            override fun onIsPlayingChanged(isPlaying: Boolean) = publishNowPlaying(player)
+
+            override fun onPositionDiscontinuity(
+                oldPosition: Player.PositionInfo,
+                newPosition: Player.PositionInfo,
+                reason: Int,
+            ) = publishNowPlaying(player)
         })
         prefs = getSharedPreferences(PREFS, MODE_PRIVATE)
         prefListener = android.content.SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
@@ -66,6 +82,26 @@ class PlaybackService : MediaSessionService() {
     }
 
     private val processor = MuAudioProcessor()
+    private val widgetScope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
+
+    /** 現正播放快照 → SharedPreferences + Widget（model.md §1.11；widget 只讀）。 */
+    private fun publishNowPlaying(player: Player) {
+        val item = player.currentMediaItem
+        val duration = player.duration.takeIf { it != C.TIME_UNSET && it > 0 }?.toInt()
+        val snapshot = NowPlayingSnapshot.create(
+            trackId = item?.mediaId,
+            title = item?.mediaMetadata?.title?.toString(),
+            artist = item?.mediaMetadata?.artist?.toString(),
+            albumId = item?.mediaMetadata?.albumTitle?.toString(),
+            isPlaying = player.isPlaying,
+            positionMs = player.currentPosition.coerceAtLeast(0).toInt(),
+            durationMs = duration,
+            updatedAtMs = System.currentTimeMillis(),
+        )
+        prefs?.edit()?.putString(NowPlayingSnapshot.STORAGE_KEY, snapshot.serialize())?.apply()
+        widgetScope.launch { MuWidget().updateAll(this@PlaybackService) }
+    }
+
     private var prefs: android.content.SharedPreferences? = null
     private var prefListener: android.content.SharedPreferences.OnSharedPreferenceChangeListener? = null
 
@@ -90,6 +126,7 @@ class PlaybackService : MediaSessionService() {
     }
 
     override fun onDestroy() {
+        widgetScope.cancel()
         prefs?.unregisterOnSharedPreferenceChangeListener(prefListener)
         mediaSession?.run {
             player.release()

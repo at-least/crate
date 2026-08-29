@@ -1,6 +1,6 @@
 # Mu — 個人雲端音樂庫播放器 · 專案計畫書
 
-> 版本 1.7 · 2026-08-29（D13；GDrive/Dropbox provider 核心 + 掃描視窗化；Phase 4 ReplayGain + EQ/正增益）
+> 版本 1.8 · 2026-08-29（D13；GDrive/Dropbox 核心 + 視窗化；Phase 4 ReplayGain、EQ/正增益、Widget 契約 + Android）
 > 一人 + AI agent 開發。本文件是唯一事實來源（single source of truth）。
 
 ---
@@ -209,7 +209,9 @@ CarPlay（Media3 原生支援 + CarPlay framework）、桌面 Widget、Last.fm s
 > 2026-08-29 進度：**ReplayGain 上線（三平台對等）**——契約 model.md §1.9：`replayGainTrackMb/AlbumMb`（millibel 整數，無浮點；`parseGainMb` 截斷第三位小數）；來源 Vorbis `REPLAYGAIN_*`、ID3 `TXXX`（description 不分大小寫；終止符依編碼——UTF-16 為對齊 `00 00`）、MP4 `----` 自由格式 atom（`name` 決定鍵）；Opus `R128_*` v1 不支援。新 scanner 案例 `replaygain_tags`（合成 FLAC/MP3/M4A，`generate.py --case` 不需 ffmpeg；含 `n/a`→null、`3.567`→356、`-.5`→null、UTF-16 TXXX、無關 `----` 忽略），全部 fixtures 換版（27+6+8+8）三方 byte-identical。schema.sql v0.4（`tracks.rg_track_mb/rg_album_mb`，user_version 3；Room v4）。播放：核心 `ReplayGain.volume(mode, track)`——線性 `10^(mb/2000)`、**上限 1.0**（只衰減不放大；正增益放大需 audio processor，EQ 相位再議）、無前置增益；模式 off/track/album（album 缺退 track），Apple 存 UserDefaults、Android 存 SharedPreferences（PlaybackService 監聽即時套用）；UI：iOS NowPlaying 選單、MuMac 更多選單、Android TopAppBar 下拉。MuiOS UI 測試（schema 換版後 DB 還原）全綠。
 > 2026-08-29 進度：**EQ + 正增益放大上線（三平台對等）**——契約 model.md §1.10：`EqSettings`（10 段固定中心頻率 31…16k Hz、Q=1.41、每段與 preamp 均 millibel 且 clamp ±1200、9 組 presets、canonical 序列化）與**播放總增益**合成規則（§1.9 ReplayGain + preamp，clamp [-6000,+1200]）——純整數，`eq_cases/` 3 案例三方 byte-identical（含壞 JSON/型別/長度、preset 表、增益矩陣）。**浮點 DSP 刻意不入 byte 契約**：`Biquad`（RBJ peaking）+ `AudioDsp`（Direct Form I、每聲道獨立狀態、直通零成本、輸出硬 clamp ±1.0）由各平台性質測試驗證（中心頻率增益誤差 <0.01 dB、遠端 ≈0 dB、穩態 RMS ≈ 設定值、聲道不串音、無 NaN）。
 > 接線：**Apple = MTAudioProcessingTap**（掛在每個 AVPlayerItem 的 audioMix；刻意不改寫成 AVAudioEngine，保留 AVQueuePlayer 佇列接力/gapless 與既有遠端控制），**Android = Media3 `AudioProcessor`**（自訂 `DefaultRenderersFactory.buildAudioSink` → `DefaultAudioSink` 處理鏈；支援 PCM16/float，5 條 JVM buffer 層測試：直通位元不變、增益、削峰不 wrap、float 路徑、非支援編碼交還）。**ReplayGain 改由 DSP 套用**（player.volume 固定 1）→ 解除 v1.2「只能衰減」的限制，正增益真正放大。設定存平台 prefs（Apple UserDefaults / Android SharedPreferences，鍵 `eq`），UI：iOS NowPlaying 選單、MuMac 更多選單、Android TopAppBar 下拉（preset + 前置增益 ±6 dB）。iOS 模擬器 UI 測試（實際播放、tap 生效路徑）全綠。
-> 尚未做：CarPlay（需你向 Apple 申請 CarPlay audio entitlement）、桌面 Widget、Last.fm scrobble（選配）。
+> 2026-08-29 進度：**Widget 第一階段——契約 + Android 主畫面 Widget 上線**。契約 model.md §1.11 `NowPlayingSnapshot`（trackId/title/artist/albumId/isPlaying/positionMs/durationMs/updatedAtMs，canonical JSON、純整數字串）與**顯示規則**：`displayState`（trackId 無 → idle；超過 6 小時未更新 → idle；否則 playing/paused；時鐘回退不算過期）、`effectivePositionMs`（playing 才隨時鐘前進、clamp 到時長）。`nowplaying_cases/` 2 案例三方 byte-identical（解析容錯矩陣 + 顯示/位置矩陣）。Android：Glance `MuWidget`（讀 SharedPreferences 快照、顯示曲名/藝人/進度、點擊開 app；`PlaybackService` 於換曲/播放狀態/跳轉時寫快照並 `updateAll`），4 條 JVM 顯示字串測試。
+> **iOS/macOS Widget 待決**：WidgetKit extension 必須用 **App Group** 才能讀到 app 寫的快照，而 App Group 需要付費開發者帳號才能佈建——加上去會讓沒有該能力的帳號在**裝置**簽章時失敗（模擬器不受影響）。等你確認帳號狀態再進場（見下方 §12）。
+> 尚未做：CarPlay（需你向 Apple 申請 CarPlay audio entitlement）、iOS/macOS Widget（見上）、Last.fm scrobble（選配）。
 
 ## 8. 驗證策略（誰驗什麼）
 

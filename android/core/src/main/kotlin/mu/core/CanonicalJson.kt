@@ -69,6 +69,9 @@ object CanonicalJson {
         repeat(n * 2) { sb.append(' ') }
     }
 
+    /** 帶引號的轉義字串——其他 canonical 序列化（如 NowPlayingSnapshot）共用。 */
+    fun quoted(s: String): String = StringBuilder().also { escape(s, it) }.toString()
+
     private fun escape(s: String, sb: StringBuilder) {
         sb.append('"')
         for (c in s) {

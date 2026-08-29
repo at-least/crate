@@ -1,0 +1,146 @@
+[
+  {
+    "displayState": "playing",
+    "effectivePositionMs": 42000,
+    "name": "playing_now",
+    "serialized": "{\"albumId\":\"alb|Aurora|Northern Lights\",\"artist\":\"Aurora\",\"durationMs\":213000,\"isPlaying\":true,\"positionMs\":42000,\"title\":\"Rise\",\"trackId\":\"Aurora/Northern Lights/01 - Rise.flac\",\"updatedAtMs\":1700000000000}",
+    "snapshot": {
+      "albumId": "alb|Aurora|Northern Lights",
+      "artist": "Aurora",
+      "durationMs": 213000,
+      "isPlaying": true,
+      "positionMs": 42000,
+      "title": "Rise",
+      "trackId": "Aurora/Northern Lights/01 - Rise.flac",
+      "updatedAtMs": 1700000000000
+    }
+  },
+  {
+    "displayState": "playing",
+    "effectivePositionMs": 52000,
+    "name": "playing_advanced",
+    "serialized": "{\"albumId\":\"alb|Aurora|Northern Lights\",\"artist\":\"Aurora\",\"durationMs\":213000,\"isPlaying\":true,\"positionMs\":42000,\"title\":\"Rise\",\"trackId\":\"Aurora/Northern Lights/01 - Rise.flac\",\"updatedAtMs\":1700000000000}",
+    "snapshot": {
+      "albumId": "alb|Aurora|Northern Lights",
+      "artist": "Aurora",
+      "durationMs": 213000,
+      "isPlaying": true,
+      "positionMs": 42000,
+      "title": "Rise",
+      "trackId": "Aurora/Northern Lights/01 - Rise.flac",
+      "updatedAtMs": 1700000000000
+    }
+  },
+  {
+    "displayState": "playing",
+    "effectivePositionMs": 213000,
+    "name": "playing_clamped_to_duration",
+    "serialized": "{\"albumId\":\"alb|Aurora|Northern Lights\",\"artist\":\"Aurora\",\"durationMs\":213000,\"isPlaying\":true,\"positionMs\":42000,\"title\":\"Rise\",\"trackId\":\"Aurora/Northern Lights/01 - Rise.flac\",\"updatedAtMs\":1700000000000}",
+    "snapshot": {
+      "albumId": "alb|Aurora|Northern Lights",
+      "artist": "Aurora",
+      "durationMs": 213000,
+      "isPlaying": true,
+      "positionMs": 42000,
+      "title": "Rise",
+      "trackId": "Aurora/Northern Lights/01 - Rise.flac",
+      "updatedAtMs": 1700000000000
+    }
+  },
+  {
+    "displayState": "paused",
+    "effectivePositionMs": 42000,
+    "name": "paused_keeps_position",
+    "serialized": "{\"albumId\":\"alb|Aurora|Northern Lights\",\"artist\":\"Aurora\",\"durationMs\":213000,\"isPlaying\":false,\"positionMs\":42000,\"title\":\"Rise\",\"trackId\":\"Aurora/Northern Lights/01 - Rise.flac\",\"updatedAtMs\":1700000000000}",
+    "snapshot": {
+      "albumId": "alb|Aurora|Northern Lights",
+      "artist": "Aurora",
+      "durationMs": 213000,
+      "isPlaying": false,
+      "positionMs": 42000,
+      "title": "Rise",
+      "trackId": "Aurora/Northern Lights/01 - Rise.flac",
+      "updatedAtMs": 1700000000000
+    }
+  },
+  {
+    "displayState": "playing",
+    "effectivePositionMs": 42000,
+    "name": "clock_went_backwards",
+    "serialized": "{\"albumId\":\"alb|Aurora|Northern Lights\",\"artist\":\"Aurora\",\"durationMs\":213000,\"isPlaying\":true,\"positionMs\":42000,\"title\":\"Rise\",\"trackId\":\"Aurora/Northern Lights/01 - Rise.flac\",\"updatedAtMs\":1700000000000}",
+    "snapshot": {
+      "albumId": "alb|Aurora|Northern Lights",
+      "artist": "Aurora",
+      "durationMs": 213000,
+      "isPlaying": true,
+      "positionMs": 42000,
+      "title": "Rise",
+      "trackId": "Aurora/Northern Lights/01 - Rise.flac",
+      "updatedAtMs": 1700000000000
+    }
+  },
+  {
+    "displayState": "playing",
+    "effectivePositionMs": 213000,
+    "name": "stale_exactly_at_limit",
+    "serialized": "{\"albumId\":\"alb|Aurora|Northern Lights\",\"artist\":\"Aurora\",\"durationMs\":213000,\"isPlaying\":true,\"positionMs\":42000,\"title\":\"Rise\",\"trackId\":\"Aurora/Northern Lights/01 - Rise.flac\",\"updatedAtMs\":1700000000000}",
+    "snapshot": {
+      "albumId": "alb|Aurora|Northern Lights",
+      "artist": "Aurora",
+      "durationMs": 213000,
+      "isPlaying": true,
+      "positionMs": 42000,
+      "title": "Rise",
+      "trackId": "Aurora/Northern Lights/01 - Rise.flac",
+      "updatedAtMs": 1700000000000
+    }
+  },
+  {
+    "displayState": "idle",
+    "effectivePositionMs": 42000,
+    "name": "stale_past_limit",
+    "serialized": "{\"albumId\":\"alb|Aurora|Northern Lights\",\"artist\":\"Aurora\",\"durationMs\":213000,\"isPlaying\":true,\"positionMs\":42000,\"title\":\"Rise\",\"trackId\":\"Aurora/Northern Lights/01 - Rise.flac\",\"updatedAtMs\":1700000000000}",
+    "snapshot": {
+      "albumId": "alb|Aurora|Northern Lights",
+      "artist": "Aurora",
+      "durationMs": 213000,
+      "isPlaying": true,
+      "positionMs": 42000,
+      "title": "Rise",
+      "trackId": "Aurora/Northern Lights/01 - Rise.flac",
+      "updatedAtMs": 1700000000000
+    }
+  },
+  {
+    "displayState": "idle",
+    "effectivePositionMs": 0,
+    "name": "idle_no_track",
+    "serialized": "{\"albumId\":null,\"artist\":null,\"durationMs\":null,\"isPlaying\":false,\"positionMs\":0,\"title\":null,\"trackId\":null,\"updatedAtMs\":0}",
+    "snapshot": {
+      "albumId": null,
+      "artist": null,
+      "durationMs": null,
+      "isPlaying": false,
+      "positionMs": 0,
+      "title": null,
+      "trackId": null,
+      "updatedAtMs": 0
+    }
+  },
+  {
+    "displayState": "playing",
+    "effectivePositionMs": 442000,
+    "name": "no_duration_unbounded",
+    "serialized": "{\"albumId\":\"alb|Aurora|Northern Lights\",\"artist\":\"Aurora\",\"durationMs\":null,\"isPlaying\":true,\"positionMs\":42000,\"title\":\"Rise\",\"trackId\":\"Aurora/Northern Lights/01 - Rise.flac\",\"updatedAtMs\":1700000000000}",
+    "snapshot": {
+      "albumId": "alb|Aurora|Northern Lights",
+      "artist": "Aurora",
+      "durationMs": null,
+      "isPlaying": true,
+      "positionMs": 42000,
+      "title": "Rise",
+      "trackId": "Aurora/Northern Lights/01 - Rise.flac",
+      "updatedAtMs": 1700000000000
+    }
+  }
+]

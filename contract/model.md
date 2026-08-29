@@ -146,6 +146,19 @@ parser 只讀結構需要的位元組、跳過大 payload（存取序列即規�
 線性值 = `10^(mb/2000)`；**v1.3 起允許 > 1（正增益放大）**——增益改在 DSP 層套用（不再受播放器音量 0…1 上限），
 輸出樣本硬性 clamp 到 ±1.0（過度正增益會削峰，屬使用者選擇）。EQ 停用且總增益 = 0 → DSP 直通（零成本）。
 
+### 1.11 現正播放快照（NowPlayingSnapshot；v1.4，Phase 4 Widget）
+播放器 → 桌面 Widget 的單向資料（app 寫、widget 讀；平台共享儲存：iOS/macOS App Group `UserDefaults`、
+Android `SharedPreferences`，鍵 `nowPlaying`）。canonical JSON、**純整數/字串**（可三方 byte-identical）：
+```json
+{ "albumId": "alb|Aurora|Northern Lights", "artist": "Aurora", "durationMs": 213000,
+  "isPlaying": true, "positionMs": 42000, "title": "Rise",
+  "trackId": "Aurora/Northern Lights/01 - Rise.flac", "updatedAtMs": 1700000000000 }
+```
+- 解析：壞 JSON／缺鍵／型別不符 → 該欄位取預設（字串 `null`、`isPlaying=false`、數字 `0`／`durationMs=null`）；`trackId` 為空字串視同 null。
+- **顯示狀態** `displayState(nowMs)`：`trackId == null` → `idle`；`nowMs − updatedAtMs > staleAfterMs`（預設 **6 小時** = 21600000 ms）→ `idle`；否則 `isPlaying ? playing : paused`。`nowMs < updatedAtMs`（時鐘回退）不算過期。
+- **推算位置** `effectivePositionMs(nowMs)`：`paused`/`idle` → `positionMs`；`playing` → `positionMs + max(0, nowMs − updatedAtMs)`，再 clamp 到 `durationMs`（若有）。負值一律取 0。
+- Widget 只讀不寫；點擊 = 開啟 app（v1 不做 widget 內控制——互動需 App Intents／自訂 action，留待日後）。
+
 ## 2. ScanResult JSON（契約核心）
 
 ### 2.1 結構
