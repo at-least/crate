@@ -1,0 +1,67 @@
+[
+  {
+    "kind": "token_response",
+    "name": "exchange_full",
+    "needsRefresh": false,
+    "serialized": "{\"accessToken\":\"at-1\",\"expiresAtMs\":1700003599000,\"refreshToken\":\"rt-1\",\"scope\":\"drive.readonly\"}",
+    "state": {
+      "accessToken": "at-1",
+      "expiresAtMs": 1700003599000,
+      "refreshToken": "rt-1",
+      "scope": "drive.readonly"
+    },
+    "usable": true
+  },
+  {
+    "kind": "token_response",
+    "name": "refresh_keeps_refresh_token",
+    "needsRefresh": false,
+    "serialized": "{\"accessToken\":\"at-2\",\"expiresAtMs\":1700007199000,\"refreshToken\":\"rt-1\",\"scope\":\"drive.readonly\"}",
+    "state": {
+      "accessToken": "at-2",
+      "expiresAtMs": 1700007199000,
+      "refreshToken": "rt-1",
+      "scope": "drive.readonly"
+    },
+    "usable": true
+  },
+  {
+    "kind": "token_response",
+    "name": "expires_in_missing",
+    "needsRefresh": true,
+    "serialized": "{\"accessToken\":\"at-3\",\"expiresAtMs\":1700000000000,\"refreshToken\":\"rt-3\",\"scope\":\"\"}",
+    "state": {
+      "accessToken": "at-3",
+      "expiresAtMs": 1700000000000,
+      "refreshToken": "rt-3",
+      "scope": ""
+    },
+    "usable": false
+  },
+  {
+    "kind": "token_response",
+    "name": "expires_in_string",
+    "needsRefresh": false,
+    "serialized": "{\"accessToken\":\"at-4\",\"expiresAtMs\":1700000600000,\"refreshToken\":\"\",\"scope\":\"\"}",
+    "state": {
+      "accessToken": "at-4",
+      "expiresAtMs": 1700000600000,
+      "refreshToken": "",
+      "scope": ""
+    },
+    "usable": true
+  },
+  {
+    "kind": "token_response",
+    "name": "garbage_body",
+    "needsRefresh": true,
+    "serialized": "{\"accessToken\":\"at-old\",\"expiresAtMs\":1700000000000,\"refreshToken\":\"rt-old\",\"scope\":\"s\"}",
+    "state": {
+      "accessToken": "at-old",
+      "expiresAtMs": 1700000000000,
+      "refreshToken": "rt-old",
+      "scope": "s"
+    },
+    "usable": false
+  }
+]

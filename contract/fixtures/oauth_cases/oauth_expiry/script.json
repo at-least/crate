@@ -1,0 +1,40 @@
+{
+  "entries": [
+    {
+      "type": "expiry",
+      "name": "fresh",
+      "nowMs": 1700000000000,
+      "state": "{\"accessToken\": \"at\", \"refreshToken\": \"rt\", \"expiresAtMs\": 1700003600000, \"scope\": \"\"}"
+    },
+    {
+      "type": "expiry",
+      "name": "inside_skew",
+      "nowMs": 1700003550000,
+      "state": "{\"accessToken\": \"at\", \"refreshToken\": \"rt\", \"expiresAtMs\": 1700003600000, \"scope\": \"\"}"
+    },
+    {
+      "type": "expiry",
+      "name": "exactly_skew",
+      "nowMs": 1700003540000,
+      "state": "{\"accessToken\": \"at\", \"refreshToken\": \"rt\", \"expiresAtMs\": 1700003600000, \"scope\": \"\"}"
+    },
+    {
+      "type": "expiry",
+      "name": "expired",
+      "nowMs": 1700009999000,
+      "state": "{\"accessToken\": \"at\", \"refreshToken\": \"rt\", \"expiresAtMs\": 1700003600000, \"scope\": \"\"}"
+    },
+    {
+      "type": "expiry",
+      "name": "empty_state",
+      "nowMs": 1700000000000,
+      "state": ""
+    },
+    {
+      "type": "expiry",
+      "name": "no_access_token",
+      "nowMs": 1700000000000,
+      "state": "{\"accessToken\": \"\", \"refreshToken\": \"rt\", \"expiresAtMs\": 1700003600000, \"scope\": \"\"}"
+    }
+  ]
+}

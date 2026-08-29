@@ -23,6 +23,7 @@
 ### Phase 1 補充：GDrive provider（子步驟 4；OAuth 依 D11 延後）
 - [B8] GDrive provider 契約（provider.md §8；`gdrive_cases/` 7 案例：首掃/分頁/變更/reset/重試/續掃/同名碰撞）Python/Kotlin/Swift 三方 byte-identical — ✅ 2026-08-29（機器；CI 三 job）
 - [B8b] 掃描視窗化（model.md §1.8）：scanner 經 ChunkedReader 只抓需要的 chunk；`gdrive_windowed_scan` 三檔（moov 在尾 m4a／大封面 FLAC／大 APIC MP3）各 2 個 Range 請求，三方 byte-identical；26 scanner + 6 sync cases 輸出不變 — ✅ 2026-08-29（機器）
+- [B8c] OAuth + PKCE 核心（provider.md §10；`oauth_cases/` 三方 byte-identical + 兩平台 RefreshingTokenSource 行為測試） — ✅ 2026-08-29（機器）
 - [B9] 真帳號：填入 client ID → 登入 → 索引與本地資料夾一致；Range 支援與 5,000 檔請求數量測（人 + 機器；待 OAuth 進場）
 
 ## Phase 2（Apple MVP）

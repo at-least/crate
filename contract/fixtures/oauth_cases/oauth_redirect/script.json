@@ -1,0 +1,52 @@
+{
+  "entries": [
+    {
+      "type": "redirect",
+      "name": "ok",
+      "url": "music.mu.ios:/oauth2redirect?code=abc123&state=st-1",
+      "state": "st-1"
+    },
+    {
+      "type": "redirect",
+      "name": "ok_percent_encoded",
+      "url": "http://127.0.0.1:7777/callback?code=a%2Fb%2Bc&state=st%202",
+      "state": "st 2"
+    },
+    {
+      "type": "redirect",
+      "name": "denied",
+      "url": "music.mu.ios:/oauth2redirect?error=access_denied&state=st-1",
+      "state": "st-1"
+    },
+    {
+      "type": "redirect",
+      "name": "state_mismatch",
+      "url": "music.mu.ios:/oauth2redirect?code=abc123&state=other",
+      "state": "st-1"
+    },
+    {
+      "type": "redirect",
+      "name": "denied_state_mismatch",
+      "url": "music.mu.ios:/oauth2redirect?error=access_denied&state=x",
+      "state": "st-1"
+    },
+    {
+      "type": "redirect",
+      "name": "no_query",
+      "url": "music.mu.ios:/oauth2redirect",
+      "state": "st-1"
+    },
+    {
+      "type": "redirect",
+      "name": "no_code",
+      "url": "music.mu.ios:/oauth2redirect?state=st-1",
+      "state": "st-1"
+    },
+    {
+      "type": "redirect",
+      "name": "with_fragment",
+      "url": "music.mu.ios:/oauth2redirect?code=abc&state=st-1#frag",
+      "state": "st-1"
+    }
+  ]
+}

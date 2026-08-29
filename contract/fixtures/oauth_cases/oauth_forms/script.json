@@ -1,0 +1,22 @@
+{
+  "entries": [
+    {
+      "type": "form",
+      "name": "gdrive",
+      "clientId": "123-abc.apps.googleusercontent.com",
+      "code": "4/0Ab_c-d",
+      "verifier": "muVerifier-0123456789abcdefghijklmnopqrstuvwxyz~._-",
+      "redirectUri": "music.mu.ios:/oauth2redirect",
+      "refreshToken": "1//rt-token"
+    },
+    {
+      "type": "form",
+      "name": "dropbox",
+      "clientId": "dbx-key",
+      "code": "code+with/chars",
+      "verifier": "short-verifier",
+      "redirectUri": "http://127.0.0.1:7777/callback",
+      "refreshToken": "rt&x=1"
+    }
+  ]
+}

@@ -1,0 +1,62 @@
+[
+  {
+    "kind": "redirect",
+    "name": "ok",
+    "result": {
+      "code": "abc123",
+      "status": "ok"
+    }
+  },
+  {
+    "kind": "redirect",
+    "name": "ok_percent_encoded",
+    "result": {
+      "code": "a/b+c",
+      "status": "ok"
+    }
+  },
+  {
+    "kind": "redirect",
+    "name": "denied",
+    "result": {
+      "error": "access_denied",
+      "status": "denied"
+    }
+  },
+  {
+    "kind": "redirect",
+    "name": "state_mismatch",
+    "result": {
+      "status": "state_mismatch"
+    }
+  },
+  {
+    "kind": "redirect",
+    "name": "denied_state_mismatch",
+    "result": {
+      "status": "state_mismatch"
+    }
+  },
+  {
+    "kind": "redirect",
+    "name": "no_query",
+    "result": {
+      "status": "invalid"
+    }
+  },
+  {
+    "kind": "redirect",
+    "name": "no_code",
+    "result": {
+      "status": "invalid"
+    }
+  },
+  {
+    "kind": "redirect",
+    "name": "with_fragment",
+    "result": {
+      "code": "abc",
+      "status": "ok"
+    }
+  }
+]

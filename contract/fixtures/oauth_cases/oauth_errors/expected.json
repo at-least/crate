@@ -1,0 +1,42 @@
+[
+  {
+    "class": "auth",
+    "kind": "error",
+    "name": "invalid_grant"
+  },
+  {
+    "class": "auth",
+    "kind": "error",
+    "name": "invalid_client"
+  },
+  {
+    "class": "auth",
+    "kind": "error",
+    "name": "unauthorized_client"
+  },
+  {
+    "class": "transient",
+    "kind": "error",
+    "name": "rate_limited"
+  },
+  {
+    "class": "transient",
+    "kind": "error",
+    "name": "server_error"
+  },
+  {
+    "class": "transient",
+    "kind": "error",
+    "name": "transport_failure"
+  },
+  {
+    "class": "http",
+    "kind": "error",
+    "name": "other_4xx"
+  },
+  {
+    "class": "ok",
+    "kind": "error",
+    "name": "ok"
+  }
+]

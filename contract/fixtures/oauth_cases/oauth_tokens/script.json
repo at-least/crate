@@ -1,0 +1,36 @@
+{
+  "entries": [
+    {
+      "type": "token_response",
+      "name": "exchange_full",
+      "nowMs": 1700000000000,
+      "body": "{\"access_token\": \"at-1\", \"refresh_token\": \"rt-1\", \"expires_in\": 3599, \"scope\": \"drive.readonly\", \"token_type\": \"Bearer\"}"
+    },
+    {
+      "type": "token_response",
+      "name": "refresh_keeps_refresh_token",
+      "nowMs": 1700003600000,
+      "prev": "{\"accessToken\": \"at-1\", \"refreshToken\": \"rt-1\", \"expiresAtMs\": 1700003599000, \"scope\": \"drive.readonly\"}",
+      "body": "{\"access_token\": \"at-2\", \"expires_in\": 3599}"
+    },
+    {
+      "type": "token_response",
+      "name": "expires_in_missing",
+      "nowMs": 1700000000000,
+      "body": "{\"access_token\": \"at-3\", \"refresh_token\": \"rt-3\"}"
+    },
+    {
+      "type": "token_response",
+      "name": "expires_in_string",
+      "nowMs": 1700000000000,
+      "body": "{\"access_token\": \"at-4\", \"expires_in\": \"600\"}"
+    },
+    {
+      "type": "token_response",
+      "name": "garbage_body",
+      "nowMs": 1700000000000,
+      "prev": "{\"accessToken\": \"at-old\", \"refreshToken\": \"rt-old\", \"expiresAtMs\": 1, \"scope\": \"s\"}",
+      "body": "not json"
+    }
+  ]
+}

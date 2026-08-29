@@ -20,6 +20,16 @@
    | Desktop app | — | Linux 開發機的整合測試（loopback + PKCE） |
 5. **回報**：三個 Client ID 給 agent。Desktop secret 放 `.env`（已 gitignore），不進 repo。
 
+## Redirect URI（對齊 provider.md §10）
+| 用途 | redirect_uri |
+|---|---|
+| iOS / macOS | `music.mu.ios:/oauth2redirect`（iOS client 的反轉 client ID 亦可，屆時擇一釘死） |
+| Android | `music.mu.android:/oauth2redirect` |
+| Desktop（開發機整合測試） | `http://127.0.0.1:<port>/callback` |
+
+流程本身（PKCE challenge、授權 URL、token 交換/更新、過期判定、錯誤語意）已在核心層完成並有契約測試
+（`contract/fixtures/oauth_cases/`），拿到 Client ID 後只需填入設定 + 接上平台的「開瀏覽器」與鑰匙串儲存。
+
 ## 已查證的地雷
 
 - **Testing 模式 refresh token 7 天過期**（官方明文）：開發期可接受；

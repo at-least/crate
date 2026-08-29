@@ -1,0 +1,26 @@
+[
+  {
+    "challenge": "TV9Do5GFgiHICyZWaYrecFHiX1M3OP3eac0BsKKwxn0",
+    "kind": "authorize",
+    "name": "gdrive_mobile",
+    "url": "https://accounts.google.com/o/oauth2/v2/auth?client_id=123-abc.apps.googleusercontent.com&code_challenge=TV9Do5GFgiHICyZWaYrecFHiX1M3OP3eac0BsKKwxn0&code_challenge_method=S256&redirect_uri=music.mu.ios%3A%2Foauth2redirect&response_type=code&scope=https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fdrive.readonly&state=st-1&access_type=offline&prompt=consent"
+  },
+  {
+    "challenge": "TV9Do5GFgiHICyZWaYrecFHiX1M3OP3eac0BsKKwxn0",
+    "kind": "authorize",
+    "name": "gdrive_loopback",
+    "url": "https://accounts.google.com/o/oauth2/v2/auth?client_id=123-abc.apps.googleusercontent.com&code_challenge=TV9Do5GFgiHICyZWaYrecFHiX1M3OP3eac0BsKKwxn0&code_challenge_method=S256&redirect_uri=http%3A%2F%2F127.0.0.1%3A7777%2Fcallback&response_type=code&scope=https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fdrive.readonly&state=st%202&access_type=offline&prompt=consent"
+  },
+  {
+    "challenge": "TV9Do5GFgiHICyZWaYrecFHiX1M3OP3eac0BsKKwxn0",
+    "kind": "authorize",
+    "name": "dropbox_mobile",
+    "url": "https://www.dropbox.com/oauth2/authorize?client_id=dbx-key&code_challenge=TV9Do5GFgiHICyZWaYrecFHiX1M3OP3eac0BsKKwxn0&code_challenge_method=S256&redirect_uri=music.mu.android%3A%2Foauth2redirect&response_type=code&scope=files.metadata.read%20files.content.read&state=st-3&token_access_type=offline"
+  },
+  {
+    "challenge": "Nb9gqlOcQmdgooA-8xjf8IPMQhWeyujCph4yzdaXdH0",
+    "kind": "authorize",
+    "name": "unicode_state",
+    "url": "https://www.dropbox.com/oauth2/authorize?client_id=dbx-key&code_challenge=Nb9gqlOcQmdgooA-8xjf8IPMQhWeyujCph4yzdaXdH0&code_challenge_method=S256&redirect_uri=music.mu.android%3A%2Foauth2redirect&response_type=code&scope=files.metadata.read%20files.content.read&state=%E7%8B%80%E6%85%8B%2F%2B%26%3D%3F&token_access_type=offline"
+  }
+]

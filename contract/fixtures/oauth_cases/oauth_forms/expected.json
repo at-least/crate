@@ -1,0 +1,14 @@
+[
+  {
+    "exchange": "client_id=123-abc.apps.googleusercontent.com&code=4%2F0Ab_c-d&code_verifier=muVerifier-0123456789abcdefghijklmnopqrstuvwxyz~._-&grant_type=authorization_code&redirect_uri=music.mu.ios%3A%2Foauth2redirect",
+    "kind": "form",
+    "name": "gdrive",
+    "refresh": "client_id=123-abc.apps.googleusercontent.com&grant_type=refresh_token&refresh_token=1%2F%2Frt-token"
+  },
+  {
+    "exchange": "client_id=dbx-key&code=code%2Bwith%2Fchars&code_verifier=short-verifier&grant_type=authorization_code&redirect_uri=http%3A%2F%2F127.0.0.1%3A7777%2Fcallback",
+    "kind": "form",
+    "name": "dropbox",
+    "refresh": "client_id=dbx-key&grant_type=refresh_token&refresh_token=rt%26x%3D1"
+  }
+]

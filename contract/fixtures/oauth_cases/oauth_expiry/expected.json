@@ -1,0 +1,38 @@
+[
+  {
+    "kind": "expiry",
+    "name": "fresh",
+    "needsRefresh": false,
+    "usable": true
+  },
+  {
+    "kind": "expiry",
+    "name": "inside_skew",
+    "needsRefresh": true,
+    "usable": false
+  },
+  {
+    "kind": "expiry",
+    "name": "exactly_skew",
+    "needsRefresh": true,
+    "usable": false
+  },
+  {
+    "kind": "expiry",
+    "name": "expired",
+    "needsRefresh": true,
+    "usable": false
+  },
+  {
+    "kind": "expiry",
+    "name": "empty_state",
+    "needsRefresh": true,
+    "usable": false
+  },
+  {
+    "kind": "expiry",
+    "name": "no_access_token",
+    "needsRefresh": false,
+    "usable": false
+  }
+]

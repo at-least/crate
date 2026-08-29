@@ -1,6 +1,6 @@
 # Provider 介面語意（provider.md）
 
-> 契約 v0.3（§8 GDrive、§9 Dropbox 進場）。實作於 MuCore(swift) / mu-core(kotlin)。v0 只釘**語意**；類別簽名各語言自便。
+> 契約 v0.4（§8 GDrive、§9 Dropbox、§10 OAuth+PKCE）。實作於 MuCore(swift) / mu-core(kotlin)。v0 只釘**語意**；類別簽名各語言自便。
 
 ## 1. 介面
 
@@ -188,3 +188,41 @@ provider 持有 **全 Drive 的 id→node 表**（`{id,name,mimeType,parent,tras
 | 其他 4xx / 409 | 直接傳播 |
 
 fixtures 與 §8 同形（`{provider: {requests, reauths, sleeps, reset, unscanned, error}, report}`）；FakeDropbox 為 HTTP 語意層 in-memory（含 content_hash 計算與 Range）。
+
+## 10. OAuth 2.0 + PKCE 與 token 生命週期（fixtures `oauth_cases/`，三實作 byte-identical）
+
+app 唯讀取用使用者雲端，一律走 **Authorization Code + PKCE**（無 client secret 於行動端；桌面 loopback 亦同）。
+只有「開瀏覽器讓使用者同意」屬平台（ASWebAuthenticationSession／Custom Tab），其餘（URL 組裝、challenge、
+token 交換/更新、過期判定、錯誤語意）全在核心層，可測。
+
+### 10.1 端點與參數（`OAuthConfig`）
+| 欄位 | GDrive | Dropbox |
+|---|---|---|
+| `authorizeUrl` | `https://accounts.google.com/o/oauth2/v2/auth` | `https://www.dropbox.com/oauth2/authorize` |
+| `tokenUrl` | `https://oauth2.googleapis.com/token` | `https://api.dropboxapi.com/oauth2/token` |
+| `scope` | `https://www.googleapis.com/auth/drive.readonly` | `files.metadata.read files.content.read` |
+| 額外授權參數 | `access_type=offline`、`prompt=consent`（確保拿到 refresh token） | `token_access_type=offline` |
+
+`redirectUri`：行動端用自訂 scheme（`music.mu.ios:/oauth2redirect`、`music.mu.android:/oauth2redirect`），
+桌面/開發機用 loopback（`http://127.0.0.1:<port>/callback`）。
+
+### 10.2 PKCE
+- `codeVerifier`：43–128 字元、字元集 `A-Za-z0-9-._~`（平台以密碼學亂數產生；契約不釘產生器，只釘轉換）。
+- `codeChallenge = base64url(SHA-256(verifier))`，**去尾端 `=`**，`+`→`-`、`/`→`_`；`code_challenge_method=S256`。
+- 授權 URL 查詢參數順序**固定**（契約可比對）：
+  `client_id, code_challenge, code_challenge_method, redirect_uri, response_type=code, scope, state` + 該後端的額外參數（依上表順序附在最後）。
+  百分比編碼：未保留字元 `A-Za-z0-9-._~` 原樣，其餘一律 `%XX`（大寫十六進位；空白為 `%20`，不是 `+`）。
+
+### 10.3 回呼與 token
+- 回呼 URL 解析：取 `code`／`state`／`error`；`state` 與送出值不符 → `state_mismatch`（視為授權失敗，不重試）。
+- 交換：`POST tokenUrl`，`application/x-www-form-urlencoded`，欄位序固定
+  `client_id, code, code_verifier, grant_type=authorization_code, redirect_uri`。
+- 更新：欄位序固定 `client_id, grant_type=refresh_token, refresh_token`。
+- 回應解析 → `TokenState { accessToken, refreshToken, expiresAtMs, scope }`：
+  `expiresAtMs = nowMs + expires_in×1000`（`expires_in` 缺 → 視為 0，即立刻過期）；
+  **回應沒有 `refresh_token` → 沿用既有的**（Google 的 refresh 回應不重發）。
+- 過期判定：`needsRefresh(nowMs) = nowMs + skewMs ≥ expiresAtMs`，`skewMs` 預設 **60000**（提前一分鐘換）。
+- token 端點錯誤：body 的 `error` = `invalid_grant`／`invalid_client`／`unauthorized_client` → `AuthError`
+  （**需使用者重新授權**，不重試）；HTTP 429/5xx/傳輸失敗 → `TransientError`（套 §2.1 退避）；其餘 4xx → 傳播。
+- 儲存：token 存平台鑰匙串（iOS/macOS Keychain、Android EncryptedSharedPreferences）；
+  **不進 DB、不進 repo**（client secret 於桌面 loopback 情境走 `.env`，已 gitignore）。

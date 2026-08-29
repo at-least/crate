@@ -59,3 +59,4 @@ fixture provider 的 `Entry.id == Entry.path`（見 model.md §1.4），所以
 | `dropbox_cases/` | `dropbox_generate.py` | Dropbox provider（provider.md §9） |
 | `eq_cases/` | `eq_generate.py` | EQ 設定與播放總增益（model.md §1.10；純整數。浮點 DSP 由各平台性質測試驗） |
 | `nowplaying_cases/` | `nowplaying_generate.py` | 現正播放快照與 Widget 顯示規則（model.md §1.11） |
+| `oauth_cases/` | `oauth_generate.py` | OAuth + PKCE 與 token 生命週期（provider.md §10） |

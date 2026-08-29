@@ -1,0 +1,52 @@
+{
+  "entries": [
+    {
+      "type": "error",
+      "name": "invalid_grant",
+      "status": 400,
+      "body": "{\"error\": \"invalid_grant\"}"
+    },
+    {
+      "type": "error",
+      "name": "invalid_client",
+      "status": 401,
+      "body": "{\"error\": \"invalid_client\"}"
+    },
+    {
+      "type": "error",
+      "name": "unauthorized_client",
+      "status": 400,
+      "body": "{\"error\": \"unauthorized_client\"}"
+    },
+    {
+      "type": "error",
+      "name": "rate_limited",
+      "status": 429,
+      "body": ""
+    },
+    {
+      "type": "error",
+      "name": "server_error",
+      "status": 503,
+      "body": ""
+    },
+    {
+      "type": "error",
+      "name": "transport_failure",
+      "status": 0,
+      "body": ""
+    },
+    {
+      "type": "error",
+      "name": "other_4xx",
+      "status": 403,
+      "body": "{\"error\": \"insufficient_scope\"}"
+    },
+    {
+      "type": "error",
+      "name": "ok",
+      "status": 200,
+      "body": "{\"access_token\": \"at\"}"
+    }
+  ]
+}
