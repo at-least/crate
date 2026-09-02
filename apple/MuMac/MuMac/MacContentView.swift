@@ -38,34 +38,36 @@ struct MacContentView: View {
             }
         } else if model.ui.scanning && model.ui.albums.isEmpty && model.ui.playlists.isEmpty {
             VStack(spacing: 0) {
-                MacHeader(title: "音樂庫") { EmptyView() }
+                MacHeader(title: "資料庫") { EmptyView() }
                 VStack(spacing: 12) {
                     ProgressView()
-                    Text("正在掃描音樂庫…").font(.headline)
+                    Text("正在掃描資料庫").font(.headline)
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
             }
         } else {
             VStack(spacing: 0) {
-                MacHeader(title: "音樂庫") {
+                MacHeader(title: "資料庫") {
                     if model.ui.scanning {
                         ProgressView().controlSize(.small)
                     } else {
                         Menu {
-                            Button {
-                                model.rescan()
-                            } label: {
-                                Label("重新掃描", systemImage: "arrow.clockwise")
+                            Section(model.ui.rootPath.map {
+                                URL(fileURLWithPath: $0).lastPathComponent
+                            } ?? "資料夾") {
+                                Button {
+                                    model.rescan()
+                                } label: {
+                                    Label("重新掃描", systemImage: "arrow.clockwise")
+                                }
+                                Button {
+                                    pickFolder()
+                                } label: {
+                                    Label("更換資料夾…", systemImage: "folder")
+                                }
                             }
-                            Button {
-                                pickFolder()
-                            } label: {
-                                Label("更換資料夾…", systemImage: "folder")
-                            }
-                            MacReplayGainPicker(player: model.player)
-                            if let root = model.ui.rootPath {
-                                Divider()
-                                Text(URL(fileURLWithPath: root).lastPathComponent)
+                            Section("音效") {
+                                MacReplayGainPicker(player: model.player)
                             }
                         } label: {
                             Image(systemName: "ellipsis.circle")
@@ -73,8 +75,8 @@ struct MacContentView: View {
                         .menuStyle(.borderlessButton)
                         .menuIndicator(.hidden)
                         .fixedSize()
-                        .accessibilityLabel("更多")
-                        .help("重掃 / 更換資料夾")
+                        .accessibilityLabel("資料庫選項")
+                        .help("重掃 / 更換資料夾 / 音效")
                     }
                 }
                 MacLibrary(path: $path)
@@ -152,19 +154,13 @@ private struct MacWelcome: View {
     var body: some View {
         VStack(spacing: 0) {
             Spacer()
-            ZStack {
-                RoundedRectangle(cornerRadius: 20, style: .continuous)
-                    .fill(LinearGradient(colors: [Color.accentColor, Color.accentColor.opacity(0.6)],
-                                         startPoint: .topLeading, endPoint: .bottomTrailing))
-                    .frame(width: 72, height: 72)
-                    .shadow(color: Color.accentColor.opacity(0.3), radius: 14, y: 8)
-                Image(systemName: "music.note")
-                    .font(.system(size: 32, weight: .semibold))
-                    .foregroundStyle(.white)
-            }
+            Image(systemName: "music.note.list")
+                .font(.system(size: 40))
+                .foregroundStyle(.tint)
+                .accessibilityHidden(true)
             Text("Mu")
-                .font(.system(size: 30, weight: .bold, design: .rounded))
-                .padding(.top, 18)
+                .font(.largeTitle.weight(.bold))
+                .padding(.top, 14)
             Text("把資料夾當成音樂庫。\n只讀不寫，隨處播放，釘選離線。")
                 .multilineTextAlignment(.center)
                 .foregroundStyle(.secondary)
@@ -178,7 +174,7 @@ private struct MacWelcome: View {
             .controlSize(.large)
             Text("MP3 · FLAC · M4A · OGG · WAV · .m3u8")
                 .font(.caption)
-                .foregroundStyle(.tertiary)
+                .foregroundStyle(.secondary)
                 .padding(.top, 10)
         }
         .padding(28)
@@ -216,9 +212,13 @@ private struct MacLibrary: View {
             if albums.isEmpty && playlists.isEmpty {
                 VStack(spacing: 8) {
                     Image(systemName: q.isEmpty ? "music.note.list" : "magnifyingglass")
-                        .font(.system(size: 30))
-                        .foregroundStyle(.tertiary)
+                        .font(.system(size: 32))
+                        .foregroundStyle(.secondary)
+                        .accessibilityHidden(true)
                     Text(q.isEmpty ? "資料夾裡還沒有音樂" : "沒有符合的結果")
+                        .font(.headline)
+                    Text(q.isEmpty ? "從右上角選單重新掃描。" : "換個關鍵字試試。")
+                        .font(.subheadline)
                         .foregroundStyle(.secondary)
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -468,7 +468,8 @@ private struct MacTrackRow: View {
                     .foregroundStyle(.secondary)
                     .frame(minWidth: 34, alignment: .trailing)
             }
-            .padding(.vertical, 3)
+            .padding(.vertical, 4)
+            .frame(minHeight: 28)
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
@@ -561,10 +562,16 @@ private struct MacPlayerBar: View {
                 }
                 Spacer(minLength: 6)
                 transport("backward.fill", size: 13) { player.previous() }
+                    .accessibilityLabel("上一首")
+                    .help("上一首")
                 transport(player.isPlaying ? "pause.fill" : "play.fill", size: 20) { player.toggle() }
+                    .accessibilityLabel(player.isPlaying ? "暫停" : "播放")
                     .accessibilityIdentifier("player.toggle")
+                    .help(player.isPlaying ? "暫停" : "播放")
                 transport("forward.fill", size: 13) { player.next() }
+                    .accessibilityLabel("下一首")
                     .accessibilityIdentifier("player.next")
+                    .help("下一首")
             }
             MacProgressBar(elapsed: player.elapsed, duration: player.duration) { player.seek(to: $0) }
         }
@@ -622,6 +629,9 @@ private struct MacProgressBar: View {
         }
         .font(.caption2.monospacedDigit())
         .foregroundStyle(.secondary)
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel("播放進度")
+        .accessibilityValue(fmtClock(shown) + " / " + fmtClock(duration))
     }
 
     private var shown: Double { dragFrac.map { $0 * duration } ?? elapsed }
@@ -654,22 +664,25 @@ private struct MacReplayGainPicker: View {
     private static let preampChoices = [-600, -300, 0, 300, 600]
 
     var body: some View {
-        Picker("ReplayGain", selection: $player.replayGainMode) {
+        Picker("音量標準化", selection: $player.replayGainMode) {
             ForEach(ReplayGain.Mode.allCases, id: \.self) { m in
                 Text(m.label).tag(m)
             }
         }
+        .pickerStyle(.menu)
         Picker("等化器", selection: presetBinding) {
             Text("關閉").tag("")
             ForEach(EqSettings.presets, id: \.name) { p in
                 Text(Self.presetLabel(p.name)).tag(p.name)
             }
         }
+        .pickerStyle(.menu)
         Picker("前置增益", selection: preampBinding) {
             ForEach(Self.preampChoices, id: \.self) { mb in
                 Text(mb == 0 ? "0 dB" : String(format: "%+.0f dB", Double(mb) / 100)).tag(mb)
             }
         }
+        .pickerStyle(.menu)
         .disabled(!player.eq.enabled)
     }
 

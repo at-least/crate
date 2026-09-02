@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- 深色模式：視窗底色跟著系統，Compose 內的顏色由 MuTheme 決定。 -->
+    <style name="Theme.Mu" parent="android:Theme.Material.NoActionBar" />
+</resources>

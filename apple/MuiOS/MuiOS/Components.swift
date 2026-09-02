@@ -2,17 +2,19 @@ import SwiftUI
 import MuCore
 import MuKit
 
-/// 設計常數：圓角/間距單一來源，各頁面不各自硬編。
+/// 設計代幣：圓角／間距／最小點擊區的單一來源，各頁面不各自硬編。
+/// 顏色與字級一律走系統語意（.primary/.secondary/.tint、Dynamic Type），不定義自有色票。
 enum MuTheme {
-    static let radiusS: CGFloat = 8
-    static let radiusM: CGFloat = 14
-    static let radiusL: CGFloat = 22
-    static let pageInset: CGFloat = 20
-    static let gridSpacing: CGFloat = 14
+    static let radiusS: CGFloat = 8    // 縮圖
+    static let radiusM: CGFloat = 12   // 網格封面、清單頭部
+    static let radiusL: CGFloat = 18   // 大封面
+    static let pageInset: CGFloat = 20 // 與系統列表縮排一致
+    static let gridSpacing: CGFloat = 16
+    static let hitTarget: CGFloat = 44 // HIG 最小可點區
 }
 
 /// 音軌列（專輯/清單共用）：序號或播放中喇叭、標題（+副標）、離線標記、時長。
-/// accessibility：整列 `track.<index>`，離線圖示 label「離線」。
+/// accessibility：整列 `track.<index>`，離線圖示 label「離線」（UI 測試依賴，勿併入父元素）。
 struct TrackRow: View {
     let index: Int
     let number: Int?
@@ -29,24 +31,25 @@ struct TrackRow: View {
                 ZStack {
                     if isPlaying {
                         Image(systemName: "speaker.wave.2.fill")
-                            .font(.footnote.weight(.semibold))
-                            .foregroundStyle(Color.accentColor)
+                            .font(.footnote)
+                            .foregroundStyle(.tint)
+                            .accessibilityLabel("播放中")
                     } else {
                         Text(number.map(String.init) ?? "")
-                            .font(.callout.monospacedDigit())
+                            .font(.subheadline.monospacedDigit())
                             .foregroundStyle(.secondary)
                     }
                 }
-                .frame(width: 26, alignment: .center)
+                .frame(width: 28, alignment: .center)
 
-                VStack(alignment: .leading, spacing: 2) {
+                VStack(alignment: .leading, spacing: 1) {
                     Text(title)
                         .font(.body)
-                        .foregroundStyle(isPlaying ? Color.accentColor : Color.primary)
+                        .foregroundStyle(isPlaying ? AnyShapeStyle(.tint) : AnyShapeStyle(.primary))
                         .lineLimit(1)
                     if let subtitle, !subtitle.isEmpty {
                         Text(subtitle)
-                            .font(.caption)
+                            .font(.footnote)
                             .foregroundStyle(.secondary)
                             .lineLimit(1)
                     }
@@ -64,7 +67,8 @@ struct TrackRow: View {
                     .frame(minWidth: 36, alignment: .trailing)
             }
             .padding(.horizontal, MuTheme.pageInset)
-            .padding(.vertical, 11)
+            .padding(.vertical, 8)
+            .frame(minHeight: MuTheme.hitTarget)
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
@@ -72,7 +76,7 @@ struct TrackRow: View {
     }
 }
 
-/// 音軌清單 + 列間分隔線（縮排對齊標題）。
+/// 音軌清單 + 列間分隔線（縮排對齊標題，同系統列表）。
 struct TrackList<Row: View>: View {
     let count: Int
     @ViewBuilder let row: (Int) -> Row
@@ -82,7 +86,7 @@ struct TrackList<Row: View>: View {
             ForEach(0..<count, id: \.self) { i in
                 row(i)
                 if i < count - 1 {
-                    Divider().padding(.leading, MuTheme.pageInset + 38)
+                    Divider().padding(.leading, MuTheme.pageInset + 40)
                 }
             }
         }
@@ -96,25 +100,29 @@ struct TrackSummary: View {
     var body: some View {
         Text("\(tracks.count) 首歌曲 · \(fmtTotal(tracks))")
             .font(.footnote)
-            .foregroundStyle(.tertiary)
+            .foregroundStyle(.secondary)
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(.horizontal, MuTheme.pageInset)
             .padding(.vertical, 16)
     }
 }
 
-/// 區段標題（「專輯」+ 計數）。
+/// 區段標題（搜尋結果分組用）。
 struct SectionHeader: View {
     let title: String
     let count: Int
 
     var body: some View {
-        HStack(alignment: .firstTextBaseline, spacing: 8) {
-            Text(title).font(.title2.weight(.bold))
-            Text("\(count)").font(.subheadline).foregroundStyle(.tertiary)
+        HStack(alignment: .firstTextBaseline, spacing: 6) {
+            Text(title)
+                .font(.title3.weight(.semibold))
+            Text("\(count)")
+                .font(.subheadline)
+                .foregroundStyle(.secondary)
             Spacer()
         }
         .padding(.horizontal, MuTheme.pageInset)
+        .accessibilityElement(children: .combine)
     }
 }
 
@@ -157,7 +165,7 @@ struct PinButton: View {
                 }
                 Text(shortLabel)
             }
-            .font(.body.weight(.semibold))
+            .font(.body.weight(.medium))
             .frame(maxWidth: .infinity)
         }
         .tint(failed > 0 && pending == 0 ? .orange : .accentColor)
@@ -181,14 +189,14 @@ struct PinButton: View {
     }
 }
 
-/// 詳情頁「播放」主按鈕。
+/// 詳情頁「播放」主按鈕（每頁唯一的主要動作）。
 struct PlayAllButton: View {
     let action: () -> Void
 
     var body: some View {
         Button(action: action) {
             Label("播放", systemImage: "play.fill")
-                .font(.body.weight(.semibold))
+                .font(.body.weight(.medium))
                 .frame(maxWidth: .infinity)
         }
         .buttonStyle(.borderedProminent)

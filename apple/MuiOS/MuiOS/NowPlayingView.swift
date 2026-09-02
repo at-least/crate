@@ -2,11 +2,13 @@ import SwiftUI
 import MuCore
 import MuKit
 
-/// 現正播放（全頁 sheet）：大封面（播放時放大）、標題/藝人/專輯、可拖曳進度條、
-/// 上一首/播放/下一首、AirPlay 路由。背景以專輯佔位色淡淡染色，每張專輯氛圍不同。
+/// 現正播放（全頁 sheet）：大封面（暫停時縮小）、標題/藝人、可拖曳進度條、
+/// 上一首/播放/下一首、音效選單與 AirPlay。
+/// 背景維持系統底色——封面就是唯一的顏色來源（HIG deference）。
 struct NowPlayingView: View {
     @ObservedObject var player: PlayerManager
     @EnvironmentObject private var model: AppModel
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var scrubbing = false
     @State private var scrubValue: Double = 0
 
@@ -15,40 +17,56 @@ struct NowPlayingView: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            Spacer(minLength: 12)
+            Spacer(minLength: 8)
 
             ArtworkImage(key: albumKey,
                          url: track.map { model.artworkURL(for: $0.albumId) } ?? nil,
                          loader: model.artwork,
                          cornerRadius: MuTheme.radiusL)
-                .shadow(color: .black.opacity(0.28), radius: 28, y: 14)
-                .scaleEffect(player.isPlaying ? 1 : 0.86)
-                .animation(.spring(response: 0.45, dampingFraction: 0.8), value: player.isPlaying)
-                .padding(.horizontal, 32)
+                .shadow(color: .black.opacity(0.22), radius: 20, y: 10)
+                .scaleEffect(reduceMotion || player.isPlaying ? 1 : 0.88)
+                .animation(reduceMotion ? nil : .spring(response: 0.45, dampingFraction: 0.8),
+                           value: player.isPlaying)
+                .padding(.horizontal, 2)
+                .accessibilityHidden(true)
 
             Spacer(minLength: 24)
 
-            VStack(alignment: .leading, spacing: 4) {
-                Text(player.nowTitle ?? "")
-                    .font(.title2.weight(.bold))
-                    .lineLimit(1)
-                    .accessibilityIdentifier("nowPlaying.title")
-                Text(player.nowArtist ?? "")
-                    .font(.title3)
-                    .foregroundStyle(.secondary)
-                    .lineLimit(1)
-                if let album = track?.album, !album.isEmpty {
-                    Text(album)
-                        .font(.footnote)
-                        .foregroundStyle(.tertiary)
+            HStack(alignment: .firstTextBaseline, spacing: 12) {
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(player.nowTitle ?? "")
+                        .font(.title3.weight(.semibold))
+                        .lineLimit(1)
+                        .accessibilityIdentifier("nowPlaying.title")
+                    Text(player.nowArtist ?? "")
+                        .font(.title3)
+                        .foregroundStyle(.secondary)
                         .lineLimit(1)
                 }
+                Spacer(minLength: 0)
+                Menu {
+                    Picker("音量標準化", selection: $player.replayGainMode) {
+                        ForEach(ReplayGain.Mode.allCases, id: \.self) { m in
+                            Text(m.label).tag(m)
+                        }
+                    }
+                    .pickerStyle(.menu)
+                    EqMenuContent(eq: $player.eq)
+                } label: {
+                    Image(systemName: "ellipsis")
+                        .font(.body.weight(.semibold))
+                        .frame(width: MuTheme.hitTarget, height: MuTheme.hitTarget)
+                        .contentShape(Rectangle())
+                }
+                .foregroundStyle(.secondary)
+                .accessibilityLabel(effectsLabel)
+                .accessibilityIdentifier("nowPlaying.replayGain")
             }
-            .frame(maxWidth: .infinity, alignment: .leading)
 
-            VStack(spacing: 4) {
+            VStack(spacing: 2) {
                 Slider(value: progress, in: 0...upper, onEditingChanged: editingChanged)
-                .tint(.primary)
+                    .tint(.primary)
+                    .accessibilityLabel("播放進度")
                 HStack {
                     Text(fmtClock(scrubbing ? scrubValue : player.elapsed))
                     Spacer()
@@ -57,52 +75,40 @@ struct NowPlayingView: View {
                 .font(.caption.monospacedDigit())
                 .foregroundStyle(.secondary)
             }
-            .padding(.top, 20)
-
-            HStack(spacing: 0) {
-                transport("backward.fill", size: 30, id: "nowPlaying.previous") { player.previous() }
-                Spacer()
-                transport(player.isPlaying ? "pause.fill" : "play.fill", size: 48,
-                          id: "nowPlaying.toggle") { player.toggle() }
-                Spacer()
-                transport("forward.fill", size: 30, id: "nowPlaying.next") { player.next() }
-            }
-            .padding(.horizontal, 36)
             .padding(.top, 16)
 
-            HStack(spacing: 24) {
-                Menu {
-                    Picker("ReplayGain", selection: $player.replayGainMode) {
-                        ForEach(ReplayGain.Mode.allCases, id: \.self) { m in
-                            Text(m.label).tag(m)
-                        }
-                    }
-                    Divider()
-                    EqMenuContent(eq: $player.eq)
-                } label: {
-                    Label(player.eq.enabled
-                          ? "音效：\(EqLabels.presetLabel(player.eq.preset))"
-                          : "ReplayGain：\(player.replayGainMode.label)",
-                          systemImage: "waveform.badge.minus")
-                        .font(.footnote)
-                        .foregroundStyle(.secondary)
+            HStack(spacing: 0) {
+                transport("backward.fill", size: 28, label: "上一首", id: "nowPlaying.previous") {
+                    player.previous()
                 }
-                .accessibilityIdentifier("nowPlaying.replayGain")
-                RoutePicker()
-                    .frame(width: 44, height: 44)
+                Spacer()
+                transport(player.isPlaying ? "pause.fill" : "play.fill", size: 44,
+                          label: player.isPlaying ? "暫停" : "播放", id: "nowPlaying.toggle") {
+                    player.toggle()
+                }
+                Spacer()
+                transport("forward.fill", size: 28, label: "下一首", id: "nowPlaying.next") {
+                    player.next()
+                }
             }
-            .padding(.top, 20)
-            .padding(.bottom, 8)
+            .padding(.horizontal, 32)
+            .padding(.top, 12)
+
+            RoutePicker()
+                .frame(width: MuTheme.hitTarget, height: MuTheme.hitTarget)
+                .padding(.top, 16)
+                .padding(.bottom, 4)
         }
         .padding(.horizontal, 28)
         .padding(.bottom, 20)
-        .background(
-            PlaceholderArt(key: albumKey, symbol: "")
-                .opacity(0.22)
-                .overlay(Color(.systemBackground).opacity(0.35))
-                .ignoresSafeArea()
-        )
+        .background(Color(.systemBackground))
         .presentationDragIndicator(.visible)
+    }
+
+    private var effectsLabel: String {
+        player.eq.enabled
+            ? "音效：等化器 \(EqLabels.presetLabel(player.eq.preset))"
+            : "音效：ReplayGain \(player.replayGainMode.label)"
     }
 
     private var upper: Double { max(player.duration, 1) }
@@ -122,15 +128,16 @@ struct NowPlayingView: View {
         }
     }
 
-    private func transport(_ symbol: String, size: CGFloat, id: String,
+    private func transport(_ symbol: String, size: CGFloat, label: String, id: String,
                            action: @escaping () -> Void) -> some View {
         Button(action: action) {
             Image(systemName: symbol)
-                .font(.system(size: size, weight: .bold))
+                .font(.system(size: size))
                 .frame(width: 64, height: 64)
                 .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
+        .accessibilityLabel(label)
         .accessibilityIdentifier(id)
     }
 }
@@ -146,11 +153,13 @@ struct EqMenuContent: View {
                 Text(EqLabels.presetLabel(p.name)).tag(p.name)
             }
         }
+        .pickerStyle(.menu)
         Picker("前置增益", selection: preampBinding) {
             ForEach(EqLabels.preampChoices, id: \.self) { mb in
                 Text(EqLabels.preampLabel(mb)).tag(mb)
             }
         }
+        .pickerStyle(.menu)
         .disabled(!eq.enabled)
     }
 

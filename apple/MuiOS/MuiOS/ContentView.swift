@@ -3,9 +3,11 @@ import UniformTypeIdentifiers
 import MuCore
 import MuKit
 
-/// 主畫面（≈ Android MainActivity）：
-/// 無庫 → 歡迎頁挑資料夾；有庫 → 音樂庫（搜尋、清單卡、專輯封面網格）；
-/// 專輯/清單 → 封面頭部 + 播放/釘選 + 音軌列；底部浮動迷你播放卡 → 點開「現正播放」。
+/// 主畫面（≈ Android MainActivity）。
+///
+/// 資訊架構（HIG：一個層級一件事）：
+/// 資料庫（分段控制：專輯／清單）→ 專輯/清單詳情 → 迷你播放列 → 現正播放 sheet。
+/// 搜尋中忽略分段，兩類同時列出（各自過濾）；沒有清單時完全不顯示分段控制。
 struct ContentView: View {
     @EnvironmentObject private var model: AppModel
     @State private var path: [Route] = []
@@ -29,7 +31,7 @@ struct ContentView: View {
                     }
                 }
         }
-        // 迷你播放卡以 safeAreaInset 掛在 NavigationStack 外：所有頁面內容自動避開，推入頁不會蓋住它。
+        // 迷你播放列以 safeAreaInset 掛在 NavigationStack 外：所有頁面內容自動避開，推入頁不會蓋住它。
         .safeAreaInset(edge: .bottom, spacing: 0) {
             MiniPlayerHost(player: model.player) { showNowPlaying = true }
         }
@@ -50,7 +52,7 @@ struct ContentView: View {
                 .toolbar(.hidden, for: .navigationBar)
         } else if model.ui.scanning && model.ui.albums.isEmpty && model.ui.playlists.isEmpty {
             ScanningView()
-                .navigationTitle("音樂庫")
+                .navigationTitle("資料庫")
         } else {
             LibraryView(path: $path) { showPicker = true }
         }
@@ -59,57 +61,52 @@ struct ContentView: View {
 
 // MARK: - 歡迎 / 掃描
 
+/// 首次啟動：一個符號、一句說明、一個主要動作（HIG：每個畫面只有一個主 CTA）。
 private struct WelcomeView: View {
     let onPick: () -> Void
 
     var body: some View {
         VStack(spacing: 0) {
-            Spacer()
-            ZStack {
-                RoundedRectangle(cornerRadius: 26, style: .continuous)
-                    .fill(LinearGradient(colors: [Color.accentColor, Color.accentColor.opacity(0.6)],
-                                         startPoint: .topLeading, endPoint: .bottomTrailing))
-                    .frame(width: 96, height: 96)
-                    .shadow(color: Color.accentColor.opacity(0.35), radius: 20, y: 10)
-                Image(systemName: "music.note")
-                    .font(.system(size: 44, weight: .semibold))
-                    .foregroundStyle(.white)
-            }
+            Spacer(minLength: 24)
+            Image(systemName: "music.note.list")
+                .font(.system(size: 56))
+                .foregroundStyle(.tint)
+                .accessibilityHidden(true)
             Text("Mu")
-                .font(.system(size: 40, weight: .bold, design: .rounded))
-                .padding(.top, 28)
+                .font(.largeTitle.weight(.bold))
+                .padding(.top, 16)
             Text("把雲端資料夾當成音樂庫。\n只讀不寫，隨處播放，釘選離線。")
                 .font(.body)
                 .multilineTextAlignment(.center)
                 .foregroundStyle(.secondary)
                 .padding(.top, 8)
-            Spacer()
+            Spacer(minLength: 24)
             Button(action: onPick) {
-                Label("選擇音樂資料夾", systemImage: "folder")
-                    .font(.body.weight(.semibold))
+                Text("選擇音樂資料夾")
                     .frame(maxWidth: .infinity)
-                    .padding(.vertical, 4)
             }
             .buttonStyle(.borderedProminent)
             .controlSize(.large)
             Text("支援 MP3 · FLAC · M4A · OGG · WAV，播放清單讀取 .m3u8")
                 .font(.footnote)
-                .foregroundStyle(.tertiary)
+                .foregroundStyle(.secondary)
                 .multilineTextAlignment(.center)
-                .padding(.top, 14)
+                .padding(.top, 12)
         }
         .padding(.horizontal, 32)
-        .padding(.bottom, 28)
+        .padding(.bottom, 24)
     }
 }
 
 private struct ScanningView: View {
     var body: some View {
-        VStack(spacing: 14) {
-            ProgressView().controlSize(.large)
-            Text("正在掃描音樂庫…").font(.headline)
+        VStack(spacing: 12) {
+            ProgressView()
+                .controlSize(.large)
+            Text("正在掃描資料庫")
+                .font(.headline)
             Text("第一次掃描會讀取每個檔案的標籤，稍候片刻。")
-                .font(.footnote)
+                .font(.subheadline)
                 .foregroundStyle(.secondary)
                 .multilineTextAlignment(.center)
         }
@@ -118,18 +115,24 @@ private struct ScanningView: View {
     }
 }
 
-// MARK: - 音樂庫
+// MARK: - 資料庫
 
 private struct LibraryView: View {
     @EnvironmentObject private var model: AppModel
     @Binding var path: [ContentView.Route]
     let onPickFolder: () -> Void
     @State private var query = ""
+    @State private var tab: Tab = .albums
+
+    private enum Tab: Hashable {
+        case albums, playlists
+    }
 
     private var q: String { query.trimmingCharacters(in: .whitespaces) }
+    private var searching: Bool { !q.isEmpty }
 
     private var albums: [Album] {
-        guard !q.isEmpty else { return model.ui.albums }
+        guard searching else { return model.ui.albums }
         return model.ui.albums.filter {
             $0.name.localizedCaseInsensitiveContains(q)
                 || $0.albumArtist.localizedCaseInsensitiveContains(q)
@@ -137,32 +140,50 @@ private struct LibraryView: View {
     }
 
     private var playlists: [AppModel.PlaylistUi] {
-        guard !q.isEmpty else { return model.ui.playlists }
+        guard searching else { return model.ui.playlists }
         return model.ui.playlists.filter { $0.name.localizedCaseInsensitiveContains(q) }
     }
 
+    /// 只有一種內容時分段控制沒有意義——直接不顯示。
+    private var showsPicker: Bool { !searching && !model.ui.playlists.isEmpty }
+    private var showsAlbums: Bool { searching ? !albums.isEmpty : (tab == .albums || model.ui.playlists.isEmpty) }
+    private var showsPlaylists: Bool { searching ? !playlists.isEmpty : (tab == .playlists && !model.ui.playlists.isEmpty) }
+
     var body: some View {
         ScrollView {
-            LazyVStack(alignment: .leading, spacing: 28) {
-                if !playlists.isEmpty {
-                    VStack(alignment: .leading, spacing: 12) {
-                        SectionHeader(title: "清單", count: playlists.count)
-                        ScrollView(.horizontal, showsIndicators: false) {
-                            HStack(spacing: 12) {
-                                ForEach(playlists, id: \.name) { pl in
-                                    PlaylistCard(playlist: pl) { path.append(.playlist(pl.name)) }
-                                }
+            LazyVStack(alignment: .leading, spacing: 20) {
+                if showsPicker {
+                    Picker("顯示", selection: $tab) {
+                        Text("專輯").tag(Tab.albums)
+                        Text("清單").tag(Tab.playlists)
+                    }
+                    .pickerStyle(.segmented)
+                    .labelsHidden()
+                    .padding(.horizontal, MuTheme.pageInset)
+                    .padding(.top, 4)
+                }
+                if showsPlaylists {
+                    VStack(alignment: .leading, spacing: 0) {
+                        if searching {
+                            SectionHeader(title: "清單", count: playlists.count)
+                                .padding(.bottom, 4)
+                        }
+                        ForEach(Array(playlists.enumerated()), id: \.element.name) { i, pl in
+                            PlaylistRow(playlist: pl) { path.append(.playlist(pl.name)) }
+                            if i < playlists.count - 1 {
+                                Divider().padding(.leading, MuTheme.pageInset + 68)
                             }
-                            .padding(.horizontal, MuTheme.pageInset)
                         }
                     }
                 }
-                if !albums.isEmpty {
+                if showsAlbums {
                     VStack(alignment: .leading, spacing: 12) {
-                        SectionHeader(title: "專輯", count: albums.count)
+                        if searching {
+                            SectionHeader(title: "專輯", count: albums.count)
+                        }
                         LazyVGrid(
                             columns: [GridItem(.adaptive(minimum: 150), spacing: MuTheme.gridSpacing)],
-                            alignment: .leading, spacing: 22
+                            alignment: .leading, spacing: 20
                         ) {
                             ForEach(albums, id: \.id) { album in
                                 AlbumCard(album: album) { path.append(.album(album.id)) }
@@ -172,41 +193,44 @@ private struct LibraryView: View {
                     }
                 }
             }
-            .padding(.top, 6)
-            .padding(.bottom, 24)
+            .padding(.vertical, 8)
         }
         .overlay {
             if albums.isEmpty && playlists.isEmpty {
-                EmptyLibrary(searching: !q.isEmpty)
+                EmptyLibrary(searching: searching)
             }
         }
-        .navigationTitle("音樂庫")
-        .searchable(text: $query, prompt: "搜尋專輯、藝人或清單")
+        .navigationTitle("資料庫")
+        .searchable(text: $query, prompt: "專輯、藝人或清單")
         .toolbar {
             ToolbarItem(placement: .navigationBarTrailing) {
                 if model.ui.scanning {
-                    ProgressView().controlSize(.small)
+                    ProgressView()
+                        .controlSize(.small)
                         .accessibilityLabel("掃描中")
                 } else {
                     Menu {
-                        Button {
-                            model.rescan()
-                        } label: {
-                            Label("重新掃描", systemImage: "arrow.clockwise")
-                        }
-                        Button(action: onPickFolder) {
-                            Label("更換資料夾", systemImage: "folder")
-                        }
-                        if let root = model.ui.rootPath {
-                            Section(URL(fileURLWithPath: root).lastPathComponent) { EmptyView() }
+                        Section(folderName) {
+                            Button {
+                                model.rescan()
+                            } label: {
+                                Label("重新掃描", systemImage: "arrow.clockwise")
+                            }
+                            Button(action: onPickFolder) {
+                                Label("更換資料夾…", systemImage: "folder")
+                            }
                         }
                     } label: {
                         Image(systemName: "ellipsis.circle")
                     }
-                    .accessibilityLabel("更多")
+                    .accessibilityLabel("資料庫選項")
                 }
             }
         }
+    }
+
+    private var folderName: String {
+        model.ui.rootPath.map { URL(fileURLWithPath: $0).lastPathComponent } ?? "資料夾"
     }
 }
 
@@ -214,23 +238,24 @@ private struct EmptyLibrary: View {
     let searching: Bool
 
     var body: some View {
-        VStack(spacing: 10) {
+        VStack(spacing: 8) {
             Image(systemName: searching ? "magnifyingglass" : "music.note.list")
-                .font(.system(size: 40))
-                .foregroundStyle(.tertiary)
+                .font(.system(size: 44))
+                .foregroundStyle(.secondary)
+                .accessibilityHidden(true)
             Text(searching ? "沒有符合的結果" : "資料夾裡還沒有音樂")
-                .font(.headline)
-            if !searching {
-                Text("把音樂放進資料夾後，從右上角選單重新掃描。")
-                    .font(.footnote)
-                    .foregroundStyle(.secondary)
-                    .multilineTextAlignment(.center)
-            }
+                .font(.title3.weight(.semibold))
+                .padding(.top, 4)
+            Text(searching ? "換個關鍵字試試。" : "把音樂放進資料夾後，從右上角選單重新掃描。")
+                .font(.subheadline)
+                .foregroundStyle(.secondary)
+                .multilineTextAlignment(.center)
         }
         .padding(32)
     }
 }
 
+/// 專輯卡：封面即內容，文字降到最低（HIG deference）。
 private struct AlbumCard: View {
     @EnvironmentObject private var model: AppModel
     let album: Album
@@ -241,18 +266,17 @@ private struct AlbumCard: View {
             VStack(alignment: .leading, spacing: 8) {
                 ArtworkImage(key: album.id, url: model.artworkURL(for: album.id),
                              loader: model.artwork, cornerRadius: MuTheme.radiusM)
-                    .shadow(color: .black.opacity(0.12), radius: 10, y: 5)
-                VStack(alignment: .leading, spacing: 2) {
+                    .shadow(color: .black.opacity(0.08), radius: 6, y: 3)
+                VStack(alignment: .leading, spacing: 1) {
                     Text(album.name)
-                        .font(.subheadline.weight(.semibold))
+                        .font(.subheadline)
                         .foregroundStyle(.primary)
                         .lineLimit(1)
                     Text(album.albumArtist + (album.year.map { " · \($0)" } ?? ""))
-                        .font(.caption)
+                        .font(.footnote)
                         .foregroundStyle(.secondary)
                         .lineLimit(1)
                 }
-                .padding(.horizontal, 2)
             }
             .contentShape(Rectangle())
         }
@@ -260,7 +284,8 @@ private struct AlbumCard: View {
     }
 }
 
-private struct PlaylistCard: View {
+/// 清單列：整列可點（≥44pt），右側 chevron 表示可推入。
+private struct PlaylistRow: View {
     let playlist: AppModel.PlaylistUi
     let onTap: () -> Void
 
@@ -268,27 +293,27 @@ private struct PlaylistCard: View {
         Button(action: onTap) {
             HStack(spacing: 12) {
                 PlaceholderArt(key: "pl:" + playlist.name, symbol: "music.note.list")
-                    .frame(width: 48, height: 48)
+                    .frame(width: 56, height: 56)
                     .clipShape(RoundedRectangle(cornerRadius: MuTheme.radiusS, style: .continuous))
                 VStack(alignment: .leading, spacing: 2) {
                     Text(playlist.name)
-                        .font(.subheadline.weight(.semibold))
+                        .font(.body)
                         .foregroundStyle(.primary)
                         .lineLimit(1)
                     Text("\(playlist.tracks.count) 首")
-                        .font(.caption)
+                        .font(.footnote)
                         .foregroundStyle(.secondary)
                 }
-                Spacer(minLength: 0)
+                Spacer(minLength: 8)
+                Image(systemName: "chevron.right")
+                    .font(.footnote.weight(.semibold))
+                    .foregroundStyle(.tertiary)
+                    .accessibilityHidden(true)
             }
-            .padding(10)
-            .frame(width: 200)
-            .background(Color(.secondarySystemGroupedBackground),
-                        in: RoundedRectangle(cornerRadius: MuTheme.radiusM, style: .continuous))
-            .overlay(
-                RoundedRectangle(cornerRadius: MuTheme.radiusM, style: .continuous)
-                    .strokeBorder(Color.primary.opacity(0.06))
-            )
+            .padding(.horizontal, MuTheme.pageInset)
+            .padding(.vertical, 8)
+            .frame(minHeight: MuTheme.hitTarget)
+            .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
     }
@@ -310,22 +335,24 @@ private struct AlbumDetail: View {
                 VStack(spacing: 0) {
                     ArtworkImage(key: album.id, url: model.artworkURL(for: album.id),
                                  loader: model.artwork, cornerRadius: MuTheme.radiusL)
-                        .frame(width: 236, height: 236)
-                        .shadow(color: .black.opacity(0.22), radius: 22, y: 12)
+                        .frame(width: 240, height: 240)
+                        .shadow(color: .black.opacity(0.18), radius: 16, y: 8)
                         .padding(.top, 8)
 
-                    VStack(spacing: 4) {
+                    VStack(spacing: 2) {
                         Text(album.name)
-                            .font(.title2.weight(.bold))
+                            .font(.title3.weight(.semibold))
                             .multilineTextAlignment(.center)
                         Text(album.albumArtist)
-                            .font(.headline)
-                            .foregroundStyle(Color.accentColor)
+                            .font(.title3)
+                            .foregroundStyle(.tint)
+                            .multilineTextAlignment(.center)
                         Text(meta(album, tracks))
                             .font(.footnote)
-                            .foregroundStyle(.tertiary)
+                            .foregroundStyle(.secondary)
+                            .padding(.top, 2)
                     }
-                    .padding(.top, 22)
+                    .padding(.top, 20)
                     .padding(.horizontal, MuTheme.pageInset)
 
                     HStack(spacing: 12) {
@@ -337,9 +364,10 @@ private struct AlbumDetail: View {
                             .buttonStyle(.bordered)
                     }
                     .controlSize(.large)
+                    .buttonBorderShape(.capsule)
                     .padding(.horizontal, MuTheme.pageInset)
                     .padding(.top, 20)
-                    .padding(.bottom, 12)
+                    .padding(.bottom, 8)
 
                     TrackList(count: tracks.count) { i in
                         let t = tracks[i]
@@ -384,10 +412,10 @@ private struct PlaylistDetail: View {
                         PlaceholderArt(key: "pl:" + pl.name, symbol: "music.note.list")
                             .frame(width: 96, height: 96)
                             .clipShape(RoundedRectangle(cornerRadius: MuTheme.radiusM, style: .continuous))
-                            .shadow(color: .black.opacity(0.15), radius: 12, y: 6)
+                            .shadow(color: .black.opacity(0.12), radius: 10, y: 5)
                         VStack(alignment: .leading, spacing: 4) {
                             Text(pl.name)
-                                .font(.title2.weight(.bold))
+                                .font(.title3.weight(.semibold))
                                 .lineLimit(2)
                             Text("播放清單 · \(pl.tracks.count) 首 · \(fmtTotal(pl.tracks))")
                                 .font(.footnote)
@@ -401,9 +429,10 @@ private struct PlaylistDetail: View {
                     PlayAllButton { model.play(pl.tracks, startIndex: 0) }
                         .disabled(pl.tracks.isEmpty)
                         .controlSize(.large)
+                        .buttonBorderShape(.capsule)
                         .padding(.horizontal, MuTheme.pageInset)
                         .padding(.top, 20)
-                        .padding(.bottom, 12)
+                        .padding(.bottom, 8)
 
                     TrackList(count: pl.tracks.count) { i in
                         let t = pl.tracks[i]
@@ -432,16 +461,18 @@ private struct GoneView: View {
     var body: some View {
         VStack(spacing: 8) {
             Image(systemName: "questionmark.folder")
-                .font(.system(size: 36))
-                .foregroundStyle(.tertiary)
-            Text(text).font(.headline)
+                .font(.system(size: 40))
+                .foregroundStyle(.secondary)
+                .accessibilityHidden(true)
+            Text(text)
+                .font(.headline)
         }
         .padding()
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 }
 
-// MARK: - 迷你播放卡
+// MARK: - 迷你播放列
 
 /// hasQueue 的 gate 必須在訂閱 PlayerManager 的視圖內——放在只訂 AppModel 的視圖裡永遠不會重算。
 private struct MiniPlayerHost: View {
@@ -456,7 +487,7 @@ private struct MiniPlayerHost: View {
     }
 }
 
-/// 浮動卡片：封面縮圖、標題/藝人、播/暫、下一首；底緣細進度線；點卡片開「現正播放」。
+/// 浮動列：封面縮圖、標題/藝人、播/暫、下一首；底緣細進度線；點整列開「現正播放」。
 private struct MiniPlayer: View {
     @ObservedObject var player: PlayerManager
     @EnvironmentObject private var model: AppModel
@@ -467,10 +498,11 @@ private struct MiniPlayer: View {
         HStack(spacing: 12) {
             ArtworkImage(key: key, url: player.nowTrack.map { model.artworkURL(for: $0.albumId) } ?? nil,
                          loader: model.artwork, cornerRadius: MuTheme.radiusS)
-                .frame(width: 46, height: 46)
-            VStack(alignment: .leading, spacing: 2) {
+                .frame(width: 44, height: 44)
+                .accessibilityHidden(true)
+            VStack(alignment: .leading, spacing: 1) {
                 Text(player.nowTitle ?? "")
-                    .font(.subheadline.weight(.semibold))
+                    .font(.subheadline)
                     .lineLimit(1)
                     .accessibilityIdentifier("player.title")
                 Text(player.nowArtist ?? "")
@@ -483,8 +515,8 @@ private struct MiniPlayer: View {
                 player.toggle()
             } label: {
                 Image(systemName: player.isPlaying ? "pause.fill" : "play.fill")
-                    .font(.title2)
-                    .frame(width: 40, height: 40)
+                    .font(.title3)
+                    .frame(width: MuTheme.hitTarget, height: MuTheme.hitTarget)
                     .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
@@ -494,36 +526,36 @@ private struct MiniPlayer: View {
                 player.next()
             } label: {
                 Image(systemName: "forward.fill")
-                    .font(.title3)
-                    .frame(width: 40, height: 40)
+                    .font(.body)
+                    .frame(width: MuTheme.hitTarget, height: MuTheme.hitTarget)
                     .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
             .accessibilityLabel("下一首")
             .accessibilityIdentifier("player.next")
         }
-        .padding(10)
-        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 18, style: .continuous))
+        .padding(.leading, 8)
+        .padding(.trailing, 4)
+        .padding(.vertical, 8)
+        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 20, style: .continuous))
         .overlay(alignment: .bottom) {
             GeometryReader { g in
                 let frac = player.duration > 0 ? min(1, player.elapsed / player.duration) : 0
                 Capsule()
-                    .fill(Color.accentColor)
+                    .fill(Color.primary.opacity(0.35))
                     .frame(width: max(0, (g.size.width - 24) * frac), height: 2)
                     .padding(.horizontal, 12)
                     .frame(maxHeight: .infinity, alignment: .bottom)
-                    .padding(.bottom, 4)
+                    .padding(.bottom, 5)
             }
             .allowsHitTesting(false)
+            .accessibilityHidden(true)
         }
-        .overlay(
-            RoundedRectangle(cornerRadius: 18, style: .continuous)
-                .strokeBorder(Color.primary.opacity(0.08))
-        )
-        .shadow(color: .black.opacity(0.14), radius: 18, y: 8)
+        .shadow(color: .black.opacity(0.10), radius: 12, y: 4)
         .padding(.horizontal, 12)
         .padding(.bottom, 6)
         .contentShape(Rectangle())
         .onTapGesture(perform: onOpen)
+        .accessibilityAction(named: "打開現正播放", onOpen)
     }
 }
