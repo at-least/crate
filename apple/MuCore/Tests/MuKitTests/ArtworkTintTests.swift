@@ -23,22 +23,21 @@ final class ArtworkTintTests: XCTestCase {
             (0, 0, 255, 2.0 / 3),  // 藍
         ]
         for (r, g, b, expected) in cases {
-            let hs = ArtworkTint.hueSaturation(from: solid(r: r, g: g, b: b))
-            XCTAssertNotNil(hs, "純色應取得色相")
-            XCTAssertEqual(hs!.hue, expected, accuracy: 0.01)
-            XCTAssertEqual(hs!.saturation, 1, accuracy: 0.02)
+            let hue = ArtworkTint.hue(from: solid(r: r, g: g, b: b))
+            XCTAssertNotNil(hue, "純色應取得色相")
+            XCTAssertEqual(hue!, expected, accuracy: 0.01)
         }
     }
 
     func testGrayscaleArtworkHasNoTint() {
-        XCTAssertNil(ArtworkTint.hueSaturation(from: solid(r: 128, g: 128, b: 128)))
-        XCTAssertNil(ArtworkTint.hueSaturation(from: solid(r: 255, g: 255, b: 255)))
-        XCTAssertNil(ArtworkTint.hueSaturation(from: solid(r: 0, g: 0, b: 0)))
+        XCTAssertNil(ArtworkTint.hue(from: solid(r: 128, g: 128, b: 128)))
+        XCTAssertNil(ArtworkTint.hue(from: solid(r: 255, g: 255, b: 255)))
+        XCTAssertNil(ArtworkTint.hue(from: solid(r: 0, g: 0, b: 0)))
     }
 
     /// 近灰但略帶色偏（低於門檻）也視為無色——避免掃出莫名其妙的染色。
     func testNearlyGrayIsBelowThreshold() {
-        XCTAssertNil(ArtworkTint.hueSaturation(from: solid(r: 130, g: 128, b: 128)))
+        XCTAssertNil(ArtworkTint.hue(from: solid(r: 130, g: 128, b: 128)))
     }
 
     func testHsbConversionIsHueStable() {

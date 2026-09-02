@@ -150,6 +150,12 @@ private struct LibraryView: View {
     private var showsPlaylists: Bool { searching ? !playlists.isEmpty : (tab == .playlists && !model.ui.playlists.isEmpty) }
 
     var body: some View {
+        // 每個都是過濾/掃描過的計算屬性——各只取一次，避免每個引用點都重跑一次過濾
+        // （PlaylistRow 迴圈裡若直接讀 `playlists.count` 會讓過濾隨列數重跑，變 O(n²)）。
+        let albums = self.albums
+        let playlists = self.playlists
+        let searching = self.searching
+
         ScrollView {
             LazyVStack(alignment: .leading, spacing: 20) {
                 if showsPicker {
@@ -197,7 +203,10 @@ private struct LibraryView: View {
         }
         .overlay {
             if albums.isEmpty && playlists.isEmpty {
-                EmptyLibrary(searching: searching)
+                EmptyState(symbol: searching ? "magnifyingglass" : "music.note.list",
+                          title: searching ? "沒有符合的結果" : "資料夾裡還沒有音樂",
+                          message: searching ? "換個關鍵字試試。"
+                                              : "把音樂放進資料夾後，從右上角選單重新掃描。")
             }
         }
         .navigationTitle("資料庫")
@@ -231,27 +240,6 @@ private struct LibraryView: View {
 
     private var folderName: String {
         model.ui.rootPath.map { URL(fileURLWithPath: $0).lastPathComponent } ?? "資料夾"
-    }
-}
-
-private struct EmptyLibrary: View {
-    let searching: Bool
-
-    var body: some View {
-        VStack(spacing: 8) {
-            Image(systemName: searching ? "magnifyingglass" : "music.note.list")
-                .font(.system(size: 44))
-                .foregroundStyle(.secondary)
-                .accessibilityHidden(true)
-            Text(searching ? "沒有符合的結果" : "資料夾裡還沒有音樂")
-                .font(.title3.weight(.semibold))
-                .padding(.top, 4)
-            Text(searching ? "換個關鍵字試試。" : "把音樂放進資料夾後，從右上角選單重新掃描。")
-                .font(.subheadline)
-                .foregroundStyle(.secondary)
-                .multilineTextAlignment(.center)
-        }
-        .padding(32)
     }
 }
 
@@ -386,7 +374,7 @@ private struct AlbumDetail: View {
             .navigationBarTitleDisplayMode(.inline)
         } else {
             // unpin 後專輯可能整個消失（全離線軌被濾掉）
-            GoneView(text: "專輯已無可播軌")
+            GoneView(title: "專輯已無可播軌")
         }
     }
 
@@ -417,7 +405,7 @@ private struct PlaylistDetail: View {
                             Text(pl.name)
                                 .font(.title3.weight(.semibold))
                                 .lineLimit(2)
-                            Text("播放清單 · \(pl.tracks.count) 首 · \(fmtTotal(pl.tracks))")
+                            Text("播放清單 · \(pl.tracks.count) 首 · \(DisplayFormat.totalDuration(msValues: pl.tracks.map(\.durationMs)))")
                                 .font(.footnote)
                                 .foregroundStyle(.secondary)
                         }
@@ -450,25 +438,17 @@ private struct PlaylistDetail: View {
             .navigationTitle("")
             .navigationBarTitleDisplayMode(.inline)
         } else {
-            GoneView(text: "清單已無可播軌")
+            GoneView(title: "清單已無可播軌")
         }
     }
 }
 
 private struct GoneView: View {
-    let text: String
+    let title: String
 
     var body: some View {
-        VStack(spacing: 8) {
-            Image(systemName: "questionmark.folder")
-                .font(.system(size: 40))
-                .foregroundStyle(.secondary)
-                .accessibilityHidden(true)
-            Text(text)
-                .font(.headline)
-        }
-        .padding()
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        EmptyState(symbol: "questionmark.folder", title: title)
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 }
 

@@ -14,9 +14,9 @@ struct NowPlayingView: View {
     @State private var ambient: Ambient = .albumHue
 
     /// 頂部氛圍色的來源：尚未判定/無封面 → 專輯 id 的穩定色相（同佔位圖）；
-    /// 有封面 → 封面平均色；灰階封面 → 不染色（亂染比不染難看）。
-    private enum Ambient: Equatable {
-        case albumHue, plain, artwork(Color)
+    /// 有封面 → 封面色相；灰階封面 → 不染色（亂染比不染難看）。
+    fileprivate enum Ambient: Equatable {
+        case albumHue, plain, artwork(hue: Double)
     }
 
     private var track: Track? { player.nowTrack }
@@ -52,13 +52,7 @@ struct NowPlayingView: View {
                 }
                 Spacer(minLength: 0)
                 Menu {
-                    Picker("音量標準化", selection: $player.replayGainMode) {
-                        ForEach(ReplayGain.Mode.allCases, id: \.self) { m in
-                            Text(m.label).tag(m)
-                        }
-                    }
-                    .pickerStyle(.menu)
-                    EqMenuContent(eq: $player.eq)
+                    EffectsMenuContent(replayGainMode: $player.replayGainMode, eq: $player.eq)
                 } label: {
                     Image(systemName: "ellipsis")
                         .font(.body.weight(.semibold))
@@ -75,9 +69,9 @@ struct NowPlayingView: View {
                     .tint(.primary)
                     .accessibilityLabel("播放進度")
                 HStack {
-                    Text(fmtClock(scrubbing ? scrubValue : player.elapsed))
+                    Text(DisplayFormat.clock(seconds: scrubbing ? scrubValue : player.elapsed))
                     Spacer()
-                    Text("-" + fmtClock(upper - (scrubbing ? scrubValue : player.elapsed)))
+                    Text("-" + DisplayFormat.clock(seconds: upper - (scrubbing ? scrubValue : player.elapsed)))
                 }
                 .font(.caption.monospacedDigit())
                 .foregroundStyle(.secondary)
@@ -112,33 +106,39 @@ struct NowPlayingView: View {
         .animation(.easeOut(duration: 0.35), value: ambientTint)
         .presentationDragIndicator(.visible)
         .task(id: albumKey) {
+            if let cached = AmbientCache.shared.value(for: albumKey) {
+                ambient = cached
+                return
+            }
             ambient = .albumHue
             guard let track, let url = model.artworkURL(for: track.albumId),
                   let image = await model.artwork.image(key: albumKey, trackURL: url) else {
                 return  // 沒有封面 → 維持專輯色相（與佔位圖同色）
             }
-            ambient = ArtworkTint.hueSaturation(from: image).map {
-                .artwork(Color(hue: $0.hue,
-                               saturation: min(0.6, max(0.35, $0.saturation)),
-                               brightness: 0.6))
-            } ?? .plain
+            // 平均色萃取是純函式；丟到背景執行緒算，算完才跳回來設狀態。
+            let resolved = await Task.detached(priority: .utility) {
+                ArtworkTint.hue(from: image).map { Ambient.artwork(hue: $0) } ?? .plain
+            }.value
+            AmbientCache.shared.set(resolved, for: albumKey)
+            ambient = resolved
         }
     }
 
+    /// 封面色與專輯色相都是同一套飽和度/亮度，只有色相來源不同——維持一致的染色強度。
     private var ambientTint: Color? {
         switch ambient {
         case .albumHue:
             return Color(hue: PlaceholderArt.hue(for: albumKey), saturation: 0.55, brightness: 0.6)
         case .plain:
             return nil
-        case .artwork(let color):
-            return color
+        case .artwork(let hue):
+            return Color(hue: hue, saturation: 0.55, brightness: 0.6)
         }
     }
 
     private var effectsLabel: String {
         player.eq.enabled
-            ? "音效：等化器 \(EqLabels.presetLabel(player.eq.preset))"
+            ? "音效：等化器 \(DisplayFormat.eqPresetLabel(player.eq.preset))"
             : "音效：ReplayGain \(player.replayGainMode.label)"
     }
 
@@ -189,61 +189,19 @@ private struct AmbientBackground: View {
     }
 }
 
-/// EQ 選單（preset / 前置增益 / 關閉）——iOS 與 MuMac 共用文案（EqLabels）。
-struct EqMenuContent: View {
-    @Binding var eq: EqSettings
+/// 封面氛圍色快取（純函式的結果，跨次開啟現正播放不必重算）：albumId → 判定結果。
+private final class AmbientCache {
+    static let shared = AmbientCache()
+    private let lock = NSLock()
+    private var storage: [String: NowPlayingView.Ambient] = [:]
 
-    var body: some View {
-        Picker("等化器", selection: presetBinding) {
-            Text("關閉").tag("")
-            ForEach(EqSettings.presets, id: \.name) { p in
-                Text(EqLabels.presetLabel(p.name)).tag(p.name)
-            }
-        }
-        .pickerStyle(.menu)
-        Picker("前置增益", selection: preampBinding) {
-            ForEach(EqLabels.preampChoices, id: \.self) { mb in
-                Text(EqLabels.preampLabel(mb)).tag(mb)
-            }
-        }
-        .pickerStyle(.menu)
-        .disabled(!eq.enabled)
+    func value(for key: String) -> NowPlayingView.Ambient? {
+        lock.lock(); defer { lock.unlock() }
+        return storage[key]
     }
 
-    private var presetBinding: Binding<String> {
-        Binding(get: { eq.enabled ? eq.preset : "" },
-                set: { name in
-                    eq = name.isEmpty
-                        ? EqSettings(bands: eq.bands, enabled: false, preamp: eq.preamp, preset: eq.preset)
-                        : EqSettings.preset(name, enabled: true, preamp: eq.preamp)
-                })
-    }
-
-    private var preampBinding: Binding<Int> {
-        Binding(get: { eq.preamp },
-                set: { eq = EqSettings(bands: eq.bands, enabled: eq.enabled, preamp: $0, preset: eq.preset) })
-    }
-}
-
-enum EqLabels {
-    static let preampChoices = [-600, -300, 0, 300, 600]
-
-    static func preampLabel(_ mb: Int) -> String {
-        mb == 0 ? "0 dB" : String(format: "%+.0f dB", Double(mb) / 100)
-    }
-
-    static func presetLabel(_ name: String) -> String {
-        switch name {
-        case "flat": return "平坦"
-        case "rock": return "搖滾"
-        case "pop": return "流行"
-        case "jazz": return "爵士"
-        case "classical": return "古典"
-        case "bass": return "重低音"
-        case "treble": return "高音"
-        case "vocal": return "人聲"
-        case "loudness": return "響度"
-        default: return name
-        }
+    func set(_ value: NowPlayingView.Ambient, for key: String) {
+        lock.lock(); defer { lock.unlock() }
+        storage[key] = value
     }
 }

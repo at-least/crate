@@ -3,6 +3,7 @@ package music.mu.android.ui
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.media.MediaMetadataRetriever
+import android.util.LruCache
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
@@ -15,6 +16,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.produceState
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -40,21 +42,32 @@ object Artwork {
     private val preferredNames = listOf("cover", "folder", "front", "album", "albumart")
     private val extensions = setOf("jpg", "jpeg", "png", "webp")
 
-    /** key（albumId）→ 封面；null 代表「查過了，沒有封面」。 */
-    private val cache = object : LinkedHashMap<String, Bitmap?>(0, 0.75f, true) {
-        override fun removeEldestEntry(eldest: MutableMap.MutableEntry<String, Bitmap?>) = size > 96
+    /** 快取一則結果；bitmap 為 null 代表「查過了，沒有封面」（LruCache 本身不接受 null 值）。 */
+    private class Entry(val bitmap: Bitmap?)
+
+    /**
+     * 依可用記憶體的 1/8 設定位元組上限（而非固定筆數）：640px 解碼後單張約 1.6MB，
+     * 固定 96 筆在大庫捲動時很快就把畫面外的封面清光、逼著重新解碼；按位元組計算才跟裝置成比例。
+     * `android.util.LruCache` 內部已用 `synchronized`，呼叫端不必再自己上鎖。
+     */
+    private val cache = object : LruCache<String, Entry>(
+        (Runtime.getRuntime().maxMemory() / 8).toInt().coerceAtMost(64 * 1024 * 1024),
+    ) {
+        override fun sizeOf(key: String, value: Entry): Int = value.bitmap?.byteCount ?: 1
     }
 
-    fun cached(key: String): Bitmap? = synchronized(cache) { cache[key] }
+    /** 已快取結果（同步；未載入回 null——與「查過但沒封面」無法區分，僅供畫面先顯示已知結果用）。 */
+    fun cached(key: String): Bitmap? = cache.get(key)?.bitmap
 
-    fun isKnown(key: String): Boolean = synchronized(cache) { cache.containsKey(key) }
-
-    suspend fun load(key: String, file: File?): Bitmap? = withContext(Dispatchers.IO) {
-        synchronized(cache) { if (cache.containsKey(key)) return@withContext cache[key] }
-        val bytes = file?.let { embedded(it) ?: folderCover(it) }
-        val bitmap = bytes?.let(::decode)
-        synchronized(cache) { cache[key] = bitmap }
-        bitmap
+    /** 快取命中就同步回傳，不必為此跳一次 IO 分派；沒命中才做真正的檔案 I/O 與解碼。 */
+    suspend fun load(key: String, file: File?): Bitmap? {
+        cache.get(key)?.let { return it.bitmap }
+        return withContext(Dispatchers.IO) {
+            val bytes = file?.let { embedded(it) ?: folderCover(it) }
+            val bitmap = bytes?.let(::decode)
+            cache.put(key, Entry(bitmap))
+            bitmap
+        }
     }
 
     private fun embedded(file: File): ByteArray? = try {
@@ -66,6 +79,7 @@ object Artwork {
         null
     }
 
+    // MediaMetadataRetriever 只在 API 29+ 才是 AutoCloseable（minSdk 26），不能用 kotlin.io.use。
     private inline fun <T> MediaMetadataRetriever.use(block: (MediaMetadataRetriever) -> T): T =
         try {
             block(this)
@@ -137,18 +151,20 @@ fun AlbumArt(
     playlist: Boolean = false,
 ) {
     val bitmap by produceState<Bitmap?>(initialValue = Artwork.cached(key), key, file?.path) {
-        if (!Artwork.isKnown(key)) value = Artwork.load(key, file)
+        value = Artwork.load(key, file)
     }
+    // key 不變就不必重算漸層 Brush、也不必每次重組都重包一次 ImageBitmap。
+    val brush = remember(key) { Artwork.placeholderBrush(key) }
+    val imageBitmap = remember(bitmap) { bitmap?.asImageBitmap() }
     Box(
         modifier
             .clip(RoundedCornerShape(corner))
-            .background(Artwork.placeholderBrush(key)),
+            .background(brush),
         contentAlignment = Alignment.Center,
     ) {
-        val bmp = bitmap
-        if (bmp != null) {
+        if (imageBitmap != null) {
             Image(
-                bmp.asImageBitmap(),
+                imageBitmap,
                 contentDescription = null,
                 modifier = Modifier.fillMaxSize(),
                 contentScale = ContentScale.Crop,

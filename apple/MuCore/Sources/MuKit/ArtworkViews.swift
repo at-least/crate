@@ -82,3 +82,34 @@ public struct PlaceholderArt: View {
     }
 }
 #endif
+
+/// 空狀態 / 訊息頁：符號 + 標題 + 說明（歡迎頁除外的所有「沒東西可顯示」畫面共用）。
+public struct EmptyState: View {
+    public let symbol: String
+    public let title: String
+    public let message: String?
+
+    public init(symbol: String, title: String, message: String? = nil) {
+        self.symbol = symbol
+        self.title = title
+        self.message = message
+    }
+
+    public var body: some View {
+        VStack(spacing: 8) {
+            Image(systemName: symbol)
+                .font(.system(size: 40))
+                .foregroundStyle(.secondary)
+                .accessibilityHidden(true)
+            Text(title)
+                .font(.headline)
+            if let message {
+                Text(message)
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+                    .multilineTextAlignment(.center)
+            }
+        }
+        .padding(32)
+    }
+}

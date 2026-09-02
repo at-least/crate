@@ -30,57 +30,64 @@ struct MacContentView: View {
         }
     }
 
+    /// 三種畫面（歡迎／掃描中／有庫）共用同一個頂欄容器，只有標題/尾端動作/主體隨狀態換。
     @ViewBuilder private var root: some View {
-        if model.ui.rootPath == nil {
-            VStack(spacing: 0) {
-                MacHeader(title: "Mu") { EmptyView() }
-                MacWelcome { pickFolder() }
-            }
-        } else if model.ui.scanning && model.ui.albums.isEmpty && model.ui.playlists.isEmpty {
-            VStack(spacing: 0) {
-                MacHeader(title: "資料庫") { EmptyView() }
-                VStack(spacing: 12) {
-                    ProgressView()
-                    Text("正在掃描資料庫").font(.headline)
-                }
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
-            }
-        } else {
-            VStack(spacing: 0) {
-                MacHeader(title: "資料庫") {
-                    if model.ui.scanning {
-                        ProgressView().controlSize(.small)
-                    } else {
-                        Menu {
-                            Section(model.ui.rootPath.map {
-                                URL(fileURLWithPath: $0).lastPathComponent
-                            } ?? "資料夾") {
-                                Button {
-                                    model.rescan()
-                                } label: {
-                                    Label("重新掃描", systemImage: "arrow.clockwise")
-                                }
-                                Button {
-                                    pickFolder()
-                                } label: {
-                                    Label("更換資料夾…", systemImage: "folder")
-                                }
-                            }
-                            Section("音效") {
-                                MacReplayGainPicker(player: model.player)
-                            }
+        VStack(spacing: 0) {
+            MacHeader(title: headerTitle) { headerTrailing }
+            content
+        }
+    }
+
+    private var headerTitle: String {
+        model.ui.rootPath == nil ? "Mu" : "資料庫"
+    }
+
+    @ViewBuilder private var headerTrailing: some View {
+        if model.ui.rootPath != nil {
+            if model.ui.scanning {
+                ProgressView().controlSize(.small)
+            } else {
+                Menu {
+                    Section(model.ui.rootPath.map {
+                        URL(fileURLWithPath: $0).lastPathComponent
+                    } ?? "資料夾") {
+                        Button {
+                            model.rescan()
                         } label: {
-                            Image(systemName: "ellipsis.circle")
+                            Label("重新掃描", systemImage: "arrow.clockwise")
                         }
-                        .menuStyle(.borderlessButton)
-                        .menuIndicator(.hidden)
-                        .fixedSize()
-                        .accessibilityLabel("資料庫選項")
-                        .help("重掃 / 更換資料夾 / 音效")
+                        Button {
+                            pickFolder()
+                        } label: {
+                            Label("更換資料夾…", systemImage: "folder")
+                        }
                     }
+                    Section("音效") {
+                        MacEffectsMenu(player: model.player)
+                    }
+                } label: {
+                    Image(systemName: "ellipsis.circle")
                 }
-                MacLibrary(path: $path)
+                .menuStyle(.borderlessButton)
+                .menuIndicator(.hidden)
+                .fixedSize()
+                .accessibilityLabel("資料庫選項")
+                .help("重掃 / 更換資料夾 / 音效")
             }
+        }
+    }
+
+    @ViewBuilder private var content: some View {
+        if model.ui.rootPath == nil {
+            MacWelcome { pickFolder() }
+        } else if model.ui.scanning && model.ui.albums.isEmpty && model.ui.playlists.isEmpty {
+            VStack(spacing: 12) {
+                ProgressView()
+                Text("正在掃描資料庫").font(.headline)
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+        } else {
+            MacLibrary(path: $path)
         }
     }
 
@@ -210,18 +217,10 @@ private struct MacLibrary: View {
                 .padding(.vertical, 8)
             Divider()
             if albums.isEmpty && playlists.isEmpty {
-                VStack(spacing: 8) {
-                    Image(systemName: q.isEmpty ? "music.note.list" : "magnifyingglass")
-                        .font(.system(size: 32))
-                        .foregroundStyle(.secondary)
-                        .accessibilityHidden(true)
-                    Text(q.isEmpty ? "資料夾裡還沒有音樂" : "沒有符合的結果")
-                        .font(.headline)
-                    Text(q.isEmpty ? "從右上角選單重新掃描。" : "換個關鍵字試試。")
-                        .font(.subheadline)
-                        .foregroundStyle(.secondary)
-                }
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                EmptyState(symbol: q.isEmpty ? "music.note.list" : "magnifyingglass",
+                          title: q.isEmpty ? "資料夾裡還沒有音樂" : "沒有符合的結果",
+                          message: q.isEmpty ? "從右上角選單重新掃描。" : "換個關鍵字試試。")
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
             } else {
                 List {
                     if !playlists.isEmpty {
@@ -352,7 +351,7 @@ private struct MacAlbumDetail: View {
         } else {
             VStack(spacing: 0) {
                 MacHeader(title: "專輯", showBack: true) { EmptyView() }
-                Text("專輯已無可播軌").foregroundStyle(.secondary)
+                EmptyState(symbol: "questionmark.folder", title: "專輯已無可播軌")
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
             }
             .navigationBarBackButtonHidden(true)
@@ -363,7 +362,7 @@ private struct MacAlbumDetail: View {
         var parts: [String] = []
         if let y = album.year { parts.append(String(y)) }
         if let f = tracks.first?.format.uppercased(), !f.isEmpty { parts.append(f) }
-        parts.append("\(tracks.count) 首 · \(fmtTotal(tracks))")
+        parts.append("\(tracks.count) 首 · \(DisplayFormat.totalDuration(msValues: tracks.map(\.durationMs)))")
         return parts.joined(separator: " · ")
     }
 }
@@ -383,7 +382,8 @@ private struct MacPlaylistDetail: View {
                         .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
                     VStack(alignment: .leading, spacing: 3) {
                         Text(pl.name).font(.title3.weight(.bold)).lineLimit(2)
-                        Text("播放清單 · \(pl.tracks.count) 首 · \(fmtTotal(pl.tracks))")
+                        Text("播放清單 · \(pl.tracks.count) 首 · " +
+                             DisplayFormat.totalDuration(msValues: pl.tracks.map(\.durationMs)))
                             .font(.caption).foregroundStyle(.secondary)
                         Button {
                             model.play(pl.tracks, startIndex: 0)
@@ -416,7 +416,7 @@ private struct MacPlaylistDetail: View {
         } else {
             VStack(spacing: 0) {
                 MacHeader(title: "清單", showBack: true) { EmptyView() }
-                Text("清單已無可播軌").foregroundStyle(.secondary)
+                EmptyState(symbol: "questionmark.folder", title: "清單已無可播軌")
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
             }
             .navigationBarBackButtonHidden(true)
@@ -463,7 +463,7 @@ private struct MacTrackRow: View {
                         .accessibilityLabel("離線")
                         .help("已釘選離線")
                 }
-                Text(fmtDuration(durationMs))
+                Text(DisplayFormat.duration(ms: durationMs))
                     .font(.caption.monospacedDigit())
                     .foregroundStyle(.secondary)
                     .frame(minWidth: 34, alignment: .trailing)
@@ -476,54 +476,32 @@ private struct MacTrackRow: View {
     }
 }
 
-/// 釘選按鈕（label 語意同 iOS：短標籤 + 完整 accessibility 句）。
+/// 釘選按鈕：狀態彙總與文案在 MuKit.PinSummary，與 iOS 完全一致（不再各自手key、各自漂移）。
 private struct MacPinButton: View {
     let tracks: [Track]
     let pinStates: [String: PinManager.PinState]
     let pin: () -> Void
     let unpin: () -> Void
 
-    private var done: Int { tracks.filter { pinStates[$0.id] == .done }.count }
-    private var pending: Int { tracks.filter { pinStates[$0.id]?.isPending == true }.count }
-    private var failed: Int { tracks.filter { pinStates[$0.id] == .failed }.count }
-    private var allDone: Bool { !tracks.isEmpty && done == tracks.count }
-
-    private var fullLabel: String {
-        switch true {
-        case tracks.isEmpty: return "無軌"
-        case allDone: return "已釘選（\(tracks.count) 軌，點擊取消）"
-        case done + pending > 0:
-            return "釘選中 \(done)/\(tracks.count)" + (failed > 0 ? " · \(failed) 失敗" : "")
-        case failed > 0: return "釘選失敗 \(failed)/\(tracks.count)（點擊重試）"
-        default: return "釘選離線（\(tracks.count) 軌）"
-        }
-    }
-
-    private var shortLabel: String {
-        if allDone { return "已釘選" }
-        if pending > 0 { return "\(done)/\(tracks.count)" }
-        if failed > 0 { return "重試" }
-        return "釘選離線"
-    }
+    private var summary: PinSummary { PinSummary(tracks: tracks, states: pinStates) }
 
     var body: some View {
         Button {
-            allDone ? unpin() : pin()
+            summary.allDone ? unpin() : pin()
         } label: {
             HStack(spacing: 4) {
-                if pending > 0 {
+                if summary.pending > 0 {
                     ProgressView().controlSize(.mini)
                 } else {
-                    Image(systemName: allDone ? "checkmark.circle.fill"
-                          : failed > 0 ? "exclamationmark.arrow.circlepath" : "arrow.down.circle")
+                    Image(systemName: summary.symbolName)
                 }
-                Text(shortLabel)
+                Text(summary.shortLabel)
             }
         }
         .buttonStyle(.bordered)
         .disabled(tracks.isEmpty)
-        .help(fullLabel)
-        .accessibilityLabel(fullLabel)
+        .help(summary.fullLabel)
+        .accessibilityLabel(summary.fullLabel)
         .accessibilityIdentifier("pinChip")
     }
 }
@@ -602,7 +580,7 @@ private struct MacProgressBar: View {
 
     var body: some View {
         HStack(spacing: 8) {
-            Text(fmtClock(shown))
+            Text(DisplayFormat.clock(seconds: shown))
             GeometryReader { g in
                 let frac = duration > 0 ? min(1, shown / duration) : 0
                 ZStack(alignment: .leading) {
@@ -625,97 +603,24 @@ private struct MacProgressBar: View {
                 )
             }
             .frame(height: 14)
-            Text("-" + fmtClock(max(0, duration - shown)))
+            Text("-" + DisplayFormat.clock(seconds: max(0, duration - shown)))
         }
         .font(.caption2.monospacedDigit())
         .foregroundStyle(.secondary)
         .accessibilityElement(children: .ignore)
         .accessibilityLabel("播放進度")
-        .accessibilityValue(fmtClock(shown) + " / " + fmtClock(duration))
+        .accessibilityValue(DisplayFormat.clock(seconds: shown) + " / " + DisplayFormat.clock(seconds: duration))
     }
 
     private var shown: Double { dragFrac.map { $0 * duration } ?? elapsed }
 }
 
-// MARK: - 格式化
-
-private func fmtDuration(_ ms: Int?) -> String {
-    guard let ms, ms >= 0 else { return "" }
-    return String(format: "%d:%02d", ms / 60000, ms / 1000 % 60)
-}
-
-private func fmtClock(_ seconds: Double) -> String {
-    let s = max(0, Int(seconds.rounded()))
-    return s >= 3600
-        ? String(format: "%d:%02d:%02d", s / 3600, s / 60 % 60, s % 60)
-        : String(format: "%d:%02d", s / 60, s % 60)
-}
-
-private func fmtTotal(_ tracks: [Track]) -> String {
-    let secs = tracks.compactMap(\.durationMs).reduce(0, +) / 1000
-    if secs >= 3600 { return "\(secs / 3600) 小時 \(secs / 60 % 60) 分鐘" }
-    return "\(max(1, secs / 60)) 分鐘"
-}
-
-/// ReplayGain 模式與 EQ（model.md §1.9/§1.10）；MacPlayer 持久化於 UserDefaults 並即時套用。
-private struct MacReplayGainPicker: View {
+/// 音效選單（ReplayGain + EQ）：內容在 MuKit.EffectsMenuContent，與 iOS 現正播放選單共用；
+/// 這裡只是把 MacPlayer 的 @Published 屬性接成 Binding。
+private struct MacEffectsMenu: View {
     @ObservedObject var player: MacPlayer
 
-    private static let preampChoices = [-600, -300, 0, 300, 600]
-
     var body: some View {
-        Picker("音量標準化", selection: $player.replayGainMode) {
-            ForEach(ReplayGain.Mode.allCases, id: \.self) { m in
-                Text(m.label).tag(m)
-            }
-        }
-        .pickerStyle(.menu)
-        Picker("等化器", selection: presetBinding) {
-            Text("關閉").tag("")
-            ForEach(EqSettings.presets, id: \.name) { p in
-                Text(Self.presetLabel(p.name)).tag(p.name)
-            }
-        }
-        .pickerStyle(.menu)
-        Picker("前置增益", selection: preampBinding) {
-            ForEach(Self.preampChoices, id: \.self) { mb in
-                Text(mb == 0 ? "0 dB" : String(format: "%+.0f dB", Double(mb) / 100)).tag(mb)
-            }
-        }
-        .pickerStyle(.menu)
-        .disabled(!player.eq.enabled)
-    }
-
-    private var presetBinding: Binding<String> {
-        Binding(get: { player.eq.enabled ? player.eq.preset : "" },
-                set: { name in
-                    let eq = player.eq
-                    player.eq = name.isEmpty
-                        ? EqSettings(bands: eq.bands, enabled: false, preamp: eq.preamp, preset: eq.preset)
-                        : EqSettings.preset(name, enabled: true, preamp: eq.preamp)
-                })
-    }
-
-    private var preampBinding: Binding<Int> {
-        Binding(get: { player.eq.preamp },
-                set: { mb in
-                    let eq = player.eq
-                    player.eq = EqSettings(bands: eq.bands, enabled: eq.enabled, preamp: mb, preset: eq.preset)
-                })
-    }
-
-    private static func presetLabel(_ name: String) -> String {
-        switch name {
-        case "flat": return "平坦"
-        case "rock": return "搖滾"
-        case "pop": return "流行"
-        case "jazz": return "爵士"
-        case "classical": return "古典"
-        case "bass": return "重低音"
-        case "treble": return "高音"
-        case "vocal": return "人聲"
-        case "loudness": return "響度"
-        default: return name
-        }
+        EffectsMenuContent(replayGainMode: $player.replayGainMode, eq: $player.eq)
     }
 }

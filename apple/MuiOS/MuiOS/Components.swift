@@ -61,7 +61,7 @@ struct TrackRow: View {
                         .foregroundStyle(.secondary)
                         .accessibilityLabel("離線")
                 }
-                Text(fmtDuration(durationMs))
+                Text(DisplayFormat.duration(ms: durationMs))
                     .font(.footnote.monospacedDigit())
                     .foregroundStyle(.secondary)
                     .frame(minWidth: 36, alignment: .trailing)
@@ -98,7 +98,7 @@ struct TrackSummary: View {
     let tracks: [Track]
 
     var body: some View {
-        Text("\(tracks.count) 首歌曲 · \(fmtTotal(tracks))")
+        Text("\(tracks.count) 首歌曲 · \(DisplayFormat.totalDuration(msValues: tracks.map(\.durationMs)))")
             .font(.footnote)
             .foregroundStyle(.secondary)
             .frame(maxWidth: .infinity, alignment: .leading)
@@ -127,65 +127,34 @@ struct SectionHeader: View {
 }
 
 /// 釘選按鈕：視覺短標籤 + 圖示；accessibility label 為完整狀態句（UI 測試依賴）。
+/// 狀態彙總邏輯在 MuKit.PinSummary——iOS/macOS 兩份按鈕共用同一份文案，不再各自手key。
 struct PinButton: View {
     let tracks: [Track]
     let pinStates: [String: PinManager.PinState]
     let pin: () -> Void
     let unpin: () -> Void
 
-    private var done: Int { tracks.filter { pinStates[$0.id] == .done }.count }
-    private var pending: Int { tracks.filter { pinStates[$0.id]?.isPending == true }.count }
-    private var failed: Int { tracks.filter { pinStates[$0.id] == .failed }.count }
-    private var allDone: Bool { !tracks.isEmpty && done == tracks.count }
-
-    private var fullLabel: String {
-        switch true {
-        case tracks.isEmpty:
-            return "無軌"
-        case allDone:
-            return "已釘選（\(tracks.count) 軌，點擊取消）"
-        case done + pending > 0:
-            return "釘選中 \(done)/\(tracks.count)" + (failed > 0 ? " · \(failed) 失敗" : "")
-        case failed > 0:
-            return "釘選失敗 \(failed)/\(tracks.count)（點擊重試）"
-        default:
-            return "釘選離線（\(tracks.count) 軌）"
-        }
-    }
+    private var summary: PinSummary { PinSummary(tracks: tracks, states: pinStates) }
 
     var body: some View {
         Button {
-            allDone ? unpin() : pin()
+            summary.allDone ? unpin() : pin()
         } label: {
             HStack(spacing: 6) {
-                if pending > 0 {
+                if summary.pending > 0 {
                     ProgressView().controlSize(.small)
                 } else {
-                    Image(systemName: icon)
+                    Image(systemName: summary.symbolName)
                 }
-                Text(shortLabel)
+                Text(summary.shortLabel)
             }
             .font(.body.weight(.medium))
             .frame(maxWidth: .infinity)
         }
-        .tint(failed > 0 && pending == 0 ? .orange : .accentColor)
+        .tint(summary.failed > 0 && summary.pending == 0 ? .orange : .accentColor)
         .disabled(tracks.isEmpty)
-        .accessibilityLabel(fullLabel)
+        .accessibilityLabel(summary.fullLabel)
         .accessibilityIdentifier("pinChip")
-    }
-
-    private var icon: String {
-        if allDone { return "checkmark.circle.fill" }
-        if failed > 0 { return "exclamationmark.arrow.circlepath" }
-        return "arrow.down.circle"
-    }
-
-    private var shortLabel: String {
-        if tracks.isEmpty { return "無軌" }
-        if allDone { return "已釘選" }
-        if pending > 0 { return "釘選中 \(done)/\(tracks.count)" }
-        if failed > 0 { return "重試釘選" }
-        return "釘選離線"
     }
 }
 
@@ -201,22 +170,4 @@ struct PlayAllButton: View {
         }
         .buttonStyle(.borderedProminent)
     }
-}
-
-func fmtDuration(_ ms: Int?) -> String {
-    guard let ms, ms >= 0 else { return "" }
-    return String(format: "%d:%02d", ms / 60000, ms / 1000 % 60)
-}
-
-func fmtClock(_ seconds: Double) -> String {
-    let s = max(0, Int(seconds.rounded()))
-    return s >= 3600
-        ? String(format: "%d:%02d:%02d", s / 3600, s / 60 % 60, s % 60)
-        : String(format: "%d:%02d", s / 60, s % 60)
-}
-
-func fmtTotal(_ tracks: [Track]) -> String {
-    let secs = tracks.compactMap(\.durationMs).reduce(0, +) / 1000
-    if secs >= 3600 { return "\(secs / 3600) 小時 \(secs / 60 % 60) 分鐘" }
-    return "\(max(1, secs / 60)) 分鐘"
 }

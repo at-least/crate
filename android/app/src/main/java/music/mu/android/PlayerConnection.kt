@@ -25,6 +25,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -61,20 +62,23 @@ fun rememberPlayerController(): MediaController? {
     return controller.value
 }
 
-/** 播放器 UI 快照（播放列與音軌高亮共用）。 */
+/**
+ * 播放器 UI 快照（播放列與音軌高亮共用）。
+ * 刻意不含 positionMs/durationMs——那兩個每 0.5 秒跳一次，若放進這個 data class，
+ * 每跳一次都會讓讀到 `ui` 的整個組合範圍（目前是 MuRoot 全部）重組一次。
+ * 進度改由 [MiniPlayer] 自己用 [MutableLongState] 持有，只讀取的那個 lambda 內部重畫。
+ */
 data class PlayerUi(
     val hasQueue: Boolean = false,
     val isPlaying: Boolean = false,
     val title: String = "",
     val artist: String = "",
     val trackId: String = "",
-    val positionMs: Long = 0,
-    val durationMs: Long = 0,
 )
 
 /**
- * 由 MediaController 事件推導 UI 狀態。
- * 直接讀 `controller.isPlaying` 不會觸發重組——必須掛 [Player.Listener]，播放中再以計時器推進進度。
+ * 由 MediaController 事件推導 UI 狀態（只在真的變動時更新：換曲、播/暫、佇列變化）。
+ * 直接讀 `controller.isPlaying` 不會觸發重組——必須掛 [Player.Listener]。
  */
 @Composable
 fun rememberPlayerUi(controller: MediaController?): PlayerUi {
@@ -86,8 +90,6 @@ fun rememberPlayerUi(controller: MediaController?): PlayerUi {
         title = c.mediaMetadata.title?.toString().orEmpty(),
         artist = c.mediaMetadata.artist?.toString().orEmpty(),
         trackId = c.currentMediaItem?.mediaId.orEmpty(),
-        positionMs = c.currentPosition.coerceAtLeast(0),
-        durationMs = c.duration.takeIf { it > 0 } ?: 0,
     )
 
     DisposableEffect(controller) {
@@ -101,17 +103,6 @@ fun rememberPlayerUi(controller: MediaController?): PlayerUi {
         c.addListener(listener)
         onDispose { c.removeListener(listener) }
     }
-
-    LaunchedEffect(controller, ui.isPlaying) {
-        val c = controller ?: return@LaunchedEffect
-        while (ui.isPlaying) {
-            delay(500)
-            ui = ui.copy(
-                positionMs = c.currentPosition.coerceAtLeast(0),
-                durationMs = c.duration.takeIf { it > 0 } ?: 0,
-            )
-        }
-    }
     return ui
 }
 
@@ -122,18 +113,40 @@ fun rememberPlayerUi(controller: MediaController?): PlayerUi {
 @Composable
 fun MiniPlayer(
     ui: PlayerUi,
+    controller: MediaController?,
     artKey: String,
     artFile: File?,
     onToggle: () -> Unit,
     onNext: () -> Unit,
     onOpen: () -> Unit,
 ) {
+    // 進度是唯一每 0.5 秒動一次的狀態，故意跟 PlayerUi 分開持有：
+    // positionState/durationState 只在 LinearProgressIndicator 的 progress lambda 裡被讀取，
+    // 所以每次 tick 只讓那個 lambda 重畫，不會讓 MiniPlayer 本身（更不會是外層 MuRoot）重組。
+    val positionState = remember { mutableLongStateOf(controller?.currentPosition?.coerceAtLeast(0) ?: 0L) }
+    val durationState = remember {
+        mutableLongStateOf(controller?.duration?.takeIf { it > 0 } ?: 0L)
+    }
+    LaunchedEffect(controller, ui.trackId, ui.isPlaying) {
+        val c = controller ?: return@LaunchedEffect
+        positionState.longValue = c.currentPosition.coerceAtLeast(0)
+        durationState.longValue = c.duration.takeIf { it > 0 } ?: 0
+        while (ui.isPlaying) {
+            delay(500)
+            positionState.longValue = c.currentPosition.coerceAtLeast(0)
+            durationState.longValue = c.duration.takeIf { it > 0 } ?: 0
+        }
+    }
+
     Surface(tonalElevation = 3.dp, shadowElevation = 8.dp) {
         // 導覽列（手勢條）在 edge-to-edge 下會壓到控制鍵——底色延伸過去，內容留白避開。
         Column(Modifier.fillMaxWidth().windowInsetsPadding(WindowInsets.navigationBars)) {
-            if (ui.durationMs > 0) {
+            if (durationState.longValue > 0) {
                 LinearProgressIndicator(
-                    progress = { (ui.positionMs.toFloat() / ui.durationMs).coerceIn(0f, 1f) },
+                    progress = {
+                        val duration = durationState.longValue
+                        if (duration > 0) (positionState.longValue.toFloat() / duration).coerceIn(0f, 1f) else 0f
+                    },
                     modifier = Modifier.fillMaxWidth().height(2.dp),
                     trackColor = MaterialTheme.colorScheme.surfaceVariant,
                     drawStopIndicator = { },

@@ -19,7 +19,6 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -83,6 +82,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import music.mu.android.ui.AlbumArt
+import music.mu.android.ui.PinSummary
 import music.mu.android.ui.MuDimens
 import music.mu.android.ui.MuTheme
 import mu.core.Scanner
@@ -157,9 +157,12 @@ fun MuRoot(vm: LibraryViewModel = viewModel()) {
         return pinManager.pinnedFile(t.id) ?: File(rootPath, t.path)
     }
 
+    // 專輯網格每一格都要查自己的封面線索檔——用 map 一次索引，不要對 albums 做線性掃描。
+    val albumsById = remember(state.albums) { state.albums.associateBy { it.id } }
+
     /** 專輯封面的線索檔：掃描器挑定的封面軌，否則該專輯第一軌。 */
     fun albumArtFile(albumId: String): File? {
-        val album = state.albums.firstOrNull { it.id == albumId }
+        val album = albumsById[albumId]
         val track = album?.artTrackId?.let { state.tracksById[it] }
             ?: state.tracksByAlbum[albumId]?.firstOrNull()
         return track?.let(::resolveFile)
@@ -177,7 +180,7 @@ fun MuRoot(vm: LibraryViewModel = viewModel()) {
 
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
     val title = when (val v = view) {
-        is View.Album -> state.albums.firstOrNull { it.id == v.id }?.name ?: "專輯"
+        is View.Album -> albumsById[v.id]?.name ?: "專輯"
         is View.Playlist -> v.name
         View.Library -> "資料庫"
     }
@@ -185,17 +188,18 @@ fun MuRoot(vm: LibraryViewModel = viewModel()) {
     Scaffold(
         modifier = if (view is View.Library) Modifier.nestedScroll(scrollBehavior.nestedScrollConnection) else Modifier,
         topBar = {
-            if (state.rootPath == null) {
+            // 綁一次成局部 val：往下即便被 composable lambda 捕捉，型別仍是非 null 的 String
+            // （比起在兩層 lambda 裡各自對 state.rootPath 再判斷一次 null，這樣只用一次）。
+            val root = state.rootPath
+            if (root == null) {
                 // 歡迎頁沒有可操作的資料庫——不放標題列，讓內容自己說話
             } else if (view is View.Library) {
                 LargeTopAppBar(
                     title = { Text(title) },
                     actions = {
-                        if (state.rootPath != null) {
-                            EffectsMenu()
-                            LibraryMenu(onRescan = { vm.rescan() }, onPickFolder = { requestAndPick() },
-                                folderName = state.rootPath?.let { File(it).name })
-                        }
+                        EffectsMenu()
+                        LibraryMenu(onRescan = { vm.rescan() }, onPickFolder = { requestAndPick() },
+                            folderName = File(root).name)
                     },
                     scrollBehavior = scrollBehavior,
                 )
@@ -216,15 +220,14 @@ fun MuRoot(vm: LibraryViewModel = viewModel()) {
                 val albumId = state.tracksById[playerUi.trackId]?.albumId.orEmpty()
                 MiniPlayer(
                     ui = playerUi,
+                    controller = controller,
                     artKey = albumId,
                     artFile = albumArtFile(albumId),
                     onToggle = {
                         controller?.run { if (isPlaying) pause() else { prepare(); play() } }
                     },
                     onNext = { controller?.seekToNextMediaItem() },
-                    onOpen = {
-                        state.tracksById[playerUi.trackId]?.albumId?.let { view = View.Album(it) }
-                    },
+                    onOpen = { if (albumId.isNotEmpty()) view = View.Album(albumId) },
                 )
             }
         },
@@ -235,80 +238,82 @@ fun MuRoot(vm: LibraryViewModel = viewModel()) {
 
                 state.scanning && state.albums.isEmpty() && state.playlists.isEmpty() -> Scanning()
 
-                view is View.Playlist -> {
-                    val pl = state.playlists.firstOrNull { it.name == (view as View.Playlist).name }
-                    if (pl == null) {
-                        Gone("清單已無可播軌")
-                    } else {
-                        DetailScreen(
-                            artKey = "pl:" + pl.name,
-                            artFile = null,
-                            playlistArt = true,
-                            title = pl.name,
-                            subtitle = "播放清單",
-                            meta = "${pl.tracks.size} 首 · " + totalDuration(pl.tracks),
-                            tracks = pl.tracks,
-                            numbering = { i, _ -> i + 1 },
-                            subtitleOf = { it.artist + " · " + it.album },
-                            offlineIds = offlineIds(state),
-                            playingId = playerUi.trackId,
-                            onPlayAll = { play(pl.tracks, 0) },
-                            onPlay = { i -> play(pl.tracks, i) },
-                        )
-                    }
-                }
-
-                view is View.Album -> {
-                    // unpin 後專輯可能整個消失（全離線軌被濾掉）→ 回庫列表，別讓 first{} 炸
-                    val album = state.albums.firstOrNull { it.id == (view as View.Album).id }
-                    if (album == null) {
-                        Gone("專輯已無可播軌")
-                    } else {
-                        val tracks = state.tracksByAlbum[album.id].orEmpty()
-                        DetailScreen(
-                            artKey = album.id,
-                            artFile = albumArtFile(album.id),
-                            title = album.name,
-                            subtitle = album.albumArtist,
-                            meta = listOfNotNull(
-                                album.year?.toString(),
-                                tracks.firstOrNull()?.format?.uppercase()?.ifEmpty { null },
-                                "${tracks.size} 首",
-                            ).joinToString(" · "),
-                            tracks = tracks,
-                            numbering = { i, t -> t.trackNo ?: (i + 1) },
-                            subtitleOf = { t -> t.artist.takeIf { it != album.albumArtist } },
-                            offlineIds = offlineIds(state),
-                            playingId = playerUi.trackId,
-                            onPlayAll = { play(tracks, 0) },
-                            onPlay = { i -> play(tracks, i) },
-                            pin = PinUi(
-                                tracks = tracks,
+                // 用 `when (val v = view)` 換掉 `view is View.X` + `(view as View.X)` 的手動轉型組合，
+                // 讓 v 在各分支裡直接是對應的子型別（smart cast）。
+                else -> when (val v = view) {
+                    is View.Playlist -> {
+                        val pl = state.playlists.firstOrNull { it.name == v.name }
+                        if (pl == null) {
+                            Gone("清單已無可播軌")
+                        } else {
+                            DetailScreen(
+                                artKey = "pl:" + pl.name,
+                                artFile = null,
+                                playlistArt = true,
+                                title = pl.name,
+                                subtitle = "播放清單",
+                                meta = "${pl.tracks.size} 首 · " +
+                                    mu.core.DisplayFormat.totalDuration(pl.tracks.map { it.durationMs }),
+                                tracks = pl.tracks,
+                                numbering = { i, _ -> i + 1 },
+                                subtitleOf = { it.artist + " · " + it.album },
                                 pinStates = state.pinStates,
-                                onPin = { vm.pinAlbum(album.id) },
-                                onUnpin = { vm.unpinAlbum(album.id) },
-                            ),
-                        )
+                                playingId = playerUi.trackId,
+                                onPlayAll = { play(pl.tracks, 0) },
+                                onPlay = { i -> play(pl.tracks, i) },
+                            )
+                        }
                     }
-                }
 
-                else -> LibraryScreen(
-                    state = state,
-                    query = query,
-                    onQuery = { query = it },
-                    tab = tab,
-                    onTab = { tab = it },
-                    artFileOf = ::albumArtFile,
-                    onAlbum = { view = View.Album(it) },
-                    onPlaylist = { view = View.Playlist(it) },
-                )
+                    is View.Album -> {
+                        // unpin 後專輯可能整個消失（全離線軌被濾掉）→ 回庫列表，別讓 first{} 炸
+                        val album = albumsById[v.id]
+                        if (album == null) {
+                            Gone("專輯已無可播軌")
+                        } else {
+                            val tracks = state.tracksByAlbum[album.id].orEmpty()
+                            DetailScreen(
+                                artKey = album.id,
+                                artFile = albumArtFile(album.id),
+                                title = album.name,
+                                subtitle = album.albumArtist,
+                                meta = listOfNotNull(
+                                    album.year?.toString(),
+                                    tracks.firstOrNull()?.format?.uppercase()?.ifEmpty { null },
+                                    "${tracks.size} 首",
+                                ).joinToString(" · "),
+                                tracks = tracks,
+                                numbering = { i, t -> t.trackNo ?: (i + 1) },
+                                subtitleOf = { t -> t.artist.takeIf { it != album.albumArtist } },
+                                pinStates = state.pinStates,
+                                playingId = playerUi.trackId,
+                                onPlayAll = { play(tracks, 0) },
+                                onPlay = { i -> play(tracks, i) },
+                                pin = PinUi(
+                                    tracks = tracks,
+                                    pinStates = state.pinStates,
+                                    onPin = { vm.pinAlbum(album.id) },
+                                    onUnpin = { vm.unpinAlbum(album.id) },
+                                ),
+                            )
+                        }
+                    }
+
+                    View.Library -> LibraryScreen(
+                        state = state,
+                        query = query,
+                        onQuery = { query = it },
+                        tab = tab,
+                        onTab = { tab = it },
+                        artFileOf = ::albumArtFile,
+                        onAlbum = { view = View.Album(it) },
+                        onPlaylist = { view = View.Playlist(it) },
+                    )
+                }
             }
         }
     }
 }
-
-private fun offlineIds(state: LibraryViewModel.UiState): Set<String> =
-    state.pinStates.filterValues { it == PinManager.PinState.DONE }.keys
 
 // MARK: 資料庫
 
@@ -325,21 +330,21 @@ private fun LibraryScreen(
 ) {
     val q = query.trim()
     val searching = q.isNotEmpty()
-    val albums = if (!searching) {
-        state.albums
-    } else {
-        state.albums.filter {
-            it.name.contains(q, true) || it.albumArtist.contains(q, true)
+    // 只在來源清單或關鍵字真的變動時重新過濾——不然每次重組（例如播放進度每 0.5 秒推進）
+    // 都會對整個庫重跑一次 contains() 掃描。
+    val albums = remember(state.albums, q) {
+        if (q.isEmpty()) {
+            state.albums
+        } else {
+            state.albums.filter {
+                it.name.contains(q, true) || it.albumArtist.contains(q, true)
+            }
         }
     }
-    val playlists = if (!searching) {
-        state.playlists
-    } else {
-        state.playlists.filter { it.name.contains(q, true) }
+    val playlists = remember(state.playlists, q) {
+        if (q.isEmpty()) state.playlists else state.playlists.filter { it.name.contains(q, true) }
     }
     val showsPicker = !searching && state.playlists.isNotEmpty()
-    val showsAlbums = if (searching) albums.isNotEmpty() else
-        (tab == LibraryTab.ALBUMS || state.playlists.isEmpty())
     val showsPlaylists = if (searching) playlists.isNotEmpty() else
         (tab == LibraryTab.PLAYLISTS && state.playlists.isNotEmpty())
 
@@ -373,7 +378,9 @@ private fun LibraryScreen(
                     HorizontalDivider(Modifier.padding(start = MuDimens.pageInset + 68.dp))
                 }
             }
-        } else if (showsAlbums) {
+        } else {
+            // showsPlaylists 已經在上一個分支排除；這個分支只會在 albums 非空時到達
+            // （上面的 albums.isEmpty() && playlists.isEmpty() 已擋掉兩者皆空的情況）。
             LazyVerticalGrid(
                 columns = GridCells.Adaptive(150.dp),
                 contentPadding = PaddingValues(MuDimens.pageInset),
@@ -485,7 +492,7 @@ private fun DetailScreen(
     tracks: List<Scanner.Track>,
     numbering: (Int, Scanner.Track) -> Int,
     subtitleOf: (Scanner.Track) -> String?,
-    offlineIds: Set<String>,
+    pinStates: Map<String, PinManager.PinState>,
     playingId: String,
     onPlayAll: () -> Unit,
     onPlay: (Int) -> Unit,
@@ -547,7 +554,7 @@ private fun DetailScreen(
                 title = t.title,
                 subtitle = subtitleOf(t),
                 durationMs = t.durationMs,
-                offline = t.id in offlineIds,
+                offline = pinStates[t.id] == PinManager.PinState.DONE,
                 playing = t.id == playingId && playingId.isNotEmpty(),
                 onClick = { onPlay(i) },
             )
@@ -557,7 +564,7 @@ private fun DetailScreen(
         }
         item {
             Text(
-                "${tracks.size} 首歌曲 · " + totalDuration(tracks),
+                "${tracks.size} 首歌曲 · " + mu.core.DisplayFormat.totalDuration(tracks.map { it.durationMs }),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.padding(MuDimens.pageInset),
@@ -627,68 +634,44 @@ private fun TrackRow(
                 Icons.Default.CheckCircle,
                 contentDescription = "離線",
                 tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.size(16.dp).padding(end = 0.dp),
+                modifier = Modifier.size(16.dp),
             )
             Spacer(Modifier.width(8.dp))
         }
         Text(
-            durationMs?.let { "%d:%02d".format(it / 60000, it / 1000 % 60) } ?: "",
+            mu.core.DisplayFormat.duration(durationMs),
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
     }
 }
 
-/** 釘選按鈕：短標籤 + 圖示；contentDescription 為完整狀態句（與 iOS 同文案）。 */
+/** 釘選按鈕：短標籤 + 圖示；contentDescription 為完整狀態句（與 iOS 同文案，見 ui/PinSummary.kt）。 */
 @Composable
 private fun PinButton(pin: PinUi, modifier: Modifier = Modifier) {
-    val total = pin.tracks.size
-    val done = pin.tracks.count { pin.pinStates[it.id] == PinManager.PinState.DONE }
-    val pending = pin.tracks.count {
-        val s = pin.pinStates[it.id]
-        s == PinManager.PinState.WANTED || s == PinManager.PinState.DOWNLOADING
-    }
-    val failed = pin.tracks.count { pin.pinStates[it.id] == PinManager.PinState.FAILED }
-    val allDone = total > 0 && done == total
-    val full = when {
-        total == 0 -> "無軌"
-        allDone -> "已釘選（$total 軌，點擊取消）"
-        done + pending > 0 -> "釘選中 $done/$total" + if (failed > 0) " · $failed 失敗" else ""
-        failed > 0 -> "釘選失敗 $failed/$total（點擊重試）"
-        else -> "釘選離線（$total 軌）"
-    }
-    val short = when {
-        total == 0 -> "無軌"
-        allDone -> "已釘選"
-        pending > 0 -> "釘選中 $done/$total"
-        failed > 0 -> "重試釘選"
-        else -> "釘選離線"
-    }
+    val summary = PinSummary.of(pin.tracks, pin.pinStates)
     OutlinedButton(
-        onClick = { if (allDone) pin.onUnpin() else pin.onPin() },
-        enabled = total > 0,
+        onClick = { if (summary.allDone) pin.onUnpin() else pin.onPin() },
+        enabled = summary.total > 0,
         modifier = modifier
             .heightIn(min = MuDimens.hitTarget)
             .testTag("pinChip")
-            .semanticsLabel(full),
+            .semantics { contentDescription = summary.fullLabel },
     ) {
-        if (pending > 0) {
+        if (summary.pending > 0) {
             CircularProgressIndicator(Modifier.size(16.dp), strokeWidth = 2.dp)
         } else {
             Icon(
-                if (allDone) Icons.Default.CheckCircle
-                else if (failed > 0) Icons.Default.Refresh
+                if (summary.allDone) Icons.Default.CheckCircle
+                else if (summary.failed > 0) Icons.Default.Refresh
                 else Icons.Default.FileDownload,
                 contentDescription = null,
             )
         }
         Spacer(Modifier.width(8.dp))
-        Text(short, maxLines = 1, overflow = TextOverflow.Ellipsis)
+        Text(summary.shortLabel, maxLines = 1, overflow = TextOverflow.Ellipsis)
     }
 }
-
-private fun Modifier.semanticsLabel(label: String): Modifier =
-    this.semantics { contentDescription = label }
 
 // MARK: 空狀態 / 歡迎
 
@@ -780,15 +763,6 @@ private fun Gone(text: String) {
     }
 }
 
-private fun totalDuration(tracks: List<Scanner.Track>): String {
-    val secs = tracks.mapNotNull { it.durationMs }.sum() / 1000
-    return if (secs >= 3600) {
-        "${secs / 3600} 小時 ${secs / 60 % 60} 分鐘"
-    } else {
-        "${maxOf(1L, secs / 60)} 分鐘"
-    }
-}
-
 // MARK: 選單
 
 /** 資料庫選單：重掃 / 更換資料夾（標題列出目前資料夾）。 */
@@ -843,7 +817,7 @@ private fun EffectsMenu() {
         Icon(
             Icons.Default.Tune,
             contentDescription = "音效：音量標準化 ${mode.label}／等化器 " +
-                if (eq.enabled) eqLabel(eq.preset) else "關閉",
+                if (eq.enabled) mu.core.DisplayFormat.eqPresetLabel(eq.preset) else "關閉",
         )
     }
     DropdownMenu(expanded = open, onDismissRequest = { open = false }) {
@@ -863,15 +837,15 @@ private fun EffectsMenu() {
             open = false
         }
         mu.core.EqSettings.PRESETS.forEach { (name, _) ->
-            CheckableItem(eqLabel(name), eq.enabled && eq.preset == name) {
+            CheckableItem(mu.core.DisplayFormat.eqPresetLabel(name), eq.enabled && eq.preset == name) {
                 saveEq(mu.core.EqSettings.preset(name, enabled = true, preamp = eq.preamp))
                 open = false
             }
         }
         HorizontalDivider()
         MenuHeader("前置增益")
-        listOf(-600, -300, 0, 300, 600).forEach { mb ->
-            CheckableItem(preampLabel(mb), eq.preamp == mb, enabled = eq.enabled) {
+        mu.core.DisplayFormat.eqPreampChoicesMb.forEach { mb ->
+            CheckableItem(mu.core.DisplayFormat.gainLabel(mb), eq.preamp == mb, enabled = eq.enabled) {
                 saveEq(mu.core.EqSettings.create(eq.bands, eq.enabled, mb, eq.preset))
                 open = false
             }
@@ -910,17 +884,3 @@ private fun CheckableItem(
     )
 }
 
-private fun preampLabel(mb: Int) = if (mb == 0) "0 dB" else "%+.0f dB".format(mb / 100.0)
-
-private fun eqLabel(name: String) = when (name) {
-    "flat" -> "平坦"
-    "rock" -> "搖滾"
-    "pop" -> "流行"
-    "jazz" -> "爵士"
-    "classical" -> "古典"
-    "bass" -> "重低音"
-    "treble" -> "高音"
-    "vocal" -> "人聲"
-    "loudness" -> "響度"
-    else -> name
-}

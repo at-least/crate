@@ -3,20 +3,21 @@ import Foundation
 
 /// 由封面取「氛圍色」——現正播放頁的頂部淡染用。
 ///
-/// 做法：整張降到 1×1 取平均色，只留色相與飽和度；亮度/飽和度由呼叫端統一正規化，
-/// 避免亮封面染出刺眼的背景、暗封面染不出東西。灰階封面（平均飽和度過低）回 nil，
+/// 做法：整張降到 1×1 取平均色，只留色相；亮度/飽和度統一由呼叫端固定，
+/// 避免亮封面染出刺眼的背景、暗封面染不出東西，也讓染色強度與「無封面」時的
+/// 專輯色相退回路徑視覺一致。灰階封面（平均飽和度過低）回 nil，
 /// 由呼叫端退回專輯 id 的穩定色相或不染色。
 public enum ArtworkTint {
 
     /// 灰階判定門檻：平均飽和度低於此值視為無色。
     public static let minSaturation = 0.08
 
-    /// 回傳 (hue, saturation)，皆為 0…1；灰階或解碼失敗回 nil。
-    public static func hueSaturation(from image: CGImage) -> (hue: Double, saturation: Double)? {
+    /// 回傳色相（0…1）；灰階或解碼失敗回 nil。
+    public static func hue(from image: CGImage) -> Double? {
         guard let rgb = averageRGB(of: image) else { return nil }
         let hsb = Self.hsb(r: rgb.r, g: rgb.g, b: rgb.b)
         guard hsb.s >= minSaturation else { return nil }
-        return (hsb.h, hsb.s)
+        return hsb.h
     }
 
     /// 1×1 降取樣的平均色（0…1）。
