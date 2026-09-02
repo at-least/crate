@@ -215,6 +215,7 @@ CarPlay（Media3 原生支援 + CarPlay framework）、桌面 Widget、Last.fm s
 > 2026-09-02 進度：**UI 改版（三平台）**——目標是「Apple 式簡潔 + 合 HIG」。Apple 端：移除裝飾性漸層方塊/圓體字/自訂色，一律走系統語意（Dynamic Type 文字樣式、`.primary/.secondary/.tint`、系統材質與控制項）；iOS 資料庫改**分段控制（專輯／清單）**取代主內容區的橫向輪播（避免與縱向捲動的手勢衝突），搜尋時忽略分段、兩類分組列出；專輯頁封面/標題/藝人 + 膠囊主次按鈕；現正播放改為標題列右側 `⋯` 子選單（音量標準化／等化器／前置增益各自 submenu，取代展開成一長串的內嵌 Picker）、封面放大、暫停縮放尊重「減少動態效果」、背景改回系統底色；迷你播放列去掉描邊、控制鍵 44pt。所有 UI 測試識別碼與 `pinChip` 文案不變。macOS popover 同步（歡迎頁、空狀態、播放列 accessibility label、進度條成為單一有值元素、選單分區）。Android：新增 `ui/Theme.kt`（Material 3 動態色 + `values-night` 深色）與 `ui/Artwork.kt`（內嵌圖 → 資料夾封面 → **與 Apple 同一 djb2 色相**的佔位漸層），主畫面重寫為 LargeTopAppBar + 搜尋 + 分段按鈕 + 封面網格 + Surface 迷你播放列（含播放狀態監聽——原本直接讀 `controller.isPlaying` 不會重組），選單改用圖示表示選取（移除 `"✓ "` 文字打勾）。
 > **順手修掉的實 bug**：Android `setContent { MuTheme { MuApp() } }` 的 `MuApp()` 解析到 **`class MuApp : Application` 的建構子**而非同名 composable，畫面整片空白且不報錯；composable 更名 `MuRoot()` 後正常（模擬器截圖佐證）。
 > 驗證：iOS UI 測試 2 條全綠、iOS/macOS/Android 三平台建置與單元測試全綠、iPhone 17 模擬器明暗各 6 張截圖、Android 模擬器明暗截圖。
+> 2026-09-03 進度：**現正播放的氛圍色背景**（UI 改版的收尾，使用者選 B 案）——系統底色之上再鋪一層由上往下收乾淨的專輯色漸層（34% → 10% → 透明），文字/進度/控制區維持純底色，對比不受影響。色源：**有封面 → 封面平均色**（MuKit `ArtworkTint`：1×1 降取樣取平均，只留色相與飽和度，亮度統一正規化，避免亮封面染出刺眼背景）；**灰階封面 → 不染色**（亂染比不染難看）；**沒有封面 → 專輯 id 的穩定色相**（與佔位圖同色）。`ArtworkTintTests` 4 條（三原色色相、灰階/純黑/純白回 nil、近灰低於門檻、HSB 轉換）。macOS 沒有對應畫面（popover 只有底部播放列），不套用。
 > 尚未做：CarPlay（需你向 Apple 申請 CarPlay audio entitlement）、iOS/macOS Widget（見上）、Last.fm scrobble（選配）。
 
 ## 8. 驗證策略（誰驗什麼）

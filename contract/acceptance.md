@@ -48,3 +48,4 @@
 - [E3b] iOS/macOS WidgetKit widget — 待 App Group 能力確認（付費開發者帳號）
 - [E4] EQ / 正增益放大：契約 model.md §1.10（`eq_cases/` 三方 byte-identical）+ 兩平台 DSP 接線（Apple MTAudioProcessingTap／Android Media3 AudioProcessor）與性質測試 — ✅ 2026-08-29 機器（契約 + DSP 性質 + Android buffer 層 + iOS 播放 UI 測試）；聽感（各 preset 是否合理、正增益是否過度削峰）屬人
 - [E5] UI 改版（三平台）：Apple 端一律系統語意（Dynamic Type 文字樣式、語意顏色/材質、系統控制項），iOS 資料庫改分段控制（專輯／清單，取代橫向輪播）、現正播放單一主動作 + 子選單音效、迷你播放列 44pt 觸控區；Android 改 Material 3（動態色 + 深色主題、LargeTopAppBar、分段按鈕、專輯封面、Surface 迷你播放列、選單以圖示表示選取），並補上 Android 封面載入（內嵌圖／資料夾封面／與 Apple 同一 djb2 佔位漸層）— ✅ 2026-09-02 機器（iOS UI 測試 2 條全綠、三平台建置、iOS 明暗雙主題 6 張截圖、Android 模擬器明暗截圖）；實機觀感與 Dynamic Type 放大檢查屬人
+- [E5b] 現正播放氛圍色背景（頂部漸層；封面平均色 → 灰階不染 → 無封面用專輯色相）：MuKit `ArtworkTint` + 4 條單元測試 — ✅ 2026-09-03 機器（單元測試 + 三種色源各拍明暗截圖）；實機觀感屬人

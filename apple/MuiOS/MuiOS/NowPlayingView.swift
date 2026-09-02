@@ -4,13 +4,20 @@ import MuKit
 
 /// 現正播放（全頁 sheet）：大封面（暫停時縮小）、標題/藝人、可拖曳進度條、
 /// 上一首/播放/下一首、音效選單與 AirPlay。
-/// 背景維持系統底色——封面就是唯一的顏色來源（HIG deference）。
+/// 背景是封面的氛圍色：從上緣往下收乾淨，文字與控制區維持系統底色（對比不受影響）。
 struct NowPlayingView: View {
     @ObservedObject var player: PlayerManager
     @EnvironmentObject private var model: AppModel
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var scrubbing = false
     @State private var scrubValue: Double = 0
+    @State private var ambient: Ambient = .albumHue
+
+    /// 頂部氛圍色的來源：尚未判定/無封面 → 專輯 id 的穩定色相（同佔位圖）；
+    /// 有封面 → 封面平均色；灰階封面 → 不染色（亂染比不染難看）。
+    private enum Ambient: Equatable {
+        case albumHue, plain, artwork(Color)
+    }
 
     private var track: Track? { player.nowTrack }
     private var albumKey: String { track?.albumId ?? "" }
@@ -101,8 +108,32 @@ struct NowPlayingView: View {
         }
         .padding(.horizontal, 28)
         .padding(.bottom, 20)
-        .background(Color(.systemBackground))
+        .background(AmbientBackground(tint: ambientTint))
+        .animation(.easeOut(duration: 0.35), value: ambientTint)
         .presentationDragIndicator(.visible)
+        .task(id: albumKey) {
+            ambient = .albumHue
+            guard let track, let url = model.artworkURL(for: track.albumId),
+                  let image = await model.artwork.image(key: albumKey, trackURL: url) else {
+                return  // 沒有封面 → 維持專輯色相（與佔位圖同色）
+            }
+            ambient = ArtworkTint.hueSaturation(from: image).map {
+                .artwork(Color(hue: $0.hue,
+                               saturation: min(0.6, max(0.35, $0.saturation)),
+                               brightness: 0.6))
+            } ?? .plain
+        }
+    }
+
+    private var ambientTint: Color? {
+        switch ambient {
+        case .albumHue:
+            return Color(hue: PlaceholderArt.hue(for: albumKey), saturation: 0.55, brightness: 0.6)
+        case .plain:
+            return nil
+        case .artwork(let color):
+            return color
+        }
     }
 
     private var effectsLabel: String {
@@ -139,6 +170,22 @@ struct NowPlayingView: View {
         .buttonStyle(.plain)
         .accessibilityLabel(label)
         .accessibilityIdentifier(id)
+    }
+}
+
+/// 現正播放背景：系統底色 + 頂部氛圍色漸層（下半部收乾淨，不影響文字對比）。
+private struct AmbientBackground: View {
+    let tint: Color?
+
+    var body: some View {
+        ZStack {
+            Color(.systemBackground)
+            if let tint {
+                LinearGradient(colors: [tint.opacity(0.34), tint.opacity(0.10), .clear],
+                               startPoint: .top, endPoint: .bottom)
+            }
+        }
+        .ignoresSafeArea()
     }
 }
 
