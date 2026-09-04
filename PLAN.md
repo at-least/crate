@@ -49,7 +49,6 @@
 | D11 | GDrive OAuth **申請延後到實際要上 production 前才做**（2026-08-27 決定） | D10 後 GDrive 不阻塞任何開發；開發期申請無收益——Testing 模式 refresh token 7 天就過期，太早申請反而要反覆重授權。操作文件已備妥（docs/gdrive-setup.md），屆時照做約 10 分鐘 | 現在就並行申請（無收益，7 天 token 過期擾人） |
 | D12 | **唯讀重新定位**（2026-08-27）：app 對雲端一律唯讀；契約移除 putText/ConflictError/LWW 衝突語意與 mu-state.json；進度/收藏改裝置本機 DB；雲端採「同一雲端同一庫」（兩平台各實作 provider 讀同一份資料夾） | 需求本質是「把雲端資料夾當音樂庫讀取」——單向資料流下衝突語義維護成本大於價值；清單編輯留在雲端原生工具即可 | m3u8 雙向編輯 + mu-state.json 跨裝置同步（原 Phase 3 方案） |
 | D13 | **下載層內容定址**（2026-08-29）：支援多 provider、單一 active 庫（換庫＝索引重掃，但下載不重來）——離線副本存 `downloads/<sha256>`（bytes 相同＝同一份，跨庫只抓一次）；pins 記錄按 (root, track_id) 換庫休眠、切回重連（sync 後 rev 重驗，hash 即終極 rev）；unpin 以 content_hash 引用計數 GC；儲存與顯示解耦（狀態只載當前 root，顯示永遠單庫視角） | 使用者語意「兩朵雲存了同樣的檔案＝不用重新抓」；雲端 API 免費附贈內容指紋（Drive md5Checksum / Dropbox content_hash），mapping 最便宜處正是重抓最貴處 | root-scoped 下載（跨庫同相對路徑撞 id＋重抓浪費）；「同一首歌」跨版本自動替換（AcoustID 指紋——靜播錯版風險，刻意不做）；合併多雲單一視圖（身分/dedup/部分失效/清單歸屬全破產） |
-| D14 | **加開 SFTP / SMB 後端**（2026-09-05）：兩者在契約上是同一種東西——遠端檔案系統，無變更日誌、無原生內容指紋——所以 provider.md 不寫兩節，而是把 §6 本地資料夾提升為「檔案系統型 provider」家族，SFTP/SMB 各是一個實例（§11）；核心層只認 `FsTransport` + `CredentialSource` 兩個注入介面，協定細節全在 App 層 | D3 早已預留（provider 抽象層，未來可加 OneDrive/WebDAV）；自架/NAS 使用者不必把音樂搬上雲端，而 §6 的語意（rev=size:mtime、全量 walk 比對快照、改名=removed+added）本來就是為這種後端寫的 | 各寫一套 provider（語意會飄，兩份 fixtures）；把 SFTP/SMB 塞進 §8/§9 的雲端形狀（沒有 OAuth、沒有伺服器 cursor、沒有 checksum，硬套只會多出四個 not-supported） |
 
 ## 4. 架構
 

@@ -25,7 +25,6 @@ contract/    兩套核心的共同規格（唯一事實來源）
     cases/         26 個掃描器案例
     sync_cases/    6 個同步引擎案例（+ sync_assets/ 共享音訊資產）
     err_cases/     錯誤語意案例（重試政策）
-    remotefs_cases/ 14 個 SFTP/SMB 案例（provider.md §11）
 design/icon/ 圖示原稿（SVG 主圖 + 兩平台匯出）
 docs/        雲端 provider 的申請設定筆記
 ```
@@ -43,7 +42,6 @@ docs/        雲端 provider 的申請設定筆記
 | 契約（參考實作重產） | `python3 contract/fixtures/generate.py`（需 ffmpeg） | ✅ 26 案例 |
 | 同步引擎（參考實作重放） | `python3 contract/fixtures/sync_generate.py --check`（無 ffmpeg，CI 用） | ✅ 6 案例 |
 | 錯誤語意（重試重放） | `python3 contract/fixtures/err_generate.py --check`（無 ffmpeg，CI 用） | ✅ 7 條目 |
-| 遠端檔案系統（SFTP/SMB） | `python3 contract/fixtures/remotefs_generate.py --check`（無 ffmpeg，CI 用） | ✅ 14 案例 |
 | Android core | `crate-android` 倉庫：`./gradlew :core:test` | ✅ 全綠 |
 | Apple CrateCore | `crate-apple` 倉庫：`cd CrateCore && swift test` | ✅ macOS（Swift 6.2.4, arm64）+ Linux Swift 6.1 雙驗通過（2026-08-27） |
 

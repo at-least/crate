@@ -35,7 +35,6 @@
 
 ## Phase 3（擴充，選配；D12 後原「同步閉環」相位取消）
 - [D1] Dropbox provider 讀同一庫：契約測試綠（provider.md §9；`dropbox_cases/` 三方 byte-identical）— ✅ 2026-08-29 核心層（機器）；掃描同一資料夾索引與 GDrive 一致（人）— 依 D11 隨 OAuth 申請延後
-- [D3] SFTP / SMB provider 讀同一庫：契約測試綠（provider.md §11；`remotefs_cases/` 三方 byte-identical）— ✅ 2026-09-05 核心層（機器）；接真 sshd 與真 samba share 掃描播放（人，需自架或 NAS）
 - [D2] macOS app（選單列常駐）播放同一庫（人，Mac）— 2026-08-28 實作上線（CrateMac：選單列 popover、瀏覽/播放/釘選；MU_ROOT 冒煙已驗掃描落庫與 root 持久化）；真機點開選單列確認屬人驗
 
 ## 通用品質門檻（每 Phase 結束跑）
