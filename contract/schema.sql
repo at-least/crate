@@ -1,4 +1,4 @@
--- Mu · contract/schema.sql
+-- Crate · contract/schema.sql
 -- 唯一事實來源。Android (Room) 與 Apple (GRDB/raw sqlite3) 都從這份檔案出發。
 -- 版本：v0.4（ReplayGain：tracks.rg_track_mb/rg_album_mb，model.md §1.9）。v0.3 = D13 pins root-scoped/content_hash。
 -- schema migration 一律加新檔 schema/NNN_*.sql，不改這份歷史。

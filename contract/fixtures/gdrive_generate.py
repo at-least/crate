@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Mu GDrive provider 契約 fixtures 產生器（兼 Python 參考實作）
+Crate GDrive provider 契約 fixtures 產生器（兼 Python 參考實作）
 
 - provider.md §8：GDriveProvider（files.list / changes / files.get?alt=media；節點表 → path；md5 = rev；
   reset；§8.5 錯誤對應套 §2.1 RetryPolicy）

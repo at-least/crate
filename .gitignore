@@ -2,7 +2,7 @@
 android/.gradle/
 android/build/
 android/*/build/
-apple/MuCore/.build/
+apple/CrateCore/.build/
 
 # tmp
 *.log

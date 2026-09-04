@@ -1,4 +1,4 @@
-# Mu
+# Crate
 
 個人雲端音樂庫播放器（Dropbox / Google Drive 當後端，**唯讀**——見 PLAN D12）。iOS + macOS（Swift）、Android（Kotlin）。
 計畫書見 [PLAN.md](PLAN.md)。
@@ -17,7 +17,7 @@ contract/    兩套核心的共同規格（唯一事實來源）
     sync_cases/    6 個同步引擎案例（+ sync_assets/ 共享音訊資產）
     err_cases/     錯誤語意案例（重試政策）
 android/     Kotlin core（純 JVM，跑契約測試）+ Compose app（Media3 播放 + Room 索引持久化）
-apple/       MuCore Swift package（跑契約測試）+ 之後的 iOS/macOS app
+apple/       CrateCore Swift package（跑契約測試）+ 之後的 iOS/macOS app
 ```
 
 ## 跑測試
@@ -28,7 +28,7 @@ apple/       MuCore Swift package（跑契約測試）+ 之後的 iOS/macOS app
 | 同步引擎（參考實作重放） | `python3 contract/fixtures/sync_generate.py --check`（無 ffmpeg，CI 用） | ✅ 6 案例 |
 | 錯誤語意（重試重放） | `python3 contract/fixtures/err_generate.py --check`（無 ffmpeg，CI 用） | ✅ 7 條目 |
 | Android core | `cd android && ./gradlew :core:test` | ✅ 全綠 |
-| Apple MuCore | `cd apple/MuCore && swift test` | ✅ macOS（Swift 6.2.4, arm64）+ Linux Swift 6.1 雙驗通過（2026-08-27） |
+| Apple CrateCore | `cd apple/CrateCore && swift test` | ✅ macOS（Swift 6.2.4, arm64）+ Linux Swift 6.1 雙驗通過（2026-08-27） |
 
 ## 鐵律
 

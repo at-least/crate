@@ -6,8 +6,8 @@
 
 1. **建 app**：[dropbox.com/developers/apps](https://www.dropbox.com/developers/apps) → Create app
    - API：**Scoped access**
-   - 存取範圍：**Full Dropbox**（音樂庫多半不在 app 專屬資料夾內；若你願意把庫放進 `Apps/Mu/`，可改 App folder）
-   - 名稱：`Mu`（全域唯一，被占用就加後綴）
+   - 存取範圍：**Full Dropbox**（音樂庫多半不在 app 專屬資料夾內；若你願意把庫放進 `Apps/Crate/`，可改 App folder）
+   - 名稱：`Crate`（全域唯一，被占用就加後綴）
 2. **Permissions 分頁**勾選（唯讀，對應 D12）：
    - `files.metadata.read`
    - `files.content.read`
@@ -17,8 +17,8 @@
    - **Redirect URIs** 加入：
      | 用途 | URI |
      |---|---|
-     | iOS / macOS | `music.mu.ios:/oauth2redirect` |
-     | Android | `music.mu.android:/oauth2redirect` |
+     | iOS / macOS | `at.least.crate.ios:/oauth2redirect` |
+     | Android | `at.least.crate.android:/oauth2redirect` |
      | Desktop（開發機） | `http://127.0.0.1:<port>/callback` |
 4. **回報**：App key 給 agent。
 
@@ -27,4 +27,4 @@
 - **短期 token 預設 4 小時**：授權時必須帶 `token_access_type=offline` 才會拿到 refresh token
   （已寫進 `OAuth.Config.dropbox`）。
 - **改 scope 要重新授權**：Permissions 改動不會套用到既有 token。
-- **content_hash**：list metadata 免費附帶，Mu 以它當 rev（provider.md §9.3），不需額外請求。
+- **content_hash**：list metadata 免費附帶，Crate 以它當 rev（provider.md §9.3），不需額外請求。

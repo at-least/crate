@@ -6,11 +6,11 @@ plugins {
 }
 
 android {
-    namespace = "music.mu.android"
+    namespace = "at.least.crate.android"
     compileSdk = 35
 
     defaultConfig {
-        applicationId = "music.mu.android"
+        applicationId = "at.least.crate.android"
         minSdk = 26
         targetSdk = 35
         versionCode = 1

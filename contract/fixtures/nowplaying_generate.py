@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Mu 現正播放快照契約 fixtures 產生器（兼 Python 參考實作）
+Crate 現正播放快照契約 fixtures 產生器（兼 Python 參考實作）
 
 - model.md §1.11：NowPlayingSnapshot（序列化/解析、displayState、effectivePositionMs）
 - 純整數/字串（Widget 顯示邏輯的可測部分）

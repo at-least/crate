@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Mu OAuth + PKCE 契約 fixtures 產生器（兼 Python 參考實作）
+Crate OAuth + PKCE 契約 fixtures 產生器（兼 Python 參考實作）
 
 - provider.md §10：PKCE challenge、授權 URL 組裝、回呼解析、token 交換/更新表單、
   回應解析（TokenState）、過期判定、token 端點錯誤語意
@@ -245,41 +245,41 @@ def build_scripts() -> dict[str, dict]:
         "oauth_authorize": {"entries": [
             {"type": "authorize", "name": "gdrive_mobile", "provider": "gdrive",
              "clientId": "123-abc.apps.googleusercontent.com",
-             "redirectUri": "music.mu.ios:/oauth2redirect",
+             "redirectUri": "at.least.crate.ios:/oauth2redirect",
              "verifier": verifier, "state": "st-1"},
             {"type": "authorize", "name": "gdrive_loopback", "provider": "gdrive",
              "clientId": "123-abc.apps.googleusercontent.com",
              "redirectUri": "http://127.0.0.1:7777/callback",
              "verifier": verifier, "state": "st 2"},
             {"type": "authorize", "name": "dropbox_mobile", "provider": "dropbox",
-             "clientId": "dbx-key", "redirectUri": "music.mu.android:/oauth2redirect",
+             "clientId": "dbx-key", "redirectUri": "at.least.crate.android:/oauth2redirect",
              "verifier": verifier, "state": "st-3"},
             {"type": "authorize", "name": "unicode_state", "provider": "dropbox",
-             "clientId": "dbx-key", "redirectUri": "music.mu.android:/oauth2redirect",
+             "clientId": "dbx-key", "redirectUri": "at.least.crate.android:/oauth2redirect",
              "verifier": "short-verifier", "state": "狀態/+&=?"},
         ]},
         "oauth_redirect": {"entries": [
             {"type": "redirect", "name": "ok",
-             "url": "music.mu.ios:/oauth2redirect?code=abc123&state=st-1", "state": "st-1"},
+             "url": "at.least.crate.ios:/oauth2redirect?code=abc123&state=st-1", "state": "st-1"},
             {"type": "redirect", "name": "ok_percent_encoded",
              "url": "http://127.0.0.1:7777/callback?code=a%2Fb%2Bc&state=st%202", "state": "st 2"},
             {"type": "redirect", "name": "denied",
-             "url": "music.mu.ios:/oauth2redirect?error=access_denied&state=st-1", "state": "st-1"},
+             "url": "at.least.crate.ios:/oauth2redirect?error=access_denied&state=st-1", "state": "st-1"},
             {"type": "redirect", "name": "state_mismatch",
-             "url": "music.mu.ios:/oauth2redirect?code=abc123&state=other", "state": "st-1"},
+             "url": "at.least.crate.ios:/oauth2redirect?code=abc123&state=other", "state": "st-1"},
             {"type": "redirect", "name": "denied_state_mismatch",
-             "url": "music.mu.ios:/oauth2redirect?error=access_denied&state=x", "state": "st-1"},
+             "url": "at.least.crate.ios:/oauth2redirect?error=access_denied&state=x", "state": "st-1"},
             {"type": "redirect", "name": "no_query",
-             "url": "music.mu.ios:/oauth2redirect", "state": "st-1"},
+             "url": "at.least.crate.ios:/oauth2redirect", "state": "st-1"},
             {"type": "redirect", "name": "no_code",
-             "url": "music.mu.ios:/oauth2redirect?state=st-1", "state": "st-1"},
+             "url": "at.least.crate.ios:/oauth2redirect?state=st-1", "state": "st-1"},
             {"type": "redirect", "name": "with_fragment",
-             "url": "music.mu.ios:/oauth2redirect?code=abc&state=st-1#frag", "state": "st-1"},
+             "url": "at.least.crate.ios:/oauth2redirect?code=abc&state=st-1#frag", "state": "st-1"},
         ]},
         "oauth_forms": {"entries": [
             {"type": "form", "name": "gdrive", "clientId": "123-abc.apps.googleusercontent.com",
              "code": "4/0Ab_c-d", "verifier": verifier,
-             "redirectUri": "music.mu.ios:/oauth2redirect", "refreshToken": "1//rt-token"},
+             "redirectUri": "at.least.crate.ios:/oauth2redirect", "refreshToken": "1//rt-token"},
             {"type": "form", "name": "dropbox", "clientId": "dbx-key", "code": "code+with/chars",
              "verifier": "short-verifier", "redirectUri": "http://127.0.0.1:7777/callback",
              "refreshToken": "rt&x=1"},
@@ -358,7 +358,7 @@ def main():
     url = r["gdrive_mobile"]["url"]
     assert url.startswith("https://accounts.google.com/o/oauth2/v2/auth?client_id=")
     assert "code_challenge_method=S256" in url and url.endswith("&access_type=offline&prompt=consent")
-    assert "%3A%2F%2F" in url and "redirect_uri=music.mu.ios%3A%2Foauth2redirect" in url
+    assert "%3A%2F%2F" in url and "redirect_uri=at.least.crate.ios%3A%2Foauth2redirect" in url
     assert r["gdrive_loopback"]["url"].count("state=st%202") == 1, "空白 → %20"
     assert r["dropbox_mobile"]["url"].endswith("&token_access_type=offline")
     assert r["gdrive_mobile"]["challenge"] == r["gdrive_loopback"]["challenge"], "同 verifier 同 challenge"

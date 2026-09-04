@@ -1,0 +1,295 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	objectVersion = 56;
+	classes = {
+	};
+	objects = {
+
+/* Begin PBXBuildFile section */
+		2B0000000000000000000020 /* CrateMacApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2B0000000000000000000030 /* CrateMacApp.swift */; };
+		2B0000000000000000000021 /* MacModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2B0000000000000000000031 /* MacModel.swift */; };
+		2B0000000000000000000022 /* MacContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2B0000000000000000000032 /* MacContentView.swift */; };
+		2B000000000000000000001A /* CrateCore in Frameworks */ = {isa = PBXBuildFile; productRef = 2B000000000000000000001C /* CrateCore */; };
+		2B000000000000000000001B /* CrateKit in Frameworks */ = {isa = PBXBuildFile; productRef = 2B000000000000000000002C /* CrateKit */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		2B0000000000000000000030 /* CrateMacApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CrateMacApp.swift; sourceTree = "<group>"; };
+		2B0000000000000000000031 /* MacModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacModel.swift; sourceTree = "<group>"; };
+		2B0000000000000000000032 /* MacContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacContentView.swift; sourceTree = "<group>"; };
+		2B000000000000000000001E /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		2B000000000000000000000E /* CrateMac.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = CrateMac.app; sourceTree = BUILT_PRODUCTS_DIR; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		2B0000000000000000000010 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				2B000000000000000000001A /* CrateCore in Frameworks */,
+				2B000000000000000000001B /* CrateKit in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		2B000000000000000000000B /* main */ = {
+			isa = PBXGroup;
+			children = (
+				2B0000000000000000000018 /* CrateMac */,
+				2B000000000000000000001E /* Info.plist */,
+				2B000000000000000000000C /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		2B0000000000000000000018 /* CrateMac */ = {
+			isa = PBXGroup;
+			children = (
+				2B0000000000000000000030 /* CrateMacApp.swift */,
+				2B0000000000000000000031 /* MacModel.swift */,
+				2B0000000000000000000032 /* MacContentView.swift */,
+			);
+			path = CrateMac;
+			sourceTree = "<group>";
+		};
+		2B000000000000000000000C /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				2B000000000000000000000E /* CrateMac.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		2B000000000000000000000D /* CrateMac */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 2B0000000000000000000016 /* Build configuration list for PBXNativeTarget "CrateMac" */;
+			buildPhases = (
+				2B000000000000000000000F /* Sources */,
+				2B0000000000000000000010 /* Frameworks */,
+				2B0000000000000000000011 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = CrateMac;
+			packageProductDependencies = (
+				2B000000000000000000001C /* CrateCore */,
+				2B000000000000000000002C /* CrateKit */,
+			);
+			productName = CrateMac;
+			productReference = 2B000000000000000000000E /* CrateMac.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		2B000000000000000000000A /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 2600;
+				LastUpgradeCheck = 2600;
+				TargetAttributes = {
+					2B000000000000000000000D = {
+						CreatedOnToolsVersion = 26.3;
+					};
+				};
+			};
+			buildConfigurationList = 2B0000000000000000000017 /* Build configuration list for PBXProject "CrateMac" */;
+			compatibilityVersion = "Xcode 14.0";
+			developmentRegion = "zh-Hant";
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+				"zh-Hant",
+			);
+			mainGroup = 2B000000000000000000000B /* main */;
+			packageReferences = (
+				2B000000000000000000002B /* CrateCore */,
+			);
+			productRefGroup = 2B000000000000000000000C /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				2B000000000000000000000D /* CrateMac */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		2B0000000000000000000011 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		2B000000000000000000000F /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				2B0000000000000000000020 /* CrateMacApp.swift in Sources */,
+				2B0000000000000000000021 /* MacModel.swift in Sources */,
+				2B0000000000000000000022 /* MacContentView.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		2B0000000000000000000014 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_NO_COMMON_BLOCKS = YES;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MACOSX_DEPLOYMENT_TARGET = 13.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "$(inherited) DEBUG";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+		2B0000000000000000000015 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_NO_COMMON_BLOCKS = YES;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MACOSX_DEPLOYMENT_TARGET = 13.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				VALIDATE_PRODUCT = YES;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
+		2B0000000000000000000012 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 13.0;
+				MARKETING_VERSION = 0.1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = at.least.crate.mac;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+				SUPPORTED_PLATFORMS = macosx;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+		2B0000000000000000000013 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 13.0;
+				MARKETING_VERSION = 0.1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = at.least.crate.mac;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+				SUPPORTED_PLATFORMS = macosx;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		2B0000000000000000000016 /* Build configuration list for PBXNativeTarget "CrateMac" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				2B0000000000000000000012 /* Debug */,
+				2B0000000000000000000013 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		2B0000000000000000000017 /* Build configuration list for PBXProject "CrateMac" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				2B0000000000000000000014 /* Debug */,
+				2B0000000000000000000015 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+
+/* Begin XCLocalSwiftPackageReference section */
+		2B000000000000000000002B /* CrateCore */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = ../CrateCore;
+		};
+/* End XCLocalSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		2B000000000000000000001C /* CrateCore */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 2B000000000000000000002B /* CrateCore */;
+			productName = CrateCore;
+		};
+		2B000000000000000000002C /* CrateKit */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 2B000000000000000000002B /* CrateCore */;
+			productName = CrateKit;
+		};
+/* End XCSwiftPackageProductDependency section */
+	};
+	rootObject = 2B000000000000000000000A /* Project object */;
+}

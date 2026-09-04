@@ -1,6 +1,6 @@
 # Provider 介面語意（provider.md）
 
-> 契約 v0.4（§8 GDrive、§9 Dropbox、§10 OAuth+PKCE）。實作於 MuCore(swift) / mu-core(kotlin)。v0 只釘**語意**；類別簽名各語言自便。
+> 契約 v0.4（§8 GDrive、§9 Dropbox、§10 OAuth+PKCE）。實作於 CrateCore(swift) / crate-core(kotlin)。v0 只釘**語意**；類別簽名各語言自便。
 
 ## 1. 介面
 
@@ -203,7 +203,7 @@ token 交換/更新、過期判定、錯誤語意）全在核心層，可測。
 | `scope` | `https://www.googleapis.com/auth/drive.readonly` | `files.metadata.read files.content.read` |
 | 額外授權參數 | `access_type=offline`、`prompt=consent`（確保拿到 refresh token） | `token_access_type=offline` |
 
-`redirectUri`：行動端用自訂 scheme（`music.mu.ios:/oauth2redirect`、`music.mu.android:/oauth2redirect`），
+`redirectUri`：行動端用自訂 scheme（`at.least.crate.ios:/oauth2redirect`、`at.least.crate.android:/oauth2redirect`），
 桌面/開發機用 loopback（`http://127.0.0.1:<port>/callback`）。
 
 ### 10.2 PKCE

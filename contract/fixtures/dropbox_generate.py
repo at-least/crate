@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Mu Dropbox provider 契約 fixtures 產生器（兼 Python 參考實作）
+Crate Dropbox provider 契約 fixtures 產生器（兼 Python 參考實作）
 
 - provider.md §9：DropboxProvider（list_folder / continue / get_latest_cursor / download+Range；
   節點表 key=path_lower；content_hash = rev；reset；§9.5 錯誤對應套 §2.1）

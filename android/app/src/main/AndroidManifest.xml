@@ -10,10 +10,10 @@
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
     <application
-        android:name=".MuApp"
-        android:label="Mu"
+        android:name=".CrateApp"
+        android:label="Crate"
         android:supportsRtl="true"
-        android:theme="@style/Theme.Mu">
+        android:theme="@style/Theme.Crate">
 
         <activity
             android:name=".MainActivity"
@@ -34,14 +34,14 @@
             </intent-filter>
         </service>
         <receiver
-            android:name=".MuWidgetReceiver"
+            android:name=".CrateWidgetReceiver"
             android:exported="false">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
             </intent-filter>
             <meta-data
                 android:name="android.appwidget.provider"
-                android:resource="@xml/mu_widget_info" />
+                android:resource="@xml/crate_widget_info" />
         </receiver>
     </application>
 </manifest>

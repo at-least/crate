@@ -1,4 +1,4 @@
-# Mu 資料模型與掃描器規格（model.md）
+# Crate 資料模型與掃描器規格（model.md）
 
 > 契約 v0.1 · Phase 0。兩套核心（Kotlin / Swift）的掃描器對同輸入必須產生 **byte-identical** 的 ScanResult JSON。本文定義到那個等級。
 

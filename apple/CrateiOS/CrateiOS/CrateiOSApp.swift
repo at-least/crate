@@ -1,0 +1,32 @@
+import SwiftUI
+import CrateKit
+
+/// App 進入點：持有 DB 與釘選管理器（≈ Android CrateApp）。
+@main
+struct CrateiOSApp: App {
+    @StateObject private var model: AppModel
+
+    init() {
+        let fm = FileManager.default
+        let support = fm.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
+        try? fm.createDirectory(at: support, withIntermediateDirectories: true)
+        let db: CrateDatabase
+        do {
+            db = try CrateDatabase(url: support.appendingPathComponent("mu.db"))
+        } catch {
+            fatalError("mu.db open failed: \(error)")
+        }
+        let pinManager = PinManager(
+            db: db,
+            downloadsDir: support.appendingPathComponent("downloads"),
+            legacyPinsDir: support.appendingPathComponent("pins"))
+        _model = StateObject(wrappedValue: AppModel(db: db, pinManager: pinManager))
+    }
+
+    var body: some Scene {
+        WindowGroup {
+            ContentView()
+                .environmentObject(model)
+        }
+    }
+}

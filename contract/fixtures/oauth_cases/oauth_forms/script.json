@@ -6,7 +6,7 @@
       "clientId": "123-abc.apps.googleusercontent.com",
       "code": "4/0Ab_c-d",
       "verifier": "muVerifier-0123456789abcdefghijklmnopqrstuvwxyz~._-",
-      "redirectUri": "music.mu.ios:/oauth2redirect",
+      "redirectUri": "at.least.crate.ios:/oauth2redirect",
       "refreshToken": "1//rt-token"
     },
     {

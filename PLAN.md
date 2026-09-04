@@ -1,4 +1,4 @@
-# Mu — 個人雲端音樂庫播放器 · 專案計畫書
+# Crate — 個人雲端音樂庫播放器 · 專案計畫書
 
 > 版本 1.9 · 2026-08-29（D13；GDrive/Dropbox 核心 + 視窗化 + OAuth/PKCE 核心；Phase 4 ReplayGain、EQ/正增益、Widget 契約 + Android）
 > 一人 + AI agent 開發。本文件是唯一事實來源（single source of truth）。
@@ -7,7 +7,7 @@
 
 ## 1. 一句話定位
 
-**Mu** 是一個把 Dropbox / Google Drive 當成音樂庫後端的跨平台原生音樂播放器：
+**Crate** 是一個把 Dropbox / Google Drive 當成音樂庫後端的跨平台原生音樂播放器：
 不用自架伺服器，掃描雲端資料夾建立索引，串流播放、離線釘選。
 **唯讀定位（D12）**：雲端資料夾是唯一真相，app 只讀不寫——播放清單是庫裡的 `.m3u8` 檔（在雲端管理），播放進度/收藏存裝置本機 DB。
 
@@ -36,7 +36,7 @@
 
 | # | 決策 | 理由 | 捨棄的替代方案 |
 |---|---|---|---|
-| D1 | 專案名 **Mu** | App Store/Play 無同名音樂播放器；商標風險低（弱商標）；品牌故事好（Mu=無） | — |
+| D1 | 專案名 **Crate** | App Store/Play 無同名音樂播放器；商標風險低（弱商標）；品牌故事好（Crate=無） | — |
 | D2 | 同步後端 = **Dropbox / Google Drive** | 免架伺服器、空間便宜；生態有先例（Astiga、CloudPlayer） | Navidrome 自架（要多架伺服器）；Syncthing（狀態同步要自做） |
 | D3 | **Provider 抽象層** | list/delta/stream/put 一套介面，未來可加 OneDrive/WebDAV/本地資料夾 | 綁死單一雲端 API |
 | D4 | 播放清單 = 雲端資料夾裡的 **.m3u8 檔** | 清單同步完全免實作，雲端硬碟原生的能力 | 自製清單同步協定 |
@@ -67,14 +67,14 @@ mu/
 │  └─ app/                    Compose UI + Media3 播放 + Service
 │
 └─ apple/                     ← Swift
-   ├─ MuCore/                 Swift package：provider/delta/掃描/m3u8/DB（跑 contract 測試）
-   ├─ MuiOS/                  iOS app（SwiftUI + AVFoundation）
-   └─ MuMac/                  macOS app（與 iOS 共用 MuCore）
+   ├─ CrateCore/                 Swift package：provider/delta/掃描/m3u8/DB（跑 contract 測試）
+   ├─ CrateiOS/                  iOS app（SwiftUI + AVFoundation）
+   └─ CrateMac/                  macOS app（與 iOS 共用 CrateCore）
 ```
 
 ### 分層原則
 - **contract/**：無任何平台代碼。fixtures 用「同輸入 → 同 JSON 輸出」斷言，兩邊 CI 都跑。
-- **核心層**（MuCore / android-core）：純邏輯，不 import 任何 UI/播放框架，單元測試覆蓋 ≥90%。
+- **核心層**（CrateCore / android-core）：純邏輯，不 import 任何 UI/播放框架，單元測試覆蓋 ≥90%。
 - **App 層**：薄。UI + 播放器接線 + 系統整合（通知/後播/CarPlay…）。業務邏輯一律下沉到核心。
 
 ## 5. 資料模型（草案，contract/ 定稿）
@@ -134,17 +134,17 @@ interface CloudProvider {
 
 ## 6. 各平台方案
 
-### Apple（MuCore + 2 apps）
+### Apple（CrateCore + 2 apps）
 | 項目 | 選擇 |
 |---|---|
 | 語言/UI | Swift 6、SwiftUI |
 | 播放 | AVFoundation（AVQueuePlayer；gapless 用 AVPlayer 接力 + `preferredForwardBufferDuration`，必要時 AVMIDI…不，必要時評估 AVAudioEngine 精控） |
-| DB | SQLite（GRDB 或 raw sqlite3——MuCore 內決定，跑同份 schema.sql） |
+| DB | SQLite（GRDB 或 raw sqlite3——CrateCore 內決定，跑同份 schema.sql） |
 | 背景/遠端控制 | MPNowPlayingInfoCenter + MPRemoteCommandCenter（免費的 SMTC 等級整合） |
 | 網路 | URLSession（range request 原生支援） |
 | OAuth | ASWebAuthenticationSession（系統體驗，無嵌入式 browser 問題） |
 | 秘密 | iOS Keychain / macOS Keychain |
-| iOS/macOS 共用 | 一個 Swift package `MuCore`，兩個薄 app target |
+| iOS/macOS 共用 | 一個 Swift package `CrateCore`，兩個薄 app target |
 | 測試 | `swift test` 跑 contract fixtures（**在 Mac 上就是你第一天跑的東西**） |
 
 ### Android（core + app）
@@ -173,7 +173,7 @@ interface CloudProvider {
    > 2026-08-27 ✅：provider.md §2.1 釘死重試政策（退避 1/2/4/8/16s、5 次重試上限、auth 立即重試一次、NotFound 不重試）+ FakeFiles putText 衝突語意；`err_cases/` fixtures 三方 byte-identical（Kotlin `RetryPolicy`/`FakeFiles`、Swift 同名）。引擎管線接線（sync 套重試）**改隨 GDrive 子步驟做**——LocalFolderProvider 無 transient/auth 錯誤來源，先接是死碼。**同日 D12：putText/ConflictError 自契約移除，err_cases 縮編為 7 條 retry 條目。**
 3. **Android 殼**（Compose + Media3 + Room）：瀏覽專輯/藝人、播放（串流/本地）、釘選、媒體通知/耳機控制、`.m3u8`。資料來源先接 LocalFolderProvider。
    > 2026-08-27 進度：垂直切片上線——`:app` 模組（Compose BOM / Material3）、`PlaybackService`（Media3 MediaSession：通知/鎖屏/耳機/音源焦點）、資料夾選擇 → SyncEngine 掃描 → 專輯網格 → 專輯音軌 → 點播（含 durationMs 顯示）。CI 加 `:app:assembleDebug` job。同日補：m3u8 playlist UI 與播放（core `resolvedItems()` 兩平台對等，解析規則=toCanonical items）、增量重掃按鈕（delta，rev 未變不重讀）、記住上次資料夾（SharedPreferences，重開自動重掃）。尚未完成：Room 持久化（目前索引在記憶體）、釘選離線。
-   > 2026-08-28 進度：**Room 持久化上線**——schema.sql v0.2 重塑（cursor/scan_errors 落庫、playlist raw 化、補 album/rev/compilation 欄位）；`:app` 加 KSP+Room（`MuApp` DB 單例、`db/MuDatabase`：Entity×6 + `loadEngineState()`/`replaceLibrary()`）；core 兩平台 `SyncEngine.exportState()/restoreState()`（+`EngineState` 測試：還原後 sync 為純 delta）。冷啟動：DB 還原 → 即時 UI → delta 同步 → 落庫；換資料夾 = 換引擎 + DB 全量置換（順手修掉 換根重用舊引擎 bug）；root 改存 DB（移除 SharedPreferences）；syncMutex 防連點/冷啟動競態。**同日：釘選離線（專輯級）上線**——`PinManager`（schema pins 狀態機 wanted→downloading→done/failed，循序佇列、應用層級 scope、行程中斷自動續傳、換庫清釘）；`PinEntity` 落 DB；專輯檢視釘選列（進度/取消）；播放 resolver 釘選副本優先；available=0 但 pinned-done 的軌仍顯示（標「離線」）可播——B5 的本地 provider 語意=來源資料夾移除後可播。已知取捨：playlist 解析仍走契約 available 集合（sync-rules §3.2-5），unavailable-pinned 軌不現身清單 UI——清單級釘選留給雲端相位。子步驟 3 至此全數完成。
+   > 2026-08-28 進度：**Room 持久化上線**——schema.sql v0.2 重塑（cursor/scan_errors 落庫、playlist raw 化、補 album/rev/compilation 欄位）；`:app` 加 KSP+Room（`CrateApp` DB 單例、`db/CrateDatabase`：Entity×6 + `loadEngineState()`/`replaceLibrary()`）；core 兩平台 `SyncEngine.exportState()/restoreState()`（+`EngineState` 測試：還原後 sync 為純 delta）。冷啟動：DB 還原 → 即時 UI → delta 同步 → 落庫；換資料夾 = 換引擎 + DB 全量置換（順手修掉 換根重用舊引擎 bug）；root 改存 DB（移除 SharedPreferences）；syncMutex 防連點/冷啟動競態。**同日：釘選離線（專輯級）上線**——`PinManager`（schema pins 狀態機 wanted→downloading→done/failed，循序佇列、應用層級 scope、行程中斷自動續傳、換庫清釘）；`PinEntity` 落 DB；專輯檢視釘選列（進度/取消）；播放 resolver 釘選副本優先；available=0 但 pinned-done 的軌仍顯示（標「離線」）可播——B5 的本地 provider 語意=來源資料夾移除後可播。已知取捨：playlist 解析仍走契約 available 集合（sync-rules §3.2-5），unavailable-pinned 軌不現身清單 UI——清單級釘選留給雲端相位。子步驟 3 至此全數完成。
 4. **GDriveProvider**（最後；需要 docs/gdrive-setup.md 的 3 個 Client ID——依 D11，申請延後到實際要上 production 前才做）：插進現有管線，UI 加帳號連結頁；同步管線接上 `RetryPolicy`（transient 退避 / auth 重授）。
    > 2026-08-29 進度：**OAuth + PKCE 核心上線（兩平台對等，三方 byte-identical）**——契約 provider.md §10：端點/scope/額外參數表（GDrive `access_type=offline&prompt=consent`、Dropbox `token_access_type=offline`）、PKCE（`base64url(SHA256(verifier))` 去 padding、S256）、**授權 URL 參數順序與百分比編碼釘死**（未保留字元原樣、其餘大寫 `%XX`、空白 `%20`）、回呼解析（code/state/error，state 不符 → `state_mismatch` 不重試）、交換/更新表單欄位序、`TokenState`（`expires_in` 缺 → 立即過期；回應無 `refresh_token` → 沿用既有）、過期判定（提前 60s）、token 端點錯誤分類（`invalid_grant`/`invalid_client`/`unauthorized_client` → 需重新授權；429/5xx/傳輸 → §2.1 退避）。`oauth_cases/` 6 案例（授權 URL ×4、回呼 ×8、表單 ×2、token 回應 ×5、過期矩陣 ×6、錯誤 ×8）。兩平台 `RefreshingTokenSource`（實作既有 `TokenSource`）：未過期不打網路、自動更新、退避、persist 回呼；行為測試以 fake token server 驗證（含表單 bytes）。**剩下只差 Client ID**：填入設定 + 平台「開瀏覽器」（ASWebAuthenticationSession／Custom Tab）與鑰匙串儲存。Dropbox 申請文件補上 `docs/dropbox-setup.md`。
    > 2026-08-29 進度：**核心層上線（兩平台對等，mock 驗證）**——契約 provider.md §8 定案：全 Drive `files.list`（每頁 1000，非逐資料夾遞迴）建 id→node 表、path 由 parents 鏈推導（trashed/含 `/`/鏈斷/Google 文件類排除、同 path 碰撞 id 最小者勝）、`rev = md5Checksum`（改名 = removed+added 且 rev 不變、modifiedTime 變內容不變 = 無變更）、增量走 `changes.list`（先取 startPageToken 再全量，不漏）、token 失效 400/404 → reset；§8.5 錯誤對應（401 → refresh 一次、403 rateLimit/429/5xx/傳輸失敗 → 1/2/4/8/16s、404 → NotFound、其他 4xx 直接傳播），每個 HTTP 請求各自套 §2.1。引擎抽 `SyncProvider` 介面（snapshot/readBytes；LocalFolderProvider 照舊實作），新增 sync-rules §3.2-8 **續掃語意**：snapshot 失敗整輪拋錯狀態不動；單檔讀取重試耗盡 → 本輪剩餘 pending 標 `unscanned`、cursor 保留上輪值、下輪自動接續。provider 只依賴 `TokenSource`（token/refresh）與 `HttpTransport`（正式：URLSession / HttpURLConnection），OAuth 流程與帳號 UI 隨 client ID 進場（D11）。契約 fixtures `gdrive_cases/` 7 案例（首掃含排除項、分頁、變更矩陣、cursor reset、401/503/403 重試與整輪失敗、續掃與掃描中拔檔、同名碰撞），每步 `{provider: {requests, reauths, sleeps, reset, unscanned, error}, report}` 三方 byte-identical（請求數即配額量測）；provider 狀態（節點表 + token）匯出 opaque JSON，App 層存 `sync_state['cursor:gdrive:<rootId>']`。**已知取捨**：md5→sha256 對應表未建（下載時仍算 SHA-256）。**尚未接線**：App 層帳號頁/資料夾選擇/串流 DataSource（`mediaRequest` 已備）——待 OAuth client ID。
@@ -188,8 +188,8 @@ interface CloudProvider {
 4. 連續播放接縫無爆音
 
 ### Phase 2 — Apple MVP（agent 寫碼；你在 Mac 上跑）
-範圍：MuCore package（provider/delta/掃描/m3u8/DB + 契約測試）→ iOS app（瀏覽/播放/釘選/遠端控制）。
-> 2026-08-28 進度：**本地資料夾垂直切片上線**——MuCore 補 App 層 API 面（`resolvedItems`/`groupAlbums` 轉 public、六個資料型別補 public init——Kotlin data class 天生 public，Swift 隱式 memberwise init 是 internal）、Package.swift 補 `products`（Xcode 得以連結本地套件）。`apple/MuiOS`：raw sqlite3 `MuDatabase`（schema.sql v0.2 鏡像；FK 全不建——playlist_items cascade 改顯式 DELETE、pins 照 Room 慣例不參照 tracks）、`PinManager`（pins 狀態機：循序佇列、DOWNLOADING 殘留自動續傳、換庫清釘/同庫保留、root 路徑統一 `resolvingSymlinksInPath` 否則冷啟動誤判換庫）、`PlayerManager`（AVQueuePlayer + MPNowPlayingInfoCenter/MPRemoteCommandCenter + 來電中斷 + 拔耳機暫停 + AVRoutePickerView AirPlay 入口）、SwiftUI `ContentView`（專輯網格/清單列/釘選列/離線標記/迷你播放列——播放列掛 NavigationStack 外，掛 root 會被推入頁蓋住）、資料夾挑選 + security-scoped bookmark 記住庫根。`MuiOSUITests`（XCUITest，MU_ROOT 環境注入 fixture 庫）：掃描→瀏覽→點播→佇列推進、專輯釘選→離線標記→重啟 DB 還原，全綠（B3/B5 的 iOS 機器版）。CI 加 `ios-app` job（generic iOS Simulator build）。同日（Phase 3 相位）：共享層提升為 `MuKit` library target、MuMac 選單列 app 上線（見 Phase 3）；掃描效能：`swift run PerfCheck`（500 專輯 ×8 軌合成庫）= 快照 0.09s + 首掃 0.35s，遠低於 B2 的 5 分鐘預算（檔案數為成本主軸的估計——真實庫 IO 量更大，GDrive 相位以 rangeRead 上限複校）。已知取捨：DB/PinManager 放 App 層比照 Android `:app`（Room 亦在 app 層；MuMac 進場時再提升共享 target）；pins state 存小寫（schema.sql 原文；Room 版存大寫 enum name——兩邊 DB 不互通無影響）；playlist 的 unavailable-pinned 軌不現身清單 UI（同 Android 取捨）。> 2026-08-29（D13）進度：**下載層內容定址上線（Android＋Apple 對等）**——schema.sql v0.3（pins：root-scoped 記錄層＋content_hash/rev；user_version=2，開發期破壞性重建）；兩平台 PinManager 重塑：`downloads/<sha256>` 邊抓邊算 hash（本地零額外 IO）、跨庫 dedup、換庫休眠不清（切回即重連）、unpin 以 hash 引用計數 GC、sync 後 rev 重驗（rev 變→重抓、舊 hash 回收；重抓失敗保留舊 rev 由下次 sync 重試）、舊 pins/ 檔案自動搬遷為內容定址；provider.md §7 契約（雲端 entries 必帶原生 checksum）。pin() 改帶 rev（AppModel/VM 自引擎索引取）。經獨立 reviewer 審查修 畢（Kotlin pump 丟失喚醒防護、sync 管線不被整批下載阻塞、GC/unpin 競態防護、revalidate 失敗重試、legacy 遷移移出建構執行緒等 10 項）。測試：MuKitTests 7 條＋Android app 單元測試同套 7 條（FakeDao 純 JVM）全綠；swift test 契約全綠；iOS/MuMac build 與 :app:assembleDebug 通過；MuiOSUITests（掃描→點播→佇列、釘選→離線標記→重啟還原）模擬器全綠——fixture 兩軌同內容，順帶覆蓋同庫 dedup 路徑。
+範圍：CrateCore package（provider/delta/掃描/m3u8/DB + 契約測試）→ iOS app（瀏覽/播放/釘選/遠端控制）。
+> 2026-08-28 進度：**本地資料夾垂直切片上線**——CrateCore 補 App 層 API 面（`resolvedItems`/`groupAlbums` 轉 public、六個資料型別補 public init——Kotlin data class 天生 public，Swift 隱式 memberwise init 是 internal）、Package.swift 補 `products`（Xcode 得以連結本地套件）。`apple/CrateiOS`：raw sqlite3 `CrateDatabase`（schema.sql v0.2 鏡像；FK 全不建——playlist_items cascade 改顯式 DELETE、pins 照 Room 慣例不參照 tracks）、`PinManager`（pins 狀態機：循序佇列、DOWNLOADING 殘留自動續傳、換庫清釘/同庫保留、root 路徑統一 `resolvingSymlinksInPath` 否則冷啟動誤判換庫）、`PlayerManager`（AVQueuePlayer + MPNowPlayingInfoCenter/MPRemoteCommandCenter + 來電中斷 + 拔耳機暫停 + AVRoutePickerView AirPlay 入口）、SwiftUI `ContentView`（專輯網格/清單列/釘選列/離線標記/迷你播放列——播放列掛 NavigationStack 外，掛 root 會被推入頁蓋住）、資料夾挑選 + security-scoped bookmark 記住庫根。`CrateiOSUITests`（XCUITest，MU_ROOT 環境注入 fixture 庫）：掃描→瀏覽→點播→佇列推進、專輯釘選→離線標記→重啟 DB 還原，全綠（B3/B5 的 iOS 機器版）。CI 加 `ios-app` job（generic iOS Simulator build）。同日（Phase 3 相位）：共享層提升為 `CrateKit` library target、CrateMac 選單列 app 上線（見 Phase 3）；掃描效能：`swift run PerfCheck`（500 專輯 ×8 軌合成庫）= 快照 0.09s + 首掃 0.35s，遠低於 B2 的 5 分鐘預算（檔案數為成本主軸的估計——真實庫 IO 量更大，GDrive 相位以 rangeRead 上限複校）。已知取捨：DB/PinManager 放 App 層比照 Android `:app`（Room 亦在 app 層；CrateMac 進場時再提升共享 target）；pins state 存小寫（schema.sql 原文；Room 版存大寫 enum name——兩邊 DB 不互通無影響）；playlist 的 unavailable-pinned 軌不現身清單 UI（同 Android 取捨）。> 2026-08-29（D13）進度：**下載層內容定址上線（Android＋Apple 對等）**——schema.sql v0.3（pins：root-scoped 記錄層＋content_hash/rev；user_version=2，開發期破壞性重建）；兩平台 PinManager 重塑：`downloads/<sha256>` 邊抓邊算 hash（本地零額外 IO）、跨庫 dedup、換庫休眠不清（切回即重連）、unpin 以 hash 引用計數 GC、sync 後 rev 重驗（rev 變→重抓、舊 hash 回收；重抓失敗保留舊 rev 由下次 sync 重試）、舊 pins/ 檔案自動搬遷為內容定址；provider.md §7 契約（雲端 entries 必帶原生 checksum）。pin() 改帶 rev（AppModel/VM 自引擎索引取）。經獨立 reviewer 審查修 畢（Kotlin pump 丟失喚醒防護、sync 管線不被整批下載阻塞、GC/unpin 競態防護、revalidate 失敗重試、legacy 遷移移出建構執行緒等 10 項）。測試：CrateKitTests 7 條＋Android app 單元測試同套 7 條（FakeDao 純 JVM）全綠；swift test 契約全綠；iOS/CrateMac build 與 :app:assembleDebug 通過；CrateiOSUITests（掃描→點播→佇列、釘選→離線標記→重啟還原）模擬器全綠——fixture 兩軌同內容，順帶覆蓋同庫 dedup 路徑。
 **尚未完成**：GDrive App 層接線（provider 核心已於 2026-08-29 上線，OAuth 依 D11 延後）→ C2 的「同一個 Drive」複驗待其進場；C3/C4（鎖屏/Control Center/AirPlay/耳機）需真機人耳驗收；macOS app 屬 Phase 3。
 **驗收（你的 Mac + iPhone）**：
 1. `swift test` 契約測試全綠（與 Android 同輸出）— ✅ 機器已驗（Mac, Swift 6.2.4）
@@ -199,7 +199,7 @@ interface CloudProvider {
 
 ### Phase 3 — 擴充（選配）
 Dropbox provider（讀同一庫）、macOS app（選單列常駐）。
-> 2026-08-28 進度：**D2 MuMac 上線**——共享層提升：`MuCore` package 新增 `MuKit` library target（`MuDatabase`/`PinManager` 自 MuiOS 遷入、`SyncRunner` 自 AppModel 抽出並 public 化——兩 app 共用引擎管線；審查時即預見此步）。`apple/MuMac`：選單列常駐（`LSUIElement` + `NSStatusItem`/`NSPopover`，macOS 13+，非 sandbox——`NSOpenPanel` 選庫根、root 直接落 DB 無需書籤）；單欄清單式 UI（清單列 + 專輯 → 音軌 + 釘選列 + 離線標記 + 底部播放列）；`MacPlayer`（AVQueuePlayer，無 remote command/audio session）。冒煙已驗：`MU_ROOT` 啟動 → 掃描落庫（mumac.db）→ root 持久化。D1 Dropbox 依 D11 同步延後（OAuth 申請等 production prep）。MuiOS 移轉 MuKit 後 UI 測試全綠（掃描/點播/釘選/重啟還原）。
+> 2026-08-28 進度：**D2 CrateMac 上線**——共享層提升：`CrateCore` package 新增 `CrateKit` library target（`CrateDatabase`/`PinManager` 自 CrateiOS 遷入、`SyncRunner` 自 AppModel 抽出並 public 化——兩 app 共用引擎管線；審查時即預見此步）。`apple/CrateMac`：選單列常駐（`LSUIElement` + `NSStatusItem`/`NSPopover`，macOS 13+，非 sandbox——`NSOpenPanel` 選庫根、root 直接落 DB 無需書籤）；單欄清單式 UI（清單列 + 專輯 → 音軌 + 釘選列 + 離線標記 + 底部播放列）；`MacPlayer`（AVQueuePlayer，無 remote command/audio session）。冒煙已驗：`MU_ROOT` 啟動 → 掃描落庫（mumac.db）→ root 持久化。D1 Dropbox 依 D11 同步延後（OAuth 申請等 production prep）。CrateiOS 移轉 CrateKit 後 UI 測試全綠（掃描/點播/釘選/重啟還原）。
 > 2026-08-29 進度：**D1 Dropbox provider 核心上線（三平台對等，mock 驗證）**——契約 provider.md §9：`get_metadata` 解析 root（`/Music`、`id:…`、`""` 整個 Dropbox；path_display 取回真實大小寫）、`get_latest_cursor` → `list_folder`（recursive、每頁 2000）→ `continue` 增量；節點表 key = `path_lower`（Dropbox 不分大小寫，無同 path 碰撞）；`deleted` 一筆連帶刪前綴子樹（Dropbox 刪資料夾只回一筆）；`rev = content_hash`（4MB 分塊 SHA-256 再 SHA-256）；409 `reset` → 重走首輪；409 `not_found` → NotFound；`download` + `Dropbox-API-Arg` + `Range`（視窗化掃描同 GDrive）。`HttpRequest` 加 body（POST JSON）。fixtures `dropbox_cases/` 8 案例（首掃含 root 外前綴相似路徑、root 大小寫、分頁、變更矩陣含資料夾改名/刪除子樹、cursor reset、重試、續掃、root="" 視窗化）三方 byte-identical；Swift/Kotlin 各帶 FakeDropbox（HTTP 語意層）。與 GDrive 同：App 層帳號頁/串流接線待 OAuth（D11）。
 > 原「同步閉環」相位（m3u8 雙向編輯、mu-state.json 跨裝置同步）隨 D12 取消——app 對雲端唯讀，清單編輯在雲端原生工具進行。
 **驗收**：見 acceptance.md Phase 3。
@@ -207,15 +207,15 @@ Dropbox provider（讀同一庫）、macOS app（選單列常駐）。
 ### Phase 4 — 打磨
 CarPlay（Media3 原生支援 + CarPlay framework）、桌面 Widget、Last.fm scrobble（選配）、ReplayGain、等化器。
 此時才考慮 TestFlight / Play 內部測試軌道。
-> 2026-08-29 進度：**ReplayGain 上線（三平台對等）**——契約 model.md §1.9：`replayGainTrackMb/AlbumMb`（millibel 整數，無浮點；`parseGainMb` 截斷第三位小數）；來源 Vorbis `REPLAYGAIN_*`、ID3 `TXXX`（description 不分大小寫；終止符依編碼——UTF-16 為對齊 `00 00`）、MP4 `----` 自由格式 atom（`name` 決定鍵）；Opus `R128_*` v1 不支援。新 scanner 案例 `replaygain_tags`（合成 FLAC/MP3/M4A，`generate.py --case` 不需 ffmpeg；含 `n/a`→null、`3.567`→356、`-.5`→null、UTF-16 TXXX、無關 `----` 忽略），全部 fixtures 換版（27+6+8+8）三方 byte-identical。schema.sql v0.4（`tracks.rg_track_mb/rg_album_mb`，user_version 3；Room v4）。播放：核心 `ReplayGain.volume(mode, track)`——線性 `10^(mb/2000)`、**上限 1.0**（只衰減不放大；正增益放大需 audio processor，EQ 相位再議）、無前置增益；模式 off/track/album（album 缺退 track），Apple 存 UserDefaults、Android 存 SharedPreferences（PlaybackService 監聽即時套用）；UI：iOS NowPlaying 選單、MuMac 更多選單、Android TopAppBar 下拉。MuiOS UI 測試（schema 換版後 DB 還原）全綠。
+> 2026-08-29 進度：**ReplayGain 上線（三平台對等）**——契約 model.md §1.9：`replayGainTrackMb/AlbumMb`（millibel 整數，無浮點；`parseGainMb` 截斷第三位小數）；來源 Vorbis `REPLAYGAIN_*`、ID3 `TXXX`（description 不分大小寫；終止符依編碼——UTF-16 為對齊 `00 00`）、MP4 `----` 自由格式 atom（`name` 決定鍵）；Opus `R128_*` v1 不支援。新 scanner 案例 `replaygain_tags`（合成 FLAC/MP3/M4A，`generate.py --case` 不需 ffmpeg；含 `n/a`→null、`3.567`→356、`-.5`→null、UTF-16 TXXX、無關 `----` 忽略），全部 fixtures 換版（27+6+8+8）三方 byte-identical。schema.sql v0.4（`tracks.rg_track_mb/rg_album_mb`，user_version 3；Room v4）。播放：核心 `ReplayGain.volume(mode, track)`——線性 `10^(mb/2000)`、**上限 1.0**（只衰減不放大；正增益放大需 audio processor，EQ 相位再議）、無前置增益；模式 off/track/album（album 缺退 track），Apple 存 UserDefaults、Android 存 SharedPreferences（PlaybackService 監聽即時套用）；UI：iOS NowPlaying 選單、CrateMac 更多選單、Android TopAppBar 下拉。CrateiOS UI 測試（schema 換版後 DB 還原）全綠。
 > 2026-08-29 進度：**EQ + 正增益放大上線（三平台對等）**——契約 model.md §1.10：`EqSettings`（10 段固定中心頻率 31…16k Hz、Q=1.41、每段與 preamp 均 millibel 且 clamp ±1200、9 組 presets、canonical 序列化）與**播放總增益**合成規則（§1.9 ReplayGain + preamp，clamp [-6000,+1200]）——純整數，`eq_cases/` 3 案例三方 byte-identical（含壞 JSON/型別/長度、preset 表、增益矩陣）。**浮點 DSP 刻意不入 byte 契約**：`Biquad`（RBJ peaking）+ `AudioDsp`（Direct Form I、每聲道獨立狀態、直通零成本、輸出硬 clamp ±1.0）由各平台性質測試驗證（中心頻率增益誤差 <0.01 dB、遠端 ≈0 dB、穩態 RMS ≈ 設定值、聲道不串音、無 NaN）。
-> 接線：**Apple = MTAudioProcessingTap**（掛在每個 AVPlayerItem 的 audioMix；刻意不改寫成 AVAudioEngine，保留 AVQueuePlayer 佇列接力/gapless 與既有遠端控制），**Android = Media3 `AudioProcessor`**（自訂 `DefaultRenderersFactory.buildAudioSink` → `DefaultAudioSink` 處理鏈；支援 PCM16/float，5 條 JVM buffer 層測試：直通位元不變、增益、削峰不 wrap、float 路徑、非支援編碼交還）。**ReplayGain 改由 DSP 套用**（player.volume 固定 1）→ 解除 v1.2「只能衰減」的限制，正增益真正放大。設定存平台 prefs（Apple UserDefaults / Android SharedPreferences，鍵 `eq`），UI：iOS NowPlaying 選單、MuMac 更多選單、Android TopAppBar 下拉（preset + 前置增益 ±6 dB）。iOS 模擬器 UI 測試（實際播放、tap 生效路徑）全綠。
-> 2026-08-29 進度：**Widget 第一階段——契約 + Android 主畫面 Widget 上線**。契約 model.md §1.11 `NowPlayingSnapshot`（trackId/title/artist/albumId/isPlaying/positionMs/durationMs/updatedAtMs，canonical JSON、純整數字串）與**顯示規則**：`displayState`（trackId 無 → idle；超過 6 小時未更新 → idle；否則 playing/paused；時鐘回退不算過期）、`effectivePositionMs`（playing 才隨時鐘前進、clamp 到時長）。`nowplaying_cases/` 2 案例三方 byte-identical（解析容錯矩陣 + 顯示/位置矩陣）。Android：Glance `MuWidget`（讀 SharedPreferences 快照、顯示曲名/藝人/進度、點擊開 app；`PlaybackService` 於換曲/播放狀態/跳轉時寫快照並 `updateAll`），4 條 JVM 顯示字串測試。
+> 接線：**Apple = MTAudioProcessingTap**（掛在每個 AVPlayerItem 的 audioMix；刻意不改寫成 AVAudioEngine，保留 AVQueuePlayer 佇列接力/gapless 與既有遠端控制），**Android = Media3 `AudioProcessor`**（自訂 `DefaultRenderersFactory.buildAudioSink` → `DefaultAudioSink` 處理鏈；支援 PCM16/float，5 條 JVM buffer 層測試：直通位元不變、增益、削峰不 wrap、float 路徑、非支援編碼交還）。**ReplayGain 改由 DSP 套用**（player.volume 固定 1）→ 解除 v1.2「只能衰減」的限制，正增益真正放大。設定存平台 prefs（Apple UserDefaults / Android SharedPreferences，鍵 `eq`），UI：iOS NowPlaying 選單、CrateMac 更多選單、Android TopAppBar 下拉（preset + 前置增益 ±6 dB）。iOS 模擬器 UI 測試（實際播放、tap 生效路徑）全綠。
+> 2026-08-29 進度：**Widget 第一階段——契約 + Android 主畫面 Widget 上線**。契約 model.md §1.11 `NowPlayingSnapshot`（trackId/title/artist/albumId/isPlaying/positionMs/durationMs/updatedAtMs，canonical JSON、純整數字串）與**顯示規則**：`displayState`（trackId 無 → idle；超過 6 小時未更新 → idle；否則 playing/paused；時鐘回退不算過期）、`effectivePositionMs`（playing 才隨時鐘前進、clamp 到時長）。`nowplaying_cases/` 2 案例三方 byte-identical（解析容錯矩陣 + 顯示/位置矩陣）。Android：Glance `CrateWidget`（讀 SharedPreferences 快照、顯示曲名/藝人/進度、點擊開 app；`PlaybackService` 於換曲/播放狀態/跳轉時寫快照並 `updateAll`），4 條 JVM 顯示字串測試。
 > **iOS/macOS Widget 待決**：WidgetKit extension 必須用 **App Group** 才能讀到 app 寫的快照，而 App Group 需要付費開發者帳號才能佈建——加上去會讓沒有該能力的帳號在**裝置**簽章時失敗（模擬器不受影響）。等你確認帳號狀態再進場（見下方 §12）。
 > 2026-09-02 進度：**UI 改版（三平台）**——目標是「Apple 式簡潔 + 合 HIG」。Apple 端：移除裝飾性漸層方塊/圓體字/自訂色，一律走系統語意（Dynamic Type 文字樣式、`.primary/.secondary/.tint`、系統材質與控制項）；iOS 資料庫改**分段控制（專輯／清單）**取代主內容區的橫向輪播（避免與縱向捲動的手勢衝突），搜尋時忽略分段、兩類分組列出；專輯頁封面/標題/藝人 + 膠囊主次按鈕；現正播放改為標題列右側 `⋯` 子選單（音量標準化／等化器／前置增益各自 submenu，取代展開成一長串的內嵌 Picker）、封面放大、暫停縮放尊重「減少動態效果」、背景改回系統底色；迷你播放列去掉描邊、控制鍵 44pt。所有 UI 測試識別碼與 `pinChip` 文案不變。macOS popover 同步（歡迎頁、空狀態、播放列 accessibility label、進度條成為單一有值元素、選單分區）。Android：新增 `ui/Theme.kt`（Material 3 動態色 + `values-night` 深色）與 `ui/Artwork.kt`（內嵌圖 → 資料夾封面 → **與 Apple 同一 djb2 色相**的佔位漸層），主畫面重寫為 LargeTopAppBar + 搜尋 + 分段按鈕 + 封面網格 + Surface 迷你播放列（含播放狀態監聽——原本直接讀 `controller.isPlaying` 不會重組），選單改用圖示表示選取（移除 `"✓ "` 文字打勾）。
-> **順手修掉的實 bug**：Android `setContent { MuTheme { MuApp() } }` 的 `MuApp()` 解析到 **`class MuApp : Application` 的建構子**而非同名 composable，畫面整片空白且不報錯；composable 更名 `MuRoot()` 後正常（模擬器截圖佐證）。
+> **順手修掉的實 bug**：Android `setContent { CrateTheme { CrateApp() } }` 的 `CrateApp()` 解析到 **`class CrateApp : Application` 的建構子**而非同名 composable，畫面整片空白且不報錯；composable 更名 `MuRoot()` 後正常（模擬器截圖佐證）。
 > 驗證：iOS UI 測試 2 條全綠、iOS/macOS/Android 三平台建置與單元測試全綠、iPhone 17 模擬器明暗各 6 張截圖、Android 模擬器明暗截圖。
-> 2026-09-03 進度：**現正播放的氛圍色背景**（UI 改版的收尾，使用者選 B 案）——系統底色之上再鋪一層由上往下收乾淨的專輯色漸層（34% → 10% → 透明），文字/進度/控制區維持純底色，對比不受影響。色源：**有封面 → 封面平均色**（MuKit `ArtworkTint`：1×1 降取樣取平均，只留色相與飽和度，亮度統一正規化，避免亮封面染出刺眼背景）；**灰階封面 → 不染色**（亂染比不染難看）；**沒有封面 → 專輯 id 的穩定色相**（與佔位圖同色）。`ArtworkTintTests` 4 條（三原色色相、灰階/純黑/純白回 nil、近灰低於門檻、HSB 轉換）。macOS 沒有對應畫面（popover 只有底部播放列），不套用。
+> 2026-09-03 進度：**現正播放的氛圍色背景**（UI 改版的收尾，使用者選 B 案）——系統底色之上再鋪一層由上往下收乾淨的專輯色漸層（34% → 10% → 透明），文字/進度/控制區維持純底色，對比不受影響。色源：**有封面 → 封面平均色**（CrateKit `ArtworkTint`：1×1 降取樣取平均，只留色相與飽和度，亮度統一正規化，避免亮封面染出刺眼背景）；**灰階封面 → 不染色**（亂染比不染難看）；**沒有封面 → 專輯 id 的穩定色相**（與佔位圖同色）。`ArtworkTintTests` 4 條（三原色色相、灰階/純黑/純白回 nil、近灰低於門檻、HSB 轉換）。macOS 沒有對應畫面（popover 只有底部播放列），不套用。
 > 尚未做：CarPlay（需你向 Apple 申請 CarPlay audio entitlement）、iOS/macOS Widget（見上）、Last.fm scrobble（選配）。
 
 ## 8. 驗證策略（誰驗什麼）
@@ -245,19 +245,19 @@ CarPlay（Media3 原生支援 + CarPlay framework）、桌面 Widget、Last.fm s
 2. **拿程式碼**：`git clone <repo>`（或先只拿 `contract/` 與 `apple/`）。
 3. **第一步跑契約測試**：
    ```bash
-   cd apple/MuCore
+   cd apple/CrateCore
    swift test
    ```
    預期：contract fixtures 全綠。**這行指令是 Apple 端的里程碑 1。**
-4. **跑 app**：`open apple/MuiOS/MuiOS.xcodeproj` → 選 iPhone 模擬器 → Cmd+R。
+4. **跑 app**：`open apple/CrateiOS/CrateiOS.xcodeproj` → 選 iPhone 模擬器 → Cmd+R。
 5. **你不需要寫碼**：開 issue / 貼錯誤訊息 / 描述聽感給 agent。你的時間花在耳朵和真機。
 
 ## 11. 命名與上架
 
-- 商店名：**Mu – Music Player**（副標解 ASO，兩字名單獨搜不到）
-- Bundle ID（建議）：`music.mu.ios` / `music.mu.mac` / `music.mu.android`（package name）
+- 商店名：**Crate – Music Player**（副標解 ASO，兩字名單獨搜不到）
+- Bundle ID（建議）：`at.least.crate.ios` / `at.least.crate.mac` / `at.least.crate.android`（package name）
 - 域名：儘早註冊 `mu.music`（查證時未註冊）；備選 `muplayer.app`
-- 上架前：TIPO/USPTO 商標檢索（第 9/42 類「Mu」）
+- 上架前：TIPO/USPTO 商標檢索（第 9/42 類「Crate」）
 - Apple 開發者帳號 $99/年（TestFlight 需要）；Play $25 一次性
 
 ## 12. 立即的下一步

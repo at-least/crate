@@ -3,7 +3,7 @@
     {
       "type": "redirect",
       "name": "ok",
-      "url": "music.mu.ios:/oauth2redirect?code=abc123&state=st-1",
+      "url": "at.least.crate.ios:/oauth2redirect?code=abc123&state=st-1",
       "state": "st-1"
     },
     {
@@ -15,37 +15,37 @@
     {
       "type": "redirect",
       "name": "denied",
-      "url": "music.mu.ios:/oauth2redirect?error=access_denied&state=st-1",
+      "url": "at.least.crate.ios:/oauth2redirect?error=access_denied&state=st-1",
       "state": "st-1"
     },
     {
       "type": "redirect",
       "name": "state_mismatch",
-      "url": "music.mu.ios:/oauth2redirect?code=abc123&state=other",
+      "url": "at.least.crate.ios:/oauth2redirect?code=abc123&state=other",
       "state": "st-1"
     },
     {
       "type": "redirect",
       "name": "denied_state_mismatch",
-      "url": "music.mu.ios:/oauth2redirect?error=access_denied&state=x",
+      "url": "at.least.crate.ios:/oauth2redirect?error=access_denied&state=x",
       "state": "st-1"
     },
     {
       "type": "redirect",
       "name": "no_query",
-      "url": "music.mu.ios:/oauth2redirect",
+      "url": "at.least.crate.ios:/oauth2redirect",
       "state": "st-1"
     },
     {
       "type": "redirect",
       "name": "no_code",
-      "url": "music.mu.ios:/oauth2redirect?state=st-1",
+      "url": "at.least.crate.ios:/oauth2redirect?state=st-1",
       "state": "st-1"
     },
     {
       "type": "redirect",
       "name": "with_fragment",
-      "url": "music.mu.ios:/oauth2redirect?code=abc&state=st-1#frag",
+      "url": "at.least.crate.ios:/oauth2redirect?code=abc&state=st-1#frag",
       "state": "st-1"
     }
   ]

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Mu contract fixtures 產生器（兼參考實作）
+Crate contract fixtures 產生器（兼參考實作）
 
 - 用 ffmpeg 產生真實音訊檔（髒檔案例手工構造位元組）
 - 內含 Python 參考掃描器（依 contract/model.md 規格）

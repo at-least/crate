@@ -7,7 +7,7 @@
 - [A1] `contract/` 五文件 + schema.sql 齊全（機器：檔案存在）
 - [A2] fixtures ≥ 20 案例，每案例 `lib/` + `expected.json`（機器：產生器跑完 0 diff）
 - [A3] Android：`./gradlew :core:test` 全綠（機器：本 Linux 機）
-- [A4] Apple：`swift test`（MuCore）全綠（機器：**Mac**，使用者跑）
+- [A4] Apple：`swift test`（CrateCore）全綠（機器：**Mac**，使用者跑）
 - [A5] 兩平台輸出與 `expected.json` byte-identical（A3/A4 內含）
 
 ## Phase 1（Android MVP）
@@ -35,10 +35,10 @@
 
 ## Phase 3（擴充，選配；D12 後原「同步閉環」相位取消）
 - [D1] Dropbox provider 讀同一庫：契約測試綠（provider.md §9；`dropbox_cases/` 三方 byte-identical）— ✅ 2026-08-29 核心層（機器）；掃描同一資料夾索引與 GDrive 一致（人）— 依 D11 隨 OAuth 申請延後
-- [D2] macOS app（選單列常駐）播放同一庫（人，Mac）— 2026-08-28 實作上線（MuMac：選單列 popover、瀏覽/播放/釘選；MU_ROOT 冒煙已驗掃描落庫與 root 持久化）；真機點開選單列確認屬人驗
+- [D2] macOS app（選單列常駐）播放同一庫（人，Mac）— 2026-08-28 實作上線（CrateMac：選單列 popover、瀏覽/播放/釘選；MU_ROOT 冒煙已驗掃描落庫與 root 持久化）；真機點開選單列確認屬人驗
 
 ## 通用品質門檻（每 Phase 結束跑）
-- core 模組測試覆蓋率 ≥ 90%（機器：jacoco / swift-coverage）— ✅ 2026-08-28 Phase 2：MuCore 98.51% 行覆蓋（llvm-cov export；CoverageGapTest 補齊契約 fixtures 未走到的分支）
+- core 模組測試覆蓋率 ≥ 90%（機器：jacoco / swift-coverage）— ✅ 2026-08-28 Phase 2：CrateCore 98.51% 行覆蓋（llvm-cov export；CoverageGapTest 補齊契約 fixtures 未走到的分支）
 - 無未解釋的契約 diff（機器：CI）
 
 ## Phase 4（打磨）
@@ -48,4 +48,4 @@
 - [E3b] iOS/macOS WidgetKit widget — 待 App Group 能力確認（付費開發者帳號）
 - [E4] EQ / 正增益放大：契約 model.md §1.10（`eq_cases/` 三方 byte-identical）+ 兩平台 DSP 接線（Apple MTAudioProcessingTap／Android Media3 AudioProcessor）與性質測試 — ✅ 2026-08-29 機器（契約 + DSP 性質 + Android buffer 層 + iOS 播放 UI 測試）；聽感（各 preset 是否合理、正增益是否過度削峰）屬人
 - [E5] UI 改版（三平台）：Apple 端一律系統語意（Dynamic Type 文字樣式、語意顏色/材質、系統控制項），iOS 資料庫改分段控制（專輯／清單，取代橫向輪播）、現正播放單一主動作 + 子選單音效、迷你播放列 44pt 觸控區；Android 改 Material 3（動態色 + 深色主題、LargeTopAppBar、分段按鈕、專輯封面、Surface 迷你播放列、選單以圖示表示選取），並補上 Android 封面載入（內嵌圖／資料夾封面／與 Apple 同一 djb2 佔位漸層）— ✅ 2026-09-02 機器（iOS UI 測試 2 條全綠、三平台建置、iOS 明暗雙主題 6 張截圖、Android 模擬器明暗截圖）；實機觀感與 Dynamic Type 放大檢查屬人
-- [E5b] 現正播放氛圍色背景（頂部漸層；封面平均色 → 灰階不染 → 無封面用專輯色相）：MuKit `ArtworkTint` + 4 條單元測試 — ✅ 2026-09-03 機器（單元測試 + 三種色源各拍明暗截圖）；實機觀感屬人
+- [E5b] 現正播放氛圍色背景（頂部漸層；封面平均色 → 灰階不染 → 無封面用專輯色相）：CrateKit `ArtworkTint` + 4 條單元測試 — ✅ 2026-09-03 機器（單元測試 + 三種色源各拍明暗截圖）；實機觀感屬人

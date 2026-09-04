@@ -38,7 +38,7 @@ jobs:
     runs-on: macos-latest
     defaults:
       run:
-        working-directory: apple/MuCore
+        working-directory: apple/CrateCore
     steps:
       - uses: actions/checkout@v4
       - run: swift test
@@ -47,19 +47,19 @@ jobs:
     runs-on: macos-latest
     defaults:
       run:
-        working-directory: apple/MuiOS
+        working-directory: apple/CrateiOS
     steps:
       - uses: actions/checkout@v4
-      - run: xcodebuild -project MuiOS.xcodeproj -scheme MuiOS -destination 'generic/platform=iOS Simulator' CODE_SIGNING_ALLOWED=NO build
+      - run: xcodebuild -project CrateiOS.xcodeproj -scheme CrateiOS -destination 'generic/platform=iOS Simulator' CODE_SIGNING_ALLOWED=NO build
 
   mac-app:
     runs-on: macos-latest
     defaults:
       run:
-        working-directory: apple/MuMac
+        working-directory: apple/CrateMac
     steps:
       - uses: actions/checkout@v4
-      - run: xcodebuild -project MuMac.xcodeproj -scheme MuMac -configuration Debug CODE_SIGNING_ALLOWED=NO build
+      - run: xcodebuild -project CrateMac.xcodeproj -scheme CrateMac -configuration Debug CODE_SIGNING_ALLOWED=NO build
 
   fixtures:
     runs-on: ubuntu-latest

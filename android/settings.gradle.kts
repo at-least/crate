@@ -18,7 +18,7 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "mu-android"
+rootProject.name = "crate-android"
 
 include(":core")
 include(":app")

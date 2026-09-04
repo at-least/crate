@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Mu 同步引擎契約 fixtures 產生器（兼 Python 參考實作）
+Crate 同步引擎契約 fixtures 產生器（兼 Python 參考實作）
 
 - sync_assets/：共享音訊資產（ffmpeg 生成後 commit；平台測試直接取用位元組）
 - sync_cases/<name>/script.json + expected.json（每步一輪 sync() 的 SyncReport）

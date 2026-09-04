@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Mu 錯誤語意契約 fixtures 產生器（兼 Python 參考實作）
+Crate 錯誤語意契約 fixtures 產生器（兼 Python 參考實作）
 
 - provider.md §2.1：重試政策（D12 後唯讀定位，僅 auth/transient/notfound 三種）
 - 產出 err_cases/<name>/script.json + expected.json（時脈注入，純確定性，無 ffmpeg）

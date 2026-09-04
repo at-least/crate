@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Mu EQ / 播放增益契約 fixtures 產生器（兼 Python 參考實作）
+Crate EQ / 播放增益契約 fixtures 產生器（兼 Python 參考實作）
 
 - model.md §1.10：EqSettings（10 段 millibel + preamp + presets）與播放總增益合成規則
 - 純整數（浮點 DSP 不入 byte 比對——各平台以 Biquad 單元測試驗證頻率響應）

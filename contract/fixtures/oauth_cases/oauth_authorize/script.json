@@ -5,7 +5,7 @@
       "name": "gdrive_mobile",
       "provider": "gdrive",
       "clientId": "123-abc.apps.googleusercontent.com",
-      "redirectUri": "music.mu.ios:/oauth2redirect",
+      "redirectUri": "at.least.crate.ios:/oauth2redirect",
       "verifier": "muVerifier-0123456789abcdefghijklmnopqrstuvwxyz~._-",
       "state": "st-1"
     },
@@ -23,7 +23,7 @@
       "name": "dropbox_mobile",
       "provider": "dropbox",
       "clientId": "dbx-key",
-      "redirectUri": "music.mu.android:/oauth2redirect",
+      "redirectUri": "at.least.crate.android:/oauth2redirect",
       "verifier": "muVerifier-0123456789abcdefghijklmnopqrstuvwxyz~._-",
       "state": "st-3"
     },
@@ -32,7 +32,7 @@
       "name": "unicode_state",
       "provider": "dropbox",
       "clientId": "dbx-key",
-      "redirectUri": "music.mu.android:/oauth2redirect",
+      "redirectUri": "at.least.crate.android:/oauth2redirect",
       "verifier": "short-verifier",
       "state": "狀態/+&=?"
     }
