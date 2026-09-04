@@ -1,0 +1,97 @@
+[
+  {
+    "provider": {
+      "connects": 1,
+      "error": null,
+      "listDirs": 4,
+      "reads": 4,
+      "reauths": 0,
+      "sleeps": [],
+      "unscanned": []
+    },
+    "report": {
+      "changes": [
+        {
+          "kind": "added",
+          "path": "Big/Cover/01 - Big.flac",
+          "rev": "158544:1700000100000"
+        },
+        {
+          "kind": "added",
+          "path": "Big/Tail/02 - Tail.m4a",
+          "rev": "200298:1700000200000"
+        }
+      ],
+      "index": {
+        "albums": [
+          {
+            "albumArtist": "Aurora",
+            "artTrackId": "Big/Cover/01 - Big.flac",
+            "compilation": false,
+            "id": "alb|Aurora|Northern Lights",
+            "name": "Northern Lights",
+            "trackCount": 1,
+            "year": 2021
+          },
+          {
+            "albumArtist": "Becko",
+            "artTrackId": "Big/Tail/02 - Tail.m4a",
+            "compilation": false,
+            "id": "alb|Becko|Vector",
+            "name": "Vector",
+            "trackCount": 1,
+            "year": null
+          }
+        ],
+        "errors": [],
+        "playlists": [],
+        "tracks": [
+          {
+            "album": "Northern Lights",
+            "albumArtist": "Aurora",
+            "albumId": "alb|Aurora|Northern Lights",
+            "artist": "Aurora",
+            "available": true,
+            "disc": 1,
+            "durationMs": 300,
+            "format": "flac",
+            "id": "Big/Cover/01 - Big.flac",
+            "path": "Big/Cover/01 - Big.flac",
+            "replayGainAlbumMb": null,
+            "replayGainTrackMb": null,
+            "rev": "158544:1700000100000",
+            "sizeBytes": 158544,
+            "tagOk": true,
+            "title": "Rise",
+            "trackNo": 1,
+            "year": 2021
+          },
+          {
+            "album": "Vector",
+            "albumArtist": "Becko",
+            "albumId": "alb|Becko|Vector",
+            "artist": "Becko",
+            "available": true,
+            "disc": 1,
+            "durationMs": 10000,
+            "format": "m4a",
+            "id": "Big/Tail/02 - Tail.m4a",
+            "path": "Big/Tail/02 - Tail.m4a",
+            "replayGainAlbumMb": null,
+            "replayGainTrackMb": null,
+            "rev": "200298:1700000200000",
+            "sizeBytes": 200298,
+            "tagOk": true,
+            "title": "Tail Moov",
+            "trackNo": 2,
+            "year": null
+          }
+        ]
+      },
+      "scanned": [
+        "Big/Cover/01 - Big.flac",
+        "Big/Tail/02 - Tail.m4a"
+      ]
+    }
+  }
+]

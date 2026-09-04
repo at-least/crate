@@ -1,0 +1,48 @@
+{
+  "steps": [
+    {
+      "ops": [
+        {
+          "asset": "flac_a",
+          "mtime": 1700000100,
+          "op": "write",
+          "path": "Aurora/Northern Lights/01 - Rise.flac"
+        },
+        {
+          "asset": "flac_b",
+          "mtime": 1700000200,
+          "op": "write",
+          "path": "Aurora/Northern Lights/02 - Drift.flac"
+        },
+        {
+          "op": "faults",
+          "queue": [
+            "ok",
+            "ok",
+            "ok",
+            "ok",
+            "disconnect",
+            "ok",
+            "disconnect",
+            "ok",
+            "disconnect",
+            "ok",
+            "disconnect",
+            "ok",
+            "disconnect",
+            "ok",
+            "disconnect"
+          ]
+        }
+      ]
+    },
+    {
+      "ops": [
+        {
+          "op": "faults",
+          "queue": []
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,26 @@
+{
+  "steps": [
+    {
+      "ops": [
+        {
+          "asset": "flac_a",
+          "mtime": 1700000100,
+          "op": "write",
+          "path": "Aurora/Northern Lights/01 - Rise.flac"
+        },
+        {
+          "asset": "flac_b",
+          "mtime": 1700000200,
+          "op": "write",
+          "path": "Aurora/Northern Lights/02 - Drift.flac"
+        },
+        {
+          "mtime": 1700000300,
+          "op": "write",
+          "path": "清單/我的最愛.m3u8",
+          "text": "#EXTM3U\n#EXTINF:180,Rise\n../Aurora/Northern Lights/01 - Rise.flac\n#EXTINF:200,Gone\n../Aurora/Northern Lights/99 - Gone.flac\n"
+        }
+      ]
+    }
+  ]
+}

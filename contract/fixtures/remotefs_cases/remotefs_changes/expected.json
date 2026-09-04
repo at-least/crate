@@ -1,0 +1,194 @@
+[
+  {
+    "provider": {
+      "connects": 1,
+      "error": null,
+      "listDirs": 3,
+      "reads": 2,
+      "reauths": 0,
+      "sleeps": [],
+      "unscanned": []
+    },
+    "report": {
+      "changes": [
+        {
+          "kind": "added",
+          "path": "Aurora/Northern Lights/01 - Rise.flac",
+          "rev": "8540:1700000100000"
+        },
+        {
+          "kind": "added",
+          "path": "Aurora/Northern Lights/02 - Drift.flac",
+          "rev": "8541:1700000200000"
+        }
+      ],
+      "index": {
+        "albums": [
+          {
+            "albumArtist": "Aurora",
+            "artTrackId": "Aurora/Northern Lights/01 - Rise.flac",
+            "compilation": false,
+            "id": "alb|Aurora|Northern Lights",
+            "name": "Northern Lights",
+            "trackCount": 2,
+            "year": 2021
+          }
+        ],
+        "errors": [],
+        "playlists": [],
+        "tracks": [
+          {
+            "album": "Northern Lights",
+            "albumArtist": "Aurora",
+            "albumId": "alb|Aurora|Northern Lights",
+            "artist": "Aurora",
+            "available": true,
+            "disc": 1,
+            "durationMs": 300,
+            "format": "flac",
+            "id": "Aurora/Northern Lights/01 - Rise.flac",
+            "path": "Aurora/Northern Lights/01 - Rise.flac",
+            "replayGainAlbumMb": null,
+            "replayGainTrackMb": null,
+            "rev": "8540:1700000100000",
+            "sizeBytes": 8540,
+            "tagOk": true,
+            "title": "Rise",
+            "trackNo": 1,
+            "year": 2021
+          },
+          {
+            "album": "Northern Lights",
+            "albumArtist": "Aurora",
+            "albumId": "alb|Aurora|Northern Lights",
+            "artist": "Aurora",
+            "available": true,
+            "disc": 1,
+            "durationMs": 300,
+            "format": "flac",
+            "id": "Aurora/Northern Lights/02 - Drift.flac",
+            "path": "Aurora/Northern Lights/02 - Drift.flac",
+            "replayGainAlbumMb": null,
+            "replayGainTrackMb": null,
+            "rev": "8541:1700000200000",
+            "sizeBytes": 8541,
+            "tagOk": true,
+            "title": "Drift",
+            "trackNo": 2,
+            "year": 2021
+          }
+        ]
+      },
+      "scanned": [
+        "Aurora/Northern Lights/01 - Rise.flac",
+        "Aurora/Northern Lights/02 - Drift.flac"
+      ]
+    }
+  },
+  {
+    "provider": {
+      "connects": 0,
+      "error": null,
+      "listDirs": 5,
+      "reads": 2,
+      "reauths": 0,
+      "sleeps": [],
+      "unscanned": []
+    },
+    "report": {
+      "changes": [
+        {
+          "kind": "removed",
+          "path": "Aurora/Northern Lights/01 - Rise.flac",
+          "rev": "8540:1700000100000"
+        },
+        {
+          "kind": "modified",
+          "path": "Aurora/Northern Lights/02 - Drift.flac",
+          "rev": "1021:1700000400000"
+        },
+        {
+          "kind": "added",
+          "path": "Kyary/Jelly/01 - Ninjya.mp3",
+          "rev": "3020:1700000300000"
+        }
+      ],
+      "index": {
+        "albums": [
+          {
+            "albumArtist": "Aurora",
+            "artTrackId": "Aurora/Northern Lights/01 - Rise.flac",
+            "compilation": false,
+            "id": "alb|Aurora|Northern Lights",
+            "name": "Northern Lights",
+            "trackCount": 1,
+            "year": 2021
+          },
+          {
+            "albumArtist": "Kyary",
+            "artTrackId": "Kyary/Jelly/01 - Ninjya.mp3",
+            "compilation": false,
+            "id": "alb|Kyary|Jelly",
+            "name": "Jelly",
+            "trackCount": 1,
+            "year": null
+          }
+        ],
+        "errors": [
+          {
+            "code": "BAD_CONTAINER",
+            "message": "",
+            "path": "Aurora/Northern Lights/02 - Drift.flac"
+          }
+        ],
+        "playlists": [],
+        "tracks": [
+          {
+            "album": "Northern Lights",
+            "albumArtist": "Aurora",
+            "albumId": "alb|Aurora|Northern Lights",
+            "artist": "Aurora",
+            "available": false,
+            "disc": 1,
+            "durationMs": 300,
+            "format": "flac",
+            "id": "Aurora/Northern Lights/01 - Rise.flac",
+            "path": "Aurora/Northern Lights/01 - Rise.flac",
+            "replayGainAlbumMb": null,
+            "replayGainTrackMb": null,
+            "rev": "8540:1700000100000",
+            "sizeBytes": 8540,
+            "tagOk": true,
+            "title": "Rise",
+            "trackNo": 1,
+            "year": 2021
+          },
+          {
+            "album": "Jelly",
+            "albumArtist": "Kyary",
+            "albumId": "alb|Kyary|Jelly",
+            "artist": "Kyary",
+            "available": true,
+            "disc": 1,
+            "durationMs": 365,
+            "format": "mp3",
+            "id": "Kyary/Jelly/01 - Ninjya.mp3",
+            "path": "Kyary/Jelly/01 - Ninjya.mp3",
+            "replayGainAlbumMb": null,
+            "replayGainTrackMb": null,
+            "rev": "3020:1700000300000",
+            "sizeBytes": 3020,
+            "tagOk": true,
+            "title": "Ninjya",
+            "trackNo": 1,
+            "year": null
+          }
+        ]
+      },
+      "scanned": [
+        "Aurora/Northern Lights/02 - Drift.flac",
+        "Kyary/Jelly/01 - Ninjya.mp3"
+      ]
+    }
+  }
+]
