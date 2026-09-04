@@ -47,6 +47,8 @@ docs/        雲端 provider 的申請設定筆記
 
 ## 鐵律
 
-1. 改掃描/同步行為 = 先改本倉庫的 `contract/`（spec + fixtures），再改兩邊實作，兩邊測試都要綠。
+1. 改掃描/同步行為 = 先改本倉庫的 `contract/`（spec + fixtures），推上來之後在兩端
+   `git submodule update --remote crate` 把指標推進、連同實作一起 commit，兩邊測試都要綠。
+   （submodule 是釘死的：兩端跑測試吃的是自己釘的那個 commit，不是你本機 hub 的未推內容。）
 2. fixtures 的 `expected.json` 由 `generate.py` 產出，不手改。
 3. `errors[].message` 是實作自由文字，契約比對時恆為空字串。
