@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
+  <!-- A 單色層：唱片以 evenodd 挖出中心孔（VectorDrawable 用 android:fillType="evenOdd"）。 -->
+  <g transform="translate(-38,23)" fill="currentColor">
+    <path fill-rule="evenodd" d="M200,580 A250,250 0 1 1 700,580 A250,250 0 1 1 200,580 Z
+                                 M402,580 A48,48 0 1 0 498,580 A48,48 0 1 0 402,580 Z"/>
+    <path d="M858,190 L 570,460" fill="none" stroke="currentColor" stroke-width="84" stroke-linecap="round"/>
+    <circle cx="858" cy="190" r="66" fill="currentColor"/>
+  </g>
+</svg>

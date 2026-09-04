@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
+  <!-- B 八分音符：實心傾斜符頭，沒有軸心孔也沒有溝紋——是音符，不是唱片。 -->
+  <rect width="1024" height="1024" fill="#16151B"/>
+  <g transform="translate(30,32)">
+    <ellipse cx="392" cy="646" rx="132" ry="100" fill="#F4EFE6" transform="rotate(-20 392 646)"/>
+    <path d="M506,646 L 506,254" fill="none" stroke="#F4EFE6" stroke-width="86" stroke-linecap="round"/>
+    <path d="M506,254 C 636,278 684,364 658,458" fill="none" stroke="#F2703A" stroke-width="86" stroke-linecap="round"/>
+  </g>
+</svg>

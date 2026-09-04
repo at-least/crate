@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- App icon 的兩個色，見 design/icon/README.md。 -->
+    <color name="crate_ink">#16151B</color>
+    <color name="crate_bone">#F4EFE6</color>
+</resources>

@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
+  <!-- B 單色層：五條描邊，全部同色。 -->
+  <g fill="none" stroke="currentColor" stroke-width="92" stroke-linecap="round">
+    <path d="M292,286 L 292,650"/>
+    <path d="M416,286 L 416,650"/>
+    <path d="M540,286 L 540,650"/>
+    <path d="M246,760 L 794,760"/>
+    <path d="M672,292 L 748,646"/>
+  </g>
+</svg>

@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
+  <!-- 等化器・四條落地／暖橘。Apple 作法：滿版不畫圓角、不烘焙高光陰影，單一白色字標、長邊約 62%。 -->
+  <defs><linearGradient id="e1" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#FF9A5C"/><stop offset="1" stop-color="#EE4E2C"/></linearGradient></defs>
+  <rect width="1024" height="1024" fill="url(#e1)"/>
+  <g transform="translate(512,512) scale(1.1429) translate(-512.0,-530.0)"><path fill="#FFFFFF" d="M 232.0,532.0 A 52.0,52.0 0 0 1 336.0,532.0 L 336.0,708.0 A 52.0,52.0 0 0 1 232.0,708.0 Z M 384.0,352.0 A 52.0,52.0 0 0 1 488.0,352.0 L 488.0,708.0 A 52.0,52.0 0 0 1 384.0,708.0 Z M 536.0,452.0 A 52.0,52.0 0 0 1 640.0,452.0 L 640.0,708.0 A 52.0,52.0 0 0 1 536.0,708.0 Z M 688.0,612.0 A 52.0,52.0 0 0 1 792.0,612.0 L 792.0,708.0 A 52.0,52.0 0 0 1 688.0,708.0 Z"/></g>
+</svg>

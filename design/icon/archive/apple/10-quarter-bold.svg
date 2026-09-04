@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
+  <!-- 四分音符・厚重／石墨。Apple 作法：滿版不畫圓角、不烘焙高光與陰影（系統會加），
+       單一白色字標、長邊約佔畫布 62%，底為同色相兩段垂直漸層。 -->
+  <defs><linearGradient id="g10" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#7A7A83"/><stop offset="1" stop-color="#26262C"/></linearGradient></defs>
+  <rect width="1024" height="1024" fill="url(#g10)"/>
+  <g transform="translate(512,512) scale(1.4213) translate(-452.0,-537.1)"><path fill="#FFFFFF" d="M 585.9,622.6 C 599.8,678.3 551.1,738.5 477.2,756.9 C 403.2,775.3 332.0,745.1 318.1,689.4 C 304.2,633.7 352.9,573.5 426.8,555.1 C 500.8,536.7 572.0,566.9 585.9,622.6 Z M 516.2,656.0 L 516.2,356.0 C 516.2,303.8 588.2,303.8 588.2,356.0 L 588.2,656.0 Z"/></g>
+</svg>

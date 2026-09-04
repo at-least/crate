@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="216 244 510 539" width="510" height="539">
+  <!-- 純字標（去背、無底），給 README／文件／載入畫面用。currentColor 可繼承外層顏色。
+       座標與 mu-icon.svg 完全相同，viewBox 直接框在字標外框 +6 的留白上。 -->
+  <g fill="none" stroke="currentColor" stroke-width="100" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M366 300 V 700"/>
+    <path d="M366 440 C 366 639 670 639 670 440 V 300"/>
+  </g>
+  <ellipse cx="318" cy="700" rx="98" ry="74" fill="currentColor" transform="rotate(-18 318 700)"/>
+</svg>

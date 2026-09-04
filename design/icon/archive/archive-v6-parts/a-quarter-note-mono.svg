@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
+  <!-- 單色層：各段本來就相接，融成一體是對的。 -->
+  <g transform="translate(105,-5)">
+    <ellipse cx="392" cy="668" rx="158" ry="118" fill="currentColor" transform="rotate(-22 392 668)"/>
+    <path d="M528,668 L 528,236" fill="none" stroke="currentColor" stroke-width="92" stroke-linecap="round"/>
+  </g>
+</svg>

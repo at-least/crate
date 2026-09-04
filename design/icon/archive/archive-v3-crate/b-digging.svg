@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
+  <!-- B 翻找：三張立著、一張往前傾，站在箱底線上。畫的是動作不是物件。 -->
+  <rect width="1024" height="1024" fill="#16151B"/>
+  <g fill="none" stroke="#F4EFE6" stroke-width="92" stroke-linecap="round">
+    <path d="M292,286 L 292,650"/>
+    <path d="M416,286 L 416,650"/>
+    <path d="M540,286 L 540,650"/>
+    <path d="M246,760 L 794,760"/>
+  </g>
+  <path d="M672,292 L 748,646" fill="none" stroke="#F2703A" stroke-width="92" stroke-linecap="round"/>
+</svg>

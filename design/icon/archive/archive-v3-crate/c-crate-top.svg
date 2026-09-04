@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
+  <!-- C 箱口俯視：厚圓角方框是箱口，唱片偏離正中心（置中會讀成標靶）。 -->
+  <rect width="1024" height="1024" fill="#16151B"/>
+  <rect x="228" y="228" width="568" height="568" rx="100" fill="none" stroke="#F4EFE6" stroke-width="92"/>
+  <circle cx="566" cy="566" r="150" fill="#F2703A"/>
+  <circle cx="566" cy="566" r="40" fill="#16151B"/>
+</svg>

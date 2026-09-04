@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
+  <!-- A 唱針：唱片＋落下的唱臂。畫的是「正在放」，不是「收著」。 -->
+  <rect width="1024" height="1024" fill="#16151B"/>
+  <g transform="translate(-38,23)">
+    <circle cx="450" cy="580" r="250" fill="#F4EFE6"/>
+    <circle cx="450" cy="580" r="186" fill="none" stroke="#16151B" stroke-width="14"/>
+    <circle cx="450" cy="580" r="48" fill="#16151B"/>
+    <path d="M858,190 L 570,460" fill="none" stroke="#F2703A" stroke-width="84" stroke-linecap="round"/>
+    <circle cx="858" cy="190" r="66" fill="#F2703A"/>
+  </g>
+</svg>

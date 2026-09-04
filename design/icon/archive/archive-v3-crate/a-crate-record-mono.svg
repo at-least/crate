@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
+  <!-- A 單色層：軸心孔用 evenodd 挖出（VectorDrawable 用 android:fillType="evenOdd"）。 -->
+  <g transform="translate(0,50)" fill="currentColor">
+    <path fill-rule="evenodd" d="M322,400 A190,190 0 1 1 702,400 A190,190 0 1 1 322,400 Z
+                                 M468,400 A44,44 0 1 0 556,400 A44,44 0 1 0 468,400 Z"/>
+    <path d="M236,392 V 620 A 60,60 0 0 0 296,680 H 728 A 60,60 0 0 0 788,620 V 392"
+          fill="none" stroke="currentColor" stroke-width="92" stroke-linecap="round"/>
+  </g>
+</svg>

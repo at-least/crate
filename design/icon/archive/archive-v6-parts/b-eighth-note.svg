@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
+  <!-- B 八分音符：符尾是一條直斜線，不是有機的彎鉤——彎鉤在小尺寸下會被當成瑕疵。 -->
+  <rect width="1024" height="1024" fill="#16151B"/>
+  <g transform="translate(8,27)">
+    <ellipse cx="400" cy="660" rx="140" ry="104" fill="#F4EFE6" transform="rotate(-22 400 660)"/>
+    <path d="M520,660 L 520,250" fill="none" stroke="#F4EFE6" stroke-width="88" stroke-linecap="round"/>
+    <path d="M520,254 L 700,384" fill="none" stroke="#F2703A" stroke-width="88" stroke-linecap="round"/>
+  </g>
+</svg>

@@ -11,6 +11,8 @@
 
     <application
         android:name=".CrateApp"
+        android:icon="@mipmap/ic_launcher"
+        android:roundIcon="@mipmap/ic_launcher_round"
         android:label="Crate"
         android:supportsRtl="true"
         android:theme="@style/Theme.Crate">

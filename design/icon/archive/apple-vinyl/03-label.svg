@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
+  <!-- 唱片＋標籤細環／紫。原則：實心盤＋很小的軸心孔（孔一放大就讀成蛋／眼睛／標靶）。
+       挖孔一律 fill-rule="evenodd"（Android VectorDrawable 對應 android:fillType="evenOdd"）。 -->
+  <defs><linearGradient id="v3" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#B49CFF"/><stop offset="1" stop-color="#6A3AE0"/></linearGradient></defs>
+  <rect width="1024" height="1024" fill="url(#v3)"/>
+  <g transform="translate(512,512) scale(1.0000) translate(-512.0,-512.0)">
+    <path fill="#FFFFFF" fill-rule="evenodd" d="M 192.0,512.0 A 320.0,320.0 0 0 1 832.0,512.0 A 320.0,320.0 0 0 1 192.0,512.0 Z M 372.0,512.0 A 140.0,140.0 0 0 1 652.0,512.0 A 140.0,140.0 0 0 1 372.0,512.0 Z M 388.0,512.0 A 124.0,124.0 0 0 1 636.0,512.0 A 124.0,124.0 0 0 1 388.0,512.0 Z M 466.0,512.0 A 46.0,46.0 0 0 1 558.0,512.0 A 46.0,46.0 0 0 1 466.0,512.0 Z"/>
+  </g>
+</svg>

@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
+  <!-- 唱片在方框內／石墨。原則：實心盤＋很小的軸心孔（孔一放大就讀成蛋／眼睛／標靶）。
+       挖孔一律 fill-rule="evenodd"（Android VectorDrawable 對應 android:fillType="evenOdd"）。 -->
+  <defs><linearGradient id="v10" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#7A7A83"/><stop offset="1" stop-color="#26262C"/></linearGradient></defs>
+  <rect width="1024" height="1024" fill="url(#v10)"/>
+  <g transform="translate(512,512) scale(1.0127) translate(-512.0,-512.0)">
+    <path fill="#FFFFFF" fill-rule="evenodd" d="M 316.0,196.0 L 708.0,196.0 Q 828.0,196.0 828.0,316.0 L 828.0,708.0 Q 828.0,828.0 708.0,828.0 L 316.0,828.0 Q 196.0,828.0 196.0,708.0 L 196.0,316.0 Q 196.0,196.0 316.0,196.0 Z M 338.0,268.0 L 686.0,268.0 Q 756.0,268.0 756.0,338.0 L 756.0,686.0 Q 756.0,756.0 686.0,756.0 L 338.0,756.0 Q 268.0,756.0 268.0,686.0 L 268.0,338.0 Q 268.0,268.0 338.0,268.0 Z"/>
+    <path fill="#FFFFFF" fill-rule="evenodd" d="M 316.0,512.0 A 196.0,196.0 0 0 1 708.0,512.0 A 196.0,196.0 0 0 1 316.0,512.0 Z M 478.0,512.0 A 34.0,34.0 0 0 1 546.0,512.0 A 34.0,34.0 0 0 1 478.0,512.0 Z"/>
+  </g>
+</svg>

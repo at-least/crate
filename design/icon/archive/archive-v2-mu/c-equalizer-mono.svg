@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
+  <!-- C 單色層：全部同一顏色，系統自行著色。 -->
+  
+  <g fill="none" stroke="currentColor" stroke-width="84" stroke-linecap="round">
+    <path d="M262,422 L 262,602"/>
+    <path d="M387,322 L 387,702"/>
+    <path d="M637,352 L 637,672"/>
+    <path d="M762,402 L 762,622"/>
+  </g>
+  <path d="M512,232 L 512,792" fill="none" stroke="currentColor" stroke-width="84" stroke-linecap="round"/>
+</svg>

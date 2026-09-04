@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 併進 android/app/src/main/res/values/colors.xml（該檔目前一個顏色都沒有）。 -->
+<resources>
+    <color name="crate_ink">#16151B</color>
+    <color name="crate_bone">#F4EFE6</color>
+</resources>

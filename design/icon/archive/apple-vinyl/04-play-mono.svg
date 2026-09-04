@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
+  <!-- 唱片・軸心是播放鍵 單色層。 -->
+  <g transform="translate(512,512) scale(1.0000) translate(-512.0,-512.0)">
+    <path fill="currentColor" fill-rule="evenodd" d="M 192.0,512.0 A 320.0,320.0 0 0 1 832.0,512.0 A 320.0,320.0 0 0 1 192.0,512.0 Z M 420.2,407.5 L 617.8,512.0 L 420.2,616.5 Z"/>
+  </g>
+</svg>

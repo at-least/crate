@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
+  <!-- B 八分音符：符頭就是唱片（溝紋＋軸心孔），符尾第二色。音樂與載體同一個形。 -->
+  <rect width="1024" height="1024" fill="#16151B"/>
+  <g transform="translate(15,8)">
+    <circle cx="400" cy="630" r="170" fill="#F4EFE6"/>
+    <circle cx="400" cy="630" r="116" fill="none" stroke="#16151B" stroke-width="12"/>
+    <circle cx="400" cy="630" r="42" fill="#16151B"/>
+    <path d="M570,630 L 570,254" fill="none" stroke="#F4EFE6" stroke-width="86" stroke-linecap="round"/>
+    <path d="M570,258 C 700,282 748,368 722,462" fill="none" stroke="#F2703A" stroke-width="86" stroke-linecap="round"/>
+  </g>
+</svg>

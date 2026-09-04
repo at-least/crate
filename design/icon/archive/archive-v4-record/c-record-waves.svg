@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
+  <!-- C 唱片與聲波：聲音正從那張唱片出來。兩道弧與唱片同圓心。 -->
+  <rect width="1024" height="1024" fill="#16151B"/>
+  <g transform="translate(30,0)">
+    <circle cx="404" cy="512" r="248" fill="#F4EFE6"/>
+    <circle cx="404" cy="512" r="184" fill="none" stroke="#16151B" stroke-width="14"/>
+    <circle cx="404" cy="512" r="48" fill="#16151B"/>
+    <path d="M616,765 A 330,330 0 0 0 616,259" fill="none" stroke="#F2703A" stroke-width="68" stroke-linecap="round"/>
+    <path d="M731,806 A 440,440 0 0 0 731,218" fill="none" stroke="#F2703A" stroke-width="68" stroke-linecap="round"/>
+  </g>
+</svg>

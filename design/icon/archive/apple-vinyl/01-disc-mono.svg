@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
+  <!-- 唱片・實心＋軸心孔 單色層。 -->
+  <g transform="translate(512,512) scale(1.0000) translate(-512.0,-512.0)">
+    <path fill="currentColor" fill-rule="evenodd" d="M 192.0,512.0 A 320.0,320.0 0 0 1 832.0,512.0 A 320.0,320.0 0 0 1 192.0,512.0 Z M 466.0,512.0 A 46.0,46.0 0 0 1 558.0,512.0 A 46.0,46.0 0 0 1 466.0,512.0 Z"/>
+  </g>
+</svg>

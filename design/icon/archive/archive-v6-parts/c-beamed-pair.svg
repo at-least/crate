@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
+  <!-- C 雙連音符：兩個頭、兩根桿、一條直連桿。除了兩個橢圓全是直線，構圖也最接近正方。 -->
+  <rect width="1024" height="1024" fill="#16151B"/>
+  <ellipse cx="330" cy="700" rx="128" ry="96" fill="#F4EFE6" transform="rotate(-20 330 700)"/>
+  <ellipse cx="650" cy="640" rx="128" ry="96" fill="#F4EFE6" transform="rotate(-20 650 640)"/>
+  <g fill="none" stroke="#F4EFE6" stroke-width="88" stroke-linecap="round">
+    <path d="M454,700 L 454,330"/>
+    <path d="M774,640 L 774,270"/>
+  </g>
+  <path d="M454,330 L 774,270" fill="none" stroke="#F2703A" stroke-width="96" stroke-linecap="round"/>
+</svg>

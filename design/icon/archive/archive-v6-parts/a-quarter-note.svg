@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
+  <!-- A 四分音符：一個頭、一根桿，沒有任何附加物。線條最少的一版。 -->
+  <rect width="1024" height="1024" fill="#16151B"/>
+  <g transform="translate(105,-5)">
+    <ellipse cx="392" cy="668" rx="158" ry="118" fill="#F2703A" transform="rotate(-22 392 668)"/>
+    <path d="M528,668 L 528,236" fill="none" stroke="#F4EFE6" stroke-width="92" stroke-linecap="round"/>
+  </g>
+</svg>

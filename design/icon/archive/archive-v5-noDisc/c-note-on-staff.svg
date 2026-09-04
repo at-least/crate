@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
+  <!-- C 譜上的音：三條譜線（五條在 29pt 會糊成一塊）＋一個落在中線上的音。 -->
+  <rect width="1024" height="1024" fill="#16151B"/>
+  <g transform="translate(0,70)">
+    <g fill="none" stroke="#F4EFE6" stroke-width="48" stroke-linecap="round">
+      <path d="M196,372 H 828"/><path d="M196,512 H 828"/><path d="M196,652 H 828"/>
+    </g>
+    <path d="M700,512 L 700,232" fill="none" stroke="#F2703A" stroke-width="60" stroke-linecap="round"/>
+    <ellipse cx="618" cy="512" rx="104" ry="80" fill="#F2703A" transform="rotate(-20 618 512)"/>
+  </g>
+</svg>

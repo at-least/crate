@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
+  <!-- C 單色層：唱片用 evenodd 挖出軸心孔。 -->
+  <rect x="228" y="228" width="568" height="568" rx="100" fill="none" stroke="currentColor" stroke-width="92"/>
+  <path fill="currentColor" fill-rule="evenodd" d="M416,566 A150,150 0 1 1 716,566 A150,150 0 1 1 416,566 Z
+                                                   M526,566 A40,40 0 1 0 606,566 A40,40 0 1 0 526,566 Z"/>
+</svg>

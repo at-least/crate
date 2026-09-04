@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
+  <!-- 三張疊放／藕紫。實心盤＋很小的軸心孔；唱臂那版先在盤面挖出比臂寬 18 的縫，否則同色會融成一塊。 -->
+  <defs><linearGradient id="v8" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#DDA9CE"/><stop offset="1" stop-color="#96417F"/></linearGradient></defs>
+  <rect width="1024" height="1024" fill="url(#v8)"/>
+  <g transform="translate(512,512) scale(0.8743) translate(-452.0,-506.0)">
+    <path fill="#FFFFFF" fill-rule="evenodd" d="M 86.0,610.0 A 214.0,214.0 0 0 1 514.0,610.0 A 214.0,214.0 0 0 1 86.0,610.0 Z M 206.0,522.0 A 246.0,246.0 0 0 1 698.0,522.0 A 246.0,246.0 0 0 1 206.0,522.0 Z"/>
+    <path fill="#FFFFFF" fill-rule="evenodd" d="M 238.0,522.0 A 214.0,214.0 0 0 1 666.0,522.0 A 214.0,214.0 0 0 1 238.0,522.0 Z M 358.0,434.0 A 246.0,246.0 0 0 1 850.0,434.0 A 246.0,246.0 0 0 1 358.0,434.0 Z"/>
+    <path fill="#FFFFFF" fill-rule="evenodd" d="M 390.0,434.0 A 214.0,214.0 0 0 1 818.0,434.0 A 214.0,214.0 0 0 1 390.0,434.0 Z M 570.0,434.0 A 34.0,34.0 0 0 1 638.0,434.0 A 34.0,34.0 0 0 1 570.0,434.0 Z"/>
+  </g>
+</svg>

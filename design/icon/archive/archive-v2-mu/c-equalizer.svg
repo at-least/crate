@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
+  <!-- C 等化器：五根圓端直條，中間一根是第二色。最安全、最沒有記憶點的一個。 -->
+  <rect width="1024" height="1024" fill="#16151B"/>
+  <g fill="none" stroke="#F4EFE6" stroke-width="84" stroke-linecap="round">
+    <path d="M262,422 L 262,602"/>
+    <path d="M387,322 L 387,702"/>
+    <path d="M637,352 L 637,672"/>
+    <path d="M762,402 L 762,622"/>
+  </g>
+  <path d="M512,232 L 512,792" fill="none" stroke="#F2703A" stroke-width="84" stroke-linecap="round"/>
+</svg>

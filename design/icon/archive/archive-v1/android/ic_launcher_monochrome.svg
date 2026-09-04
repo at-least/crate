@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 108 108" width="108" height="108">
+  <!-- Adaptive icon 單色層（themed icon）：去背、單一顏色，系統自行著色。字標高 45dp、對角 62dp，完整落在 66dp 安全圓內。 -->
+  <g transform="translate(54,54) scale(0.086) translate(-471,-513.5)">
+    <g fill="none" stroke="#FFFFFF" stroke-width="100" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M366 300 V 700"/>
+      <path d="M366 440 C 366 639 670 639 670 440 V 300"/>
+    </g>
+    <ellipse cx="318" cy="700" rx="98" ry="74" fill="#FFFFFF" transform="rotate(-18 318 700)"/>
+  </g>
+</svg>

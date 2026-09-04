@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
+  <!-- 雙盤並排 單色層。 -->
+  <g transform="translate(512,512) scale(0.7583) translate(-512.0,-512.0)">
+    <path fill="currentColor" fill-rule="evenodd" d="M 90.0,512.0 A 232.0,232.0 0 0 1 554.0,512.0 A 232.0,232.0 0 0 1 90.0,512.0 Z M 286.0,512.0 A 36.0,36.0 0 0 1 358.0,512.0 A 36.0,36.0 0 0 1 286.0,512.0 Z"/>
+    <path fill="currentColor" fill-rule="evenodd" d="M 470.0,512.0 A 232.0,232.0 0 0 1 934.0,512.0 A 232.0,232.0 0 0 1 470.0,512.0 Z M 666.0,512.0 A 36.0,36.0 0 0 1 738.0,512.0 A 36.0,36.0 0 0 1 666.0,512.0 Z"/>
+  </g>
+</svg>

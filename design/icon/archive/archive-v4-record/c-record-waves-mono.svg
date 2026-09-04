@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
+  <!-- C 單色層：兩道弧在盤面之外，單色下不會跟唱片黏住。 -->
+  <g transform="translate(30,0)">
+    <path fill="currentColor" fill-rule="evenodd" d="M156,512 A248,248 0 1 1 652,512 A248,248 0 1 1 156,512 Z
+                                                     M356,512 A48,48 0 1 0 452,512 A48,48 0 1 0 356,512 Z"/>
+    <g fill="none" stroke="currentColor" stroke-width="68" stroke-linecap="round">
+      <path d="M616,765 A 330,330 0 0 0 616,259"/>
+      <path d="M731,806 A 440,440 0 0 0 731,218"/>
+    </g>
+  </g>
+</svg>

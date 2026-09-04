@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
+  <!-- B 單色層：符桿接在符頭右緣、融在一起是對的（真的音符就長這樣）。 -->
+  <g transform="translate(15,8)">
+    <path fill="currentColor" fill-rule="evenodd" d="M230,630 A170,170 0 1 1 570,630 A170,170 0 1 1 230,630 Z
+                                                     M358,630 A42,42 0 1 0 442,630 A42,42 0 1 0 358,630 Z"/>
+    <g fill="none" stroke="currentColor" stroke-width="86" stroke-linecap="round">
+      <path d="M570,630 L 570,254"/>
+      <path d="M570,258 C 700,282 748,368 722,462"/>
+    </g>
+  </g>
+</svg>

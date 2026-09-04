@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
+  <!-- 兩張疊放／森綠。原則：實心盤＋很小的軸心孔（孔一放大就讀成蛋／眼睛／標靶）。
+       挖孔一律 fill-rule="evenodd"（Android VectorDrawable 對應 android:fillType="evenOdd"）。 -->
+  <defs><linearGradient id="v6" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#8FCF86"/><stop offset="1" stop-color="#2F7A43"/></linearGradient></defs>
+  <rect width="1024" height="1024" fill="url(#v6)"/>
+  <g transform="translate(512,512) scale(0.8649) translate(-500.0,-491.0)">
+    <path fill="#FFFFFF" fill-rule="evenodd" d="M 130.0,556.0 A 242.0,242.0 0 0 1 614.0,556.0 A 242.0,242.0 0 0 1 130.0,556.0 Z M 350.0,462.0 A 278.0,278.0 0 0 1 906.0,462.0 A 278.0,278.0 0 0 1 350.0,462.0 Z"/>
+    <path fill="#FFFFFF" fill-rule="evenodd" d="M 386.0,462.0 A 242.0,242.0 0 0 1 870.0,462.0 A 242.0,242.0 0 0 1 386.0,462.0 Z M 590.0,462.0 A 38.0,38.0 0 0 1 666.0,462.0 A 38.0,38.0 0 0 1 590.0,462.0 Z"/>
+  </g>
+</svg>

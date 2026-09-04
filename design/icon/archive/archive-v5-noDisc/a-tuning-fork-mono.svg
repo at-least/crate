@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
+  <!-- A 單色層：握柄本來就接在彎底，融在一起是對的。 -->
+  <g transform="translate(0,-28)" fill="none" stroke="currentColor" stroke-width="92" stroke-linecap="round">
+    <path d="M340,240 V 470 A 172,172 0 0 0 684,470 V 240"/>
+    <path d="M512,646 V 840"/>
+  </g>
+</svg>
