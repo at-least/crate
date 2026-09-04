@@ -1,21 +1,6 @@
-# build outputs
-android/.gradle/
-android/build/
-android/*/build/
-apple/CrateCore/.build/
-
 # tmp
 *.log
 .DS_Store
 
 # python
 __pycache__/
-
-# ide/sdk local config
-android/local.properties
-
-# xcode user data
-xcuserdata/
-
-# zcode session data
-.zcode/

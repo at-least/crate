@@ -53,7 +53,7 @@
 ## 4. 架構
 
 ```
-mu/
+crate/                        ← 中樞倉庫
 ├─ contract/                  ← 兩套核心的共同規格（機器可讀，防飄移的脊椎）
 │  ├─ schema.sql              SQLite schema（兩邊照搬）
 │  ├─ model.md                資料模型與語意（專輯/音軌/清單/釘選/狀態）
@@ -61,15 +61,19 @@ mu/
 │  ├─ sync-rules.md           增量掃描規則、cursor 語意（唯讀）
 │  ├─ acceptance.md           MVP 驗收清單（機器可查部分）
 │  └─ fixtures/               黃金測試檔（髒檔樣本 + 期望輸出 JSON）
-│
-├─ android/                   ← Kotlin
-│  ├─ core/                   純 JVM 模組：provider/delta/掃描/m3u8/DB（跑 contract 測試）
-│  └─ app/                    Compose UI + Media3 播放 + Service
-│
-└─ apple/                     ← Swift
-   ├─ CrateCore/                 Swift package：provider/delta/掃描/m3u8/DB（跑 contract 測試）
-   ├─ CrateiOS/                  iOS app（SwiftUI + AVFoundation）
-   └─ CrateMac/                  macOS app（與 iOS 共用 CrateCore）
+├─ design/icon/               圖示原稿
+└─ docs/                      provider 申請設定筆記
+
+crate-android/                ← Kotlin（獨立倉庫）
+├─ crate/                     中樞 submodule（契約與 fixtures 由此進來）
+├─ core/                      純 JVM 模組：provider/delta/掃描/m3u8/DB（跑 contract 測試）
+└─ app/                       Compose UI + Media3 播放 + Service
+
+crate-apple/                  ← Swift（獨立倉庫）
+├─ crate/                     中樞 submodule
+├─ CrateCore/                 Swift package：provider/delta/掃描/m3u8/DB（跑 contract 測試）
+├─ CrateiOS/                  iOS app（SwiftUI + AVFoundation）
+└─ CrateMac/                  macOS app（與 iOS 共用 CrateCore）
 ```
 
 ### 分層原則
@@ -242,14 +246,14 @@ CarPlay（Media3 原生支援 + CarPlay framework）、桌面 Widget、Last.fm s
 ## 10. Mac 開工指南（第一天）
 
 1. **環境**：macOS 26+、Xcode（App Store 最新版，裝完開過一次）、Command Line Tools（`xcode-select --install`）。可选 Homebrew、 Ruby（不需）。
-2. **拿程式碼**：`git clone <repo>`（或先只拿 `contract/` 與 `apple/`）。
+2. **拿程式碼**：`git clone --recurse-submodules https://github.com/at-least/crate-apple.git`（契約隨 submodule 進來，落在 `crate/`）。
 3. **第一步跑契約測試**：
    ```bash
-   cd apple/CrateCore
+   cd crate-apple/CrateCore
    swift test
    ```
    預期：contract fixtures 全綠。**這行指令是 Apple 端的里程碑 1。**
-4. **跑 app**：`open apple/CrateiOS/CrateiOS.xcodeproj` → 選 iPhone 模擬器 → Cmd+R。
+4. **跑 app**：`open CrateiOS/CrateiOS.xcodeproj` → 選 iPhone 模擬器 → Cmd+R。
 5. **你不需要寫碼**：開 issue / 貼錯誤訊息 / 描述聽感給 agent。你的時間花在耳朵和真機。
 
 ## 11. 命名與上架
