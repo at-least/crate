@@ -1,0 +1,50 @@
+{
+  "albums": [
+    {
+      "albumArtist": "Aurora",
+      "artTrackId": "Aurora/Northern Lights/01 - Rise.flac",
+      "compilation": false,
+      "id": "alb|Aurora|Northern Lights",
+      "name": "Northern Lights",
+      "trackCount": 1,
+      "year": null
+    }
+  ],
+  "errors": [],
+  "playlists": [
+    {
+      "id": "Playlists/win.m3u8",
+      "items": [
+        {
+          "durationMs": null,
+          "missing": false,
+          "position": 0,
+          "ref": "../Aurora/Northern Lights/01 - Rise.flac",
+          "trackId": "Aurora/Northern Lights/01 - Rise.flac"
+        }
+      ],
+      "name": "win",
+      "path": "Playlists/win.m3u8"
+    }
+  ],
+  "tracks": [
+    {
+      "album": "Northern Lights",
+      "albumArtist": "Aurora",
+      "albumId": "alb|Aurora|Northern Lights",
+      "artist": "Aurora",
+      "disc": 1,
+      "durationMs": 300,
+      "format": "flac",
+      "id": "Aurora/Northern Lights/01 - Rise.flac",
+      "path": "Aurora/Northern Lights/01 - Rise.flac",
+      "replayGainAlbumMb": null,
+      "replayGainTrackMb": null,
+      "sizeBytes": 8487,
+      "tagOk": true,
+      "title": "Rise",
+      "trackNo": 1,
+      "year": null
+    }
+  ]
+}

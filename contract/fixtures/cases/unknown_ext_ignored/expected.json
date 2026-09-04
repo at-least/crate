@@ -1,0 +1,35 @@
+{
+  "albums": [
+    {
+      "albumArtist": "A",
+      "artTrackId": null,
+      "compilation": false,
+      "id": "alb|A|B",
+      "name": "B",
+      "trackCount": 1,
+      "year": null
+    }
+  ],
+  "errors": [],
+  "playlists": [],
+  "tracks": [
+    {
+      "album": "B",
+      "albumArtist": "A",
+      "albumId": "alb|A|B",
+      "artist": "A",
+      "disc": 1,
+      "durationMs": 300,
+      "format": "flac",
+      "id": "A/B/01 - Real.flac",
+      "path": "A/B/01 - Real.flac",
+      "replayGainAlbumMb": null,
+      "replayGainTrackMb": null,
+      "sizeBytes": 8431,
+      "tagOk": false,
+      "title": "Real",
+      "trackNo": 1,
+      "year": null
+    }
+  ]
+}
