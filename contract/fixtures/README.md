@@ -60,3 +60,16 @@ fixture provider 的 `Entry.id == Entry.path`（見 model.md §1.4），所以
 | `eq_cases/` | `eq_generate.py` | EQ 設定與播放總增益（model.md §1.10；純整數。浮點 DSP 由各平台性質測試驗） |
 | `nowplaying_cases/` | `nowplaying_generate.py` | 現正播放快照與 Widget 顯示規則（model.md §1.11） |
 | `oauth_cases/` | `oauth_generate.py` | OAuth + PKCE 與 token 生命週期（provider.md §10） |
+
+## 產生器的旗標約定（八個產生器一致）
+
+| 指令 | 作用 |
+|---|---|
+| `python3 <x>_generate.py --check` | **唯讀**：重放／重掃已 commit 的案例，比對 `expected.json`。CI 跑的就是這個 |
+| `python3 <x>_generate.py` | **破壞性**：重新產生並覆寫 fixtures（`generate.py` 會先刪掉整個 `cases/`，且需 ffmpeg） |
+
+`generate.py` 的 `--rescan-check` 是 `--check` 的舊名，等價保留（CI 沿用中）。
+
+**未知參數一律以錯誤退出，不會掉進重產路徑。** 這條是有代價換來的：
+`generate.py` 原本只認 `--rescan-check`，`--check` 這個在其餘七個產生器都是唯讀的旗標
+落到它身上會被忽略、直接走重產，把 `cases/` 洗掉 16 個案例。

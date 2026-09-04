@@ -671,6 +671,12 @@ def check() -> int:
 
 
 if __name__ == "__main__":
-    if sys.argv[1:] == ["--check"]:
+    # 未知參數一律退出，**不**掉進會重寫 fixtures 的 main()（同 generate.py）。
+    args = sys.argv[1:]
+    if args == ["--check"]:
         sys.exit(check())
+    elif args:
+        sys.exit(f"未知參數：{' '.join(args)}\n"
+                 f"用法：python3 {__file__.split('/')[-1]} [--check]"
+                 f"（無參數 = 重新產生，會覆寫 fixtures）")
     main()

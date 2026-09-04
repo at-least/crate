@@ -459,11 +459,17 @@ def update_expected() -> int:
     return 0
 
 if __name__ == "__main__":
-    if sys.argv[1:] == ["--check"]:
+    # 未知參數一律退出，**不**掉進會重寫 fixtures 的 main()（同 generate.py）。
+    args = sys.argv[1:]
+    if args == ["--check"]:
         sys.exit(check())
-    if sys.argv[1:] == ["--update-expected"]:
+    elif args == ["--update-expected"]:
         sys.exit(update_expected())
-    if sys.argv[1:] == ["--synth"]:
+    elif args == ["--synth"]:
         build_synth_assets()
         sys.exit(0)
+    elif args:
+        sys.exit(f"未知參數：{' '.join(args)}\n"
+                 f"用法：python3 sync_generate.py [--check | --update-expected | --synth]"
+                 f"（無參數 = 重新產生，需 ffmpeg，會覆寫 fixtures）")
     main()

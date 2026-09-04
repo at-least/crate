@@ -6,7 +6,8 @@ Crate contract fixtures 產生器（兼參考實作）
 - 內含 Python 參考掃描器（依 contract/model.md 規格）
 - 每案例輸出 cases/<name>/lib/... + expected.json（byte-canonical）
 
-重跑：python3 generate.py   （需 ffmpeg；產物已 commit，平時不需要重跑）
+重跑：python3 generate.py            （需 ffmpeg；**破壞性**——先刪掉 cases/ 再全部重產）
+驗證：python3 generate.py --check    （重掃已 commit 的 cases/ 比對 expected.json；唯讀，CI 用）
 """
 import json, os, shutil, struct, subprocess, sys, zlib
 from pathlib import Path
@@ -1077,35 +1078,57 @@ def main():
     expect(by["12-Irregular"]["trackNo"] is None, "no space-dash → no trackNo")
     print(f"OK: {len(names)} cases generated, all sanity asserts passed")
 
+USAGE = """用法：
+  python3 generate.py                     重新產生全部 cases（需 ffmpeg）
+                                          **破壞性**：先刪掉整個 cases/ 再重產
+  python3 generate.py --check             重掃已 commit 的 cases/ 比對 expected.json（唯讀）
+  python3 generate.py --rescan-check      --check 的舊名，等價（CI 沿用中）
+  python3 generate.py --update-expected   只重寫 expected.json，不碰 lib/
+  python3 generate.py --case <name>       只重產單一案例（需 ffmpeg；破壞性）
+"""
+
+
+def regen_case(name: str) -> int:
+    """--case <name>：只重產單一案例。"""
+    assert name in build_cases(), name
+    case = CASES / name
+    if case.exists():
+        shutil.rmtree(case)
+    lib = case / "lib"
+    lib.mkdir(parents=True)
+    populate(name, lib)
+    result = scan_tree(lib)
+    for t in result["tracks"]:
+        t.pop("_compilation")
+    for e in result["errors"]:
+        e["message"] = ""
+    (case / "expected.json").write_text(canonical(result), encoding="utf-8")
+    if name == "replaygain_tags":
+        tr = {t["path"]: t for t in result["tracks"]}
+        assert (tr["RG/Album/01 - Flac.flac"]["replayGainTrackMb"], tr["RG/Album/01 - Flac.flac"]["replayGainAlbumMb"]) == (-654, 210)
+        assert (tr["RG/Album/02 - Flac Odd.flac"]["replayGainTrackMb"], tr["RG/Album/02 - Flac Odd.flac"]["replayGainAlbumMb"]) == (None, 356)
+        assert (tr["RG/Album/03 - Mp3.mp3"]["replayGainTrackMb"], tr["RG/Album/03 - Mp3.mp3"]["replayGainAlbumMb"]) == (-725, 50)
+        assert tr["RG/Album/03 - Mp3.mp3"]["title"] == "Gainy"
+        assert (tr["RG/Album/04 - M4a.m4a"]["replayGainTrackMb"], tr["RG/Album/04 - M4a.m4a"]["replayGainAlbumMb"]) == (-300, None)
+        assert tr["RG/Album/04 - M4a.m4a"]["title"] == "Boxed" and tr["RG/Album/04 - M4a.m4a"]["durationMs"] == 1000
+        assert parse_gain_mb("-6.545") == -654 and parse_gain_mb("  +3  ") == 300 and parse_gain_mb(".5") is None
+    print(f"OK: case {name} regenerated")
+    return 0
+
+
 if __name__ == "__main__":
-    if len(sys.argv) == 3 and sys.argv[1] == "--case":
-        name = sys.argv[2]
-        assert name in build_cases(), name
-        case = CASES / name
-        if case.exists():
-            shutil.rmtree(case)
-        lib = case / "lib"
-        lib.mkdir(parents=True)
-        populate(name, lib)
-        result = scan_tree(lib)
-        for t in result["tracks"]:
-            t.pop("_compilation")
-        for e in result["errors"]:
-            e["message"] = ""
-        (case / "expected.json").write_text(canonical(result), encoding="utf-8")
-        if name == "replaygain_tags":
-            tr = {t["path"]: t for t in result["tracks"]}
-            assert (tr["RG/Album/01 - Flac.flac"]["replayGainTrackMb"], tr["RG/Album/01 - Flac.flac"]["replayGainAlbumMb"]) == (-654, 210)
-            assert (tr["RG/Album/02 - Flac Odd.flac"]["replayGainTrackMb"], tr["RG/Album/02 - Flac Odd.flac"]["replayGainAlbumMb"]) == (None, 356)
-            assert (tr["RG/Album/03 - Mp3.mp3"]["replayGainTrackMb"], tr["RG/Album/03 - Mp3.mp3"]["replayGainAlbumMb"]) == (-725, 50)
-            assert tr["RG/Album/03 - Mp3.mp3"]["title"] == "Gainy"
-            assert (tr["RG/Album/04 - M4a.m4a"]["replayGainTrackMb"], tr["RG/Album/04 - M4a.m4a"]["replayGainAlbumMb"]) == (-300, None)
-            assert tr["RG/Album/04 - M4a.m4a"]["title"] == "Boxed" and tr["RG/Album/04 - M4a.m4a"]["durationMs"] == 1000
-            assert parse_gain_mb("-6.545") == -654 and parse_gain_mb("  +3  ") == 300 and parse_gain_mb(".5") is None
-        print(f"OK: case {name} regenerated")
-        sys.exit(0)
-    if sys.argv[1:] == ["--rescan-check"]:
+    # 未知參數一律退出，**不**掉進破壞性的 main()——曾經有人（agent）以為
+    # --check 是唯讀旗標，結果整個 cases/ 被重產掉。
+    args = sys.argv[1:]
+    if args[:1] == ["--case"]:
+        if len(args) != 2:
+            sys.exit(f"--case 需要一個案例名稱\n\n{USAGE}")
+        sys.exit(regen_case(args[1]))
+    elif args in (["--check"], ["--rescan-check"]):
         sys.exit(rescan_check())
-    if sys.argv[1:] == ["--update-expected"]:
+    elif args == ["--update-expected"]:
         sys.exit(update_expected())
-    main()
+    elif not args:
+        main()
+    else:
+        sys.exit(f"未知參數：{' '.join(args)}\n\n{USAGE}")
