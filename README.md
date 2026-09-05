@@ -22,7 +22,7 @@ contract/    兩套核心的共同規格（唯一事實來源）
   sync-rules.md    增量掃描規則（§3 同步引擎；唯讀）
   acceptance.md    各 Phase 驗收清單
   fixtures/        黃金測試案例（含 Python 參考實作 generate.py / sync_generate.py）
-    cases/         26 個掃描器案例
+    cases/         27 個掃描器案例
     sync_cases/    6 個同步引擎案例（+ sync_assets/ 共享音訊資產）
     err_cases/     錯誤語意案例（重試政策）
 design/icon/ 圖示原稿（SVG 主圖 + 兩平台匯出）
@@ -39,7 +39,8 @@ docs/        雲端 provider 的申請設定筆記
 
 | 端 | 指令 | 狀態 |
 |---|---|---|
-| 契約（參考實作重產） | `python3 contract/fixtures/generate.py`（需 ffmpeg） | ✅ 26 案例 |
+| 掃描器（重掃比對） | `python3 contract/fixtures/generate.py --check`（無 ffmpeg，CI 用） | ✅ 27 案例 |
+| 掃描器（參考實作重產） | `python3 contract/fixtures/generate.py`（需 ffmpeg；破壞性，先刪 `cases/`） | 產物已 commit，平時不跑 |
 | 同步引擎（參考實作重放） | `python3 contract/fixtures/sync_generate.py --check`（無 ffmpeg，CI 用） | ✅ 6 案例 |
 | 錯誤語意（重試重放） | `python3 contract/fixtures/err_generate.py --check`（無 ffmpeg，CI 用） | ✅ 7 條目 |
 | Android core | `crate-android` 倉庫：`./gradlew :core:test` | ✅ 全綠 |
